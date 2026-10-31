@@ -7,10 +7,10 @@ import { ResourceState } from '@/shared/components/common/ResourceState';
 import { LessonSidebar } from '@/features/learning/components/learning/LessonSidebar';
 import { LessonContent } from '@/features/learning/components/learning/LessonContent';
 import { LessonNavigation } from '@/features/learning/components/learning/LessonNavigation';
-import { VocabularyForm } from '@/features/vocabulary/components/VocabularyForm';
+import { vocabularyService } from '@/features/vocabulary/api/vocabularyService';
 import { LessonActivities } from '@/features/learning/components/learning/LessonActivities';
 import { useAiSidebar } from '@/features/ai/context/AiSidebarContext';
-import { ArrowLeft, CheckCircle2, Bookmark, PanelLeftClose, PanelLeft, Check } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Bookmark, PanelLeftClose, PanelLeft, Check, AlertCircle, Lock } from 'lucide-react';
 
 function LessonContextSyncer({ lesson, course, contentLesson, courseId }) {
   const { setLearningContext } = useAiSidebar();
@@ -43,12 +43,12 @@ function LessonScreen({ courseId, lessonId }) {
   const resource = useLearning(courseId, lessonId);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
-  const [savingWord, setSavingWord] = useState(false);
-  const [selectedWord, setSelectedWord] = useState('');
+  const [savingSelection, setSavingSelection] = useState(false);
   const [selectionAction, setSelectionAction] = useState(null);
-  const [message, setMessage] = useState('');
+  const [saveNotice, setSaveNotice] = useState(null);
   const [contentLesson, setContentLesson] = useState(null);
   const lessonContentRef = useRef(null);
+  const saveNoticeTimeoutRef = useRef(null);
 
   // Trạng thái mở/đóng thanh bên (Sidebar danh sách bài học)
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -62,8 +62,15 @@ function LessonScreen({ courseId, lessonId }) {
 
   useEffect(() => {
     setSelectionAction(null);
-    setSelectedWord('');
   }, [lessonId]);
+
+  useEffect(() => () => window.clearTimeout(saveNoticeTimeoutRef.current), []);
+
+  function showSaveNotice(type, text) {
+    window.clearTimeout(saveNoticeTimeoutRef.current);
+    setSaveNotice({ type, text });
+    saveNoticeTimeoutRef.current = window.setTimeout(() => setSaveNotice(null), 5000);
+  }
 
   function captureSelectedVocabulary() {
     window.setTimeout(() => {
@@ -89,18 +96,48 @@ function LessonScreen({ courseId, lessonId }) {
       if (!rect.width && !rect.height) return;
       setSelectionAction({
         word,
+        context: (range.commonAncestorContainer.parentElement?.textContent || word)
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 500),
         left: Math.min(Math.max(rect.left + rect.width / 2, 88), window.innerWidth - 88),
         top: Math.max(rect.top - 12, 56),
       });
     }, 0);
   }
 
-  function openSelectionVocabularyForm(word = selectionAction?.word) {
-    if (!word) return;
-    setSelectedWord(word);
-    setSelectionAction(null);
-    setSavingWord(true);
+  async function saveSelectedVocabulary(selection = selectionAction) {
+    if (!selection?.word || savingSelection) return;
+    setSavingSelection(true);
+    setSaveNotice(null);
     window.getSelection()?.removeAllRanges();
+    try {
+      const enriched = await vocabularyService.enrichWord({
+        word: selection.word,
+        context: selection.context,
+        lessonTitle: resource.data?.lesson?.titleVi || resource.data?.lesson?.title || '',
+      });
+      await vocabularyService.add({
+        lessonId: Number(lessonId),
+        word: selection.word,
+        meaning: enriched.meaning,
+        pronunciation: enriched.pronunciation || '',
+        exampleSentence: enriched.exampleSentence || '',
+        note: enriched.note || '',
+      });
+      showSaveNotice('success', bilingualLabel(
+        `Đã dịch và lưu “${selection.word}” vào sổ tay thành công.`,
+        `Successfully translated and saved “${selection.word}” to your notebook.`,
+      ));
+    } catch (e) {
+      showSaveNotice('error', bilingualLabel(
+        `Lưu “${selection.word}” thất bại. ${e.message || 'Vui lòng thử lại.'}`,
+        `Failed to save “${selection.word}”. ${e.message || 'Please try again.'}`,
+      ));
+    } finally {
+      setSavingSelection(false);
+      setSelectionAction(null);
+    }
   }
 
   async function complete() {
@@ -118,7 +155,45 @@ function LessonScreen({ courseId, lessonId }) {
 
   return (
     <ResourceState resource={resource}>
-      {({ course, lesson, lessons, progress }) => {
+      {({ course, lesson, lessons, progress, locked, requiredLesson }) => {
+        if (locked) {
+          const requiredLessonUrl = requiredLesson
+            ? `/courses/${courseId}/lessons/${requiredLesson.id}`
+            : `/courses/${courseId}`;
+
+          return (
+            <section className="max-w-2xl mx-auto rounded-3xl border border-amber-200 bg-white p-6 sm:p-8 shadow-sm text-center space-y-5">
+              <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-50 text-amber-700 border border-amber-200 flex items-center justify-center">
+                <Lock size={26} />
+              </div>
+              <div className="space-y-2">
+                <h1 className="text-xl sm:text-2xl font-black text-[#253044] m-0">
+                  <BilingualText vi="Bài học chưa được mở khóa" en="Lesson is locked" />
+                </h1>
+                <p className="text-sm text-[#64748B] m-0">
+                  <BilingualText
+                    vi={requiredLesson
+                      ? `Bạn cần hoàn thành “${requiredLesson.titleVi || requiredLesson.title}” trước khi học bài này.`
+                      : 'Bạn cần hoàn thành các bài học đứng trước trước khi học bài này.'}
+                    en={requiredLesson
+                      ? `Complete “${requiredLesson.title || requiredLesson.titleVi}” before opening this lesson.`
+                      : 'Complete the previous lessons before opening this lesson.'}
+                  />
+                </p>
+              </div>
+              <div className="flex flex-wrap justify-center gap-3">
+                <Link className="button secondary" to={`/courses/${courseId}`}>
+                  <ArrowLeft size={14} />
+                  <BilingualText vi="Về khóa học" en="Back to course" />
+                </Link>
+                <Link className="button" to={requiredLessonUrl}>
+                  <BilingualText vi="Học bài cần hoàn thành" en="Open required lesson" />
+                </Link>
+              </div>
+            </section>
+          );
+        }
+
         return (
           <>
             <LessonContextSyncer lesson={lesson} course={course} contentLesson={contentLesson} courseId={courseId} />
@@ -174,18 +249,6 @@ function LessonScreen({ courseId, lessonId }) {
                   </div>
                 </div>
 
-                {/* Nút mở modal lưu từ vựng */}
-                <button
-                  type="button"
-                  onClick={() => setSavingWord(true)}
-                  className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold border border-[#E8E5DF] transition-colors cursor-pointer"
-                >
-                  <Bookmark size={14} className="text-amber-600" />
-                  <span className="hidden sm:inline">
-                    <BilingualText vi="Lưu từ vựng" en="Save word" />
-                  </span>
-                </button>
-
                 {/* Nút ẩn/hiện thanh bên danh sách bài */}
                 <button
                   type="button"
@@ -205,14 +268,21 @@ function LessonScreen({ courseId, lessonId }) {
               </div>
             </header>
 
-            {/* Thông báo thành công khi lưu từ */}
-            {message && (
+            {/* Thông báo kết quả AI dịch và lưu từ luôn hiển thị trong khung nhìn hiện tại. */}
+            {saveNotice && (
               <div
-                role="status"
-                className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-semibold flex items-center gap-2 animate-bounce-subtle"
+                role={saveNotice.type === 'success' ? 'status' : 'alert'}
+                aria-live={saveNotice.type === 'success' ? 'polite' : 'assertive'}
+                className={`fixed bottom-5 right-5 z-[80] max-w-sm p-3.5 rounded-2xl border text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-xl animate-bounce-subtle ${
+                  saveNotice.type === 'success'
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                    : 'bg-rose-50 border-rose-200 text-rose-800'
+                }`}
               >
-                <Check size={16} className="text-emerald-600 shrink-0" />
-                <span>{message}</span>
+                {saveNotice.type === 'success'
+                  ? <Check size={16} className="text-emerald-600 shrink-0" />
+                  : <AlertCircle size={16} className="text-rose-600 shrink-0" />}
+                <span>{saveNotice.text}</span>
               </div>
             )}
 
@@ -247,7 +317,7 @@ function LessonScreen({ courseId, lessonId }) {
                 >
                   {/* Hoạt động bài học (Activities) */}
                   <LessonActivities
-                    onLoadedLesson={setContentLesson}
+                    onLessonLoaded={setContentLesson}
                     onActivityChange={(result) => {
                       if (result.completed) resource.reload();
                     }}
@@ -306,35 +376,16 @@ function LessonScreen({ courseId, lessonId }) {
                 type="button"
                 className="fixed z-[70] -translate-x-1/2 -translate-y-full inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-white px-3 py-2 text-xs font-bold text-stone-800 shadow-xl hover:bg-amber-50"
                 style={{ left: selectionAction.left, top: selectionAction.top }}
-                onPointerDown={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  openSelectionVocabularyForm(selectionAction.word);
-                }}
-                onClick={() => openSelectionVocabularyForm(selectionAction.word)}
+                onClick={() => saveSelectedVocabulary(selectionAction)}
+                disabled={savingSelection}
                 aria-label={bilingualLabel(`Lưu “${selectionAction.word}” vào sổ tay`, `Save “${selectionAction.word}” to notebook`)}
               >
                 <Bookmark size={14} className="text-amber-600" />
-                <BilingualText vi="Lưu vào sổ tay" en="Save to notebook" />
+                <BilingualText
+                  vi={savingSelection ? 'AI đang dịch và lưu…' : 'AI dịch & lưu vào sổ tay'}
+                  en={savingSelection ? 'AI is translating and saving…' : 'AI translate & save'}
+                />
               </button>
-            )}
-
-            {/* Modal lưu từ vựng */}
-            {savingWord && (
-              <VocabularyForm
-                lessonId={lesson.id}
-                initialValues={selectedWord ? { word: selectedWord } : undefined}
-                onClose={() => {
-                  setSavingWord(false);
-                  setSelectedWord('');
-                }}
-                onSaved={() => {
-                  setSavingWord(false);
-                  setSelectedWord('');
-                  setMessage(bilingualLabel('Đã lưu thành công vào sổ tay từ vựng.', 'Saved successfully to your vocabulary notebook.'));
-                  setTimeout(() => setMessage(''), 4000);
-                }}
-              />
             )}
           </div>
           </>

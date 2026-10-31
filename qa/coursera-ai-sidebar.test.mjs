@@ -102,13 +102,14 @@ test('MainLayout coordinates 3-column CSS Grid layout and passes dynamic width s
   assert.ok(content.includes("'--ai-sidebar-width'"), 'Layout shell must set --ai-sidebar-width custom property');
 });
 
-test('CSS grid in coursera-ai-sidebar.css provides column 3 reflow and responsive mobile drawer', () => {
-  const cssFile = path.join(projectRoot, 'src/styles/coursera-ai-sidebar.css');
-  assert.ok(fs.existsSync(cssFile), 'coursera-ai-sidebar.css must exist');
+test('coach-ai-sidebar.css reserves desktop width and provides a responsive mobile drawer', () => {
+  const cssFile = path.join(projectRoot, 'src/styles/coach-ai-sidebar.css');
+  assert.ok(fs.existsSync(cssFile), 'coach-ai-sidebar.css must exist');
 
   const content = fs.readFileSync(cssFile, 'utf8');
   assert.ok(content.includes('.layout-shell.has-ai-sidebar'), 'Must define has-ai-sidebar grid styles');
-  assert.ok(content.includes('grid-column: 3'), 'AI sidebar must dock in grid column 3');
+  assert.ok(content.includes('width: calc(100% - var(--ai-sidebar-width'), 'Open AI sidebar must reserve its width');
+  assert.ok(content.includes('margin-right: var(--ai-sidebar-width'), 'Page content must move clear of the docked AI sidebar');
   assert.ok(content.includes('@media (max-width: 820px)'), 'Must provide responsive drawer fallback for small screens');
 });
 

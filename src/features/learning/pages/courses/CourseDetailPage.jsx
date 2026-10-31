@@ -280,33 +280,25 @@ function CourseDetailView({ course, courseId, enrollment, onReload }) {
       };
     }
 
-    // Khi người học ĐÃ ĐĂNG KÝ: Mở khóa tuần tự theo tiến độ
+    // Khi người học ĐÃ ĐĂNG KÝ: chỉ mở bài khi tất cả bài đứng trước đã hoàn thành.
     const firstIncomplete = flattened.find((l) => l.learningStatus !== 'COMPLETED');
     const currentActive = firstIncomplete || flattened[flattened.length - 1] || null;
 
-    let passedActive = false;
+    let allPreviousLessonsCompleted = true;
     const map = {};
 
     flattened.forEach((l) => {
       const isCompleted = l.learningStatus === 'COMPLETED';
-      let isLocked = false;
-      let isNext = false;
-
-      if (isCompleted) {
-        isLocked = false;
-      } else if (!passedActive && l.uniqueKey === currentActive?.uniqueKey) {
-        isLocked = false;
-        isNext = true;
-        passedActive = true;
-      } else if (passedActive) {
-        isLocked = true;
-      }
+      const isLocked = !allPreviousLessonsCompleted;
+      const isNext = !isLocked && !isCompleted;
 
       map[l.uniqueKey] = {
         isLocked,
         isCompleted,
         isNext,
       };
+
+      allPreviousLessonsCompleted = allPreviousLessonsCompleted && isCompleted;
     });
 
     return {

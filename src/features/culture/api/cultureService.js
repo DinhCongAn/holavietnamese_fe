@@ -1,6 +1,6 @@
 // Culture Exploration Service (Người 4: /culture & /culture/:id)
 
-import axiosClient from '@/shared/api/axiosClient';
+import axiosClient from '../../../shared/api/axiosClient.js';
 
 export const CULTURE_CATEGORIES = [
   { id: 'all', label: 'Tất cả danh mục', labelVi: 'Tất cả danh mục', labelEn: 'All Categories' },

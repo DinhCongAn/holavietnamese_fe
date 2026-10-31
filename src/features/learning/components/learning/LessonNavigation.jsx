@@ -1,6 +1,6 @@
 ﻿import { BilingualText } from '@/shared/components/common/BilingualText';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, CheckCircle2, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Check, Lock } from 'lucide-react';
 
 export function LessonNavigation({ lesson, pending, onComplete, showComplete = true }) {
   const path = (id) => `/courses/${lesson.courseId}/lessons/${id}`;
@@ -62,7 +62,7 @@ export function LessonNavigation({ lesson, pending, onComplete, showComplete = t
 
       {/* Nút Bài tiếp theo */}
       <div>
-        {lesson.nextLessonId ? (
+        {lesson.nextLessonId && lesson.isCompleted ? (
           <Link
             className="button secondary inline-flex items-center gap-2 py-2.5 px-4 sm:px-5 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#24382B] hover:bg-[#1a291f] shadow-sm hover:shadow-md transition-all no-underline active:scale-95"
             to={path(lesson.nextLessonId)}
@@ -70,6 +70,16 @@ export function LessonNavigation({ lesson, pending, onComplete, showComplete = t
             <BilingualText>{"Bài tiếp theo"}</BilingualText>
             <ArrowRight size={15} />
           </Link>
+        ) : lesson.nextLessonId ? (
+          <button
+            type="button"
+            disabled
+            title="Hoàn thành bài học hiện tại để mở bài tiếp theo"
+            className="button secondary inline-flex items-center gap-2 py-2.5 px-4 sm:px-5 rounded-xl text-xs sm:text-sm font-bold text-stone-400 bg-stone-100 border border-stone-200 cursor-not-allowed"
+          >
+            <BilingualText vi="Hoàn thành bài này trước" en="Complete this lesson first" />
+            <Lock size={14} />
+          </button>
         ) : (
           <span className="w-20 sm:w-24 inline-block" />
         )}
