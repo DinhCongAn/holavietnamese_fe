@@ -9,7 +9,8 @@ import {
   X,
   Play,
   Search,
-  Check
+  Check,
+  Lock
 } from 'lucide-react';
 
 export function LessonSidebar({
@@ -161,20 +162,32 @@ export function LessonSidebar({
           filteredLessons.map((lesson, idx) => {
             const isCurrent = String(lesson.id) === String(currentId);
             const isCompleted = lesson.isCompleted || lesson.learningStatus === 'COMPLETED';
+            const isLocked = Boolean(lesson.isLocked) && !isCurrent;
             const lessonNumber = lesson.lessonOrder || idx + 1;
+            const LessonLink = isLocked ? 'div' : Link;
 
             return (
               <div
                 key={lesson.id || idx}
                 ref={isCurrent ? activeItemRef : null}
               >
-                <Link
+                <LessonLink
                   aria-current={isCurrent ? 'page' : undefined}
-                  to={`/courses/${courseId}/lessons/${lesson.id}`}
-                  onClick={() => onClose?.()}
+                  {...(isLocked
+                    ? {
+                        role: 'link',
+                        'aria-disabled': true,
+                        title: bilingualLabel('Hoàn thành các bài trước để mở khóa', 'Complete previous lessons to unlock'),
+                      }
+                    : {
+                        to: `/courses/${courseId}/lessons/${lesson.id}`,
+                        onClick: () => onClose?.(),
+                      })}
                   className={`group relative flex items-center justify-between gap-3 p-3 rounded-2xl text-xs sm:text-sm transition-all no-underline ${
                     isCurrent
                       ? 'bg-[#FFF7E8] border-2 border-[#FF7A00] border-l-4 border-l-[#FF7A00] shadow-xs'
+                      : isLocked
+                      ? 'bg-stone-50 border border-stone-200 opacity-70 cursor-not-allowed'
                       : isCompleted
                       ? 'bg-white hover:bg-emerald-50/40 border border-stone-200 hover:border-emerald-300 shadow-2xs'
                       : 'bg-white hover:bg-[#FFFDF9] border border-stone-200 hover:border-[#E8E5DF] shadow-2xs'
@@ -185,12 +198,14 @@ export function LessonSidebar({
                     className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl text-xs font-black flex items-center justify-center shrink-0 transition-transform ${
                       isCurrent
                         ? 'bg-[#FF7A00] text-white shadow-xs ring-2 ring-[#FF7A00]/20 scale-105'
+                        : isLocked
+                        ? 'bg-stone-100 text-stone-400'
                         : isCompleted
                         ? 'bg-emerald-100 text-emerald-800'
                         : 'bg-stone-100 text-stone-600 group-hover:bg-stone-200'
                     }`}
                   >
-                    {isCompleted ? <Check size={14} className="stroke-[3]" /> : lessonNumber}
+                    {isCompleted ? <Check size={14} className="stroke-[3]" /> : isLocked ? <Lock size={13} /> : lessonNumber}
                   </span>
 
                   {/* Middle: Title & Meta Info */}
@@ -240,6 +255,10 @@ export function LessonSidebar({
                       <span className="w-6 h-6 rounded-lg bg-[#FF7A00]/10 flex items-center justify-center text-[#FF7A00]">
                         <Play size={11} className="fill-[#FF7A00] ml-0.5" />
                       </span>
+                    ) : isLocked ? (
+                      <span className="w-6 h-6 rounded-lg bg-stone-100 text-stone-400 flex items-center justify-center">
+                        <Lock size={12} />
+                      </span>
                     ) : isCompleted ? (
                       <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">
                         <CheckCircle2 size={13} className="text-emerald-700" />
@@ -248,7 +267,7 @@ export function LessonSidebar({
                       <span className="w-3.5 h-3.5 rounded-full border-2 border-stone-300 group-hover:border-[#FF7A00]/60 transition-colors" />
                     )}
                   </div>
-                </Link>
+                </LessonLink>
               </div>
             );
           })
