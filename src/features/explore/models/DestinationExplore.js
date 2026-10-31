@@ -1,11 +1,16 @@
-// Use the source modules' learner catalogues without copying content or changing their storage.
-import { cultureService, CULTURE_ARTICLES } from '../../culture/api/cultureService.js';
-import { aiRoleplayService } from '../../ai/api/aiRoleplayService.js';
+// Resolve linked content from the owning modules' APIs. Explore stores only IDs.
+import { cultureService } from '../../culture/api/cultureService.js';
 
-export const exploreCultures = () =>
-  (typeof cultureService?.listArticlesSync === 'function' ? cultureService.listArticlesSync() : (CULTURE_ARTICLES || [])).map(
-    ({ id, title, summary, coverImage, destinationName }) => ({ id, title, summary, coverImage, destinationName })
+export const exploreCultures = async options =>
+  (await cultureService.listArticlesFromApi(options)).map(
+    ({ id, title, titleVi, titleEn, summary, summaryVi, summaryEn, coverImage, destinationName }) =>
+      ({ id, title, titleVi, titleEn, summary, summaryVi, summaryEn, coverImage, destinationName })
   );
-export const resolveExploreCultures = ids => ids.map(id => exploreCultures().find(item => item.id === id)).filter(Boolean);
-// Existing scenario screens resolve their own catalogue by ID; only link IDs they can open.
-export const openableExploreScenarios = rows => rows.filter(item => item.status === 'ACTIVE' && aiRoleplayService.getScenario(item.id)?.id === item.id);
+export const resolveExploreCultures = async (ids, options) => {
+  if (!ids?.length) return [];
+  const articles = await exploreCultures(options);
+  const byId = new Map(articles.map(article => [article.id, article]));
+  return ids.map(id => byId.get(id)).filter(Boolean);
+};
+// The Backend owns scenario availability; an ACTIVE API record is directly openable.
+export const openableExploreScenarios = rows => rows.filter(item => item.status === 'ACTIVE');

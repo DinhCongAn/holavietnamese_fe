@@ -7,14 +7,24 @@ import { destinationExploreService } from '@/features/explore/api/destinationExp
 import { exploreCultures, openableExploreScenarios } from '@/features/explore/models/DestinationExplore';
 
 export function DestinationContentEditor({ destinationId, editable = false }) {
-  const resource = useAsyncResource(useCallback(signal => destinationExploreService.management(destinationId, { signal }), [destinationId]));
+  const resource = useAsyncResource(useCallback(async signal => {
+    const [content, cultureItems] = await Promise.all([
+      destinationExploreService.management(destinationId, { signal }),
+      exploreCultures({ signal }),
+    ]);
+    const byId = new Map(cultureItems.map(item => [item.id, item]));
+    return {
+      ...content,
+      cultures: (content.cultureIds || []).map(id => byId.get(id) || { id, title: `${id} — không còn trong thư viện` }),
+    };
+  }, [destinationId]));
   return <section className="admin-card destination-content-editor"><h2><BilingualText vi="Nội dung Khám phá" en="Explore Content" /></h2>
     <ResourceState resource={resource}>{data => <Editor key={destinationId} destinationId={destinationId} initial={data} editable={editable} />}</ResourceState>
   </section>;
 }
 function Editor({ destinationId, initial, editable }) {
   const [words, setWords] = useState(initial.vocabulary);
-  const [cultures, setCultures] = useState(initial.cultureIds.map(id => exploreCultures().find(item => item.id === id) || { id, title: `${id} — không còn trong thư viện` }));
+  const [cultures, setCultures] = useState(initial.cultures || []);
   const [scenarios, setScenarios] = useState(initial.scenarios);
   const [pending, setPending] = useState(false), [error, setError] = useState(null), [message, setMessage] = useState('');
   async function save(event) {
@@ -40,7 +50,7 @@ function Selector({ kind, selected, onChange, editable }) {
   const resource = useAsyncResource(useCallback(async signal => {
     if (!editable) return [];
     if (kind === 'vocabulary') return destinationExploreService.vocabulary(query, { signal });
-    const items = kind === 'culture' ? exploreCultures() : openableExploreScenarios(await destinationExploreService.scenarios({ signal }));
+    const items = kind === 'culture' ? await exploreCultures({ signal }) : openableExploreScenarios(await destinationExploreService.scenarios({ signal }));
     return items.filter(item => `${item.title} ${item.destinationName || ''}`.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
   }, [editable, kind, query]));
   const label = item => item.word || item.title;

@@ -20,11 +20,15 @@ export function DestinationExploreContent({ destinationId }) {
   const { i18n } = useTranslation();
   const isVi = (i18n.resolvedLanguage || i18n.language || 'vi').startsWith('vi');
   const [tab, setTab] = useState('culture');
-  const resource = useAsyncResource(useCallback(signal => destinationExploreService.get(destinationId, { signal }), [destinationId]));
+  const resource = useAsyncResource(useCallback(async signal => {
+    const data = await destinationExploreService.get(destinationId, { signal });
+    const cultures = await resolveExploreCultures(data.cultureIds || [], { signal });
+    return { ...data, cultures };
+  }, [destinationId]));
   return <section className="card destination-explore-content">
     <Tabs items={tabs} value={tab} onChange={setTab} label={isVi ? 'Nội dung điểm đến' : 'Destination content'} />
     <ResourceState resource={resource}>{data => {
-      const cultures = resolveExploreCultures(data.cultureIds || []), scenarios = openableExploreScenarios(data.scenarios || []);
+      const cultures = data.cultures || [], scenarios = openableExploreScenarios(data.scenarios || []);
       return <>
         {tab === 'culture' && (cultures.length ? <div className="explore-related-grid">{cultures.map(article => <article className="card" key={article.id}>
           {article.coverImage && <ContentImage src={article.coverImage} alt={article.title} className="explore-related-image" />}

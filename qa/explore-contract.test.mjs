@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import axios from 'axios';
+import runtimeClient from '../src/shared/api/axiosClient.js';
 import { exploreCultures, resolveExploreCultures, openableExploreScenarios } from '../src/features/explore/models/DestinationExplore.js';
-import { aiRoleplayService } from '../src/features/ai/api/aiRoleplayService.js';
 
 const calls=[];
 globalThis.localStorage={ getItem: key => key === 'token' ? 'explore-token' : null, removeItem() {} };
@@ -16,10 +16,17 @@ globalThis.__exploreContract.client=client;
 const {destinationExploreService}=await load((await fs.readFile(new URL('../src/features/explore/api/destinationExploreService.js',import.meta.url),'utf8'))
   .replace(/import axiosClient from [^;]+;/,'const axiosClient=globalThis.__exploreContract.client;'));
 let failed=false;
-client.defaults.adapter=async config => {
+const adapter=async config => {
   calls.push(config);
+  if (config.url === '/api/culture/articles') {
+    return {config,status:200,statusText:'OK',headers:{},data:{code:1000,result:[{
+      id:'culture-from-api',title:'Culture from API',summary:'API content',status:'PUBLISHED'
+    }]}};
+  }
   return {config,status:200,statusText:'OK',headers:{},data:failed?{code:9999,message:'Rejected',success:false}:{code:1000,result:{vocabulary:[],regionalVariants:[],cultureIds:[],scenarios:[]}}};
 };
+client.defaults.adapter=adapter;
+runtimeClient.defaults.adapter=adapter;
 test('Explore content uses a read-only endpoint with JWT and cancellation; no start call',async () => {
   const signal=new AbortController().signal;
   const result=await destinationExploreService.get(42,{signal});
@@ -41,13 +48,13 @@ test('Rejected content and saves remain errors',async () => {
   await assert.rejects(destinationExploreService.save(42,{vocabularyIds:[],cultureIds:[],scenarioIds:[]}),/Rejected/);
   failed=false;
 });
-test('Culture references resolve exactly and never substitute another article',() => {
-  const articles=exploreCultures(); assert(articles.length>0);
-  assert.deepEqual(resolveExploreCultures(['missing',articles[0].id]),[articles[0]]);
+test('Culture references resolve from the Culture API and never substitute another article',async () => {
+  const articles=await exploreCultures(); assert(articles.length>0);
+  assert.deepEqual(await resolveExploreCultures(['missing',articles[0].id]),[articles[0]]);
 });
-test('Scenario links require an ACTIVE DB record and an exact supported screen ID',() => {
-  const supported=aiRoleplayService.listScenarios()[0];
-  const active={id:supported.id,title:supported.title,status:'ACTIVE'};
-  const rows=[active,{id:'nonexistent-scenario',status:'ACTIVE'},{id:supported.id,status:'DRAFT'}];
-  assert.deepEqual(openableExploreScenarios(rows),[active]);
+test('Scenario links trust ACTIVE records returned by the Backend',() => {
+  const first={id:'dynamic-scenario',title:'Dynamic',status:'ACTIVE'};
+  const second={id:'another-dynamic-scenario',title:'Another',status:'ACTIVE'};
+  const rows=[first,second,{id:'draft-scenario',status:'DRAFT'}];
+  assert.deepEqual(openableExploreScenarios(rows),[first,second]);
 });

@@ -9,7 +9,7 @@
     "lint": "eslint src/App.jsx src/app/providers/AppProviders.jsx src/app/router/AppRouter.jsx src/features/auth/context/AuthContext.jsx src/features/auth/emailVerificationFlow.js src/features/onboarding/data/onboardingData.js src/features/onboarding/pages/OnboardingPages.jsx src/features/onboarding/services/onboardingService.js src/shared/api/authApi.js src/shared/api/axiosClient.js src/features/auth/pages/auth/RegisterPage.jsx src/features/auth/pages/auth/LoginPage.jsx src/features/auth/pages/auth/VerifyEmailPage.jsx src/features/learning/pages/courses/CourseListPage.jsx qa/auth-email-verification.test.mjs qa/onboarding-registration-flow.test.mjs",
     "type-check": "tsc -p tsconfig.auth.json",
     "preview": "vite preview",
-    "test": "node --test qa/*.test.mjs",
+    "test": "node --import ./qa/register-alias-loader.mjs --test qa/*.test.mjs",
     "dev:qa": "vite --config qa/vite.config.js"
   },
   "dependencies": {

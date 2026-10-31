@@ -655,22 +655,25 @@ export const cultureService = {
     return CULTURE_DESTINATIONS;
   },
 
-  async listArticles({ search = '', category = 'all', destination = 'all' } = {}) {
-    try {
-      const params = {};
-      if (search?.trim()) params.search = search.trim();
-      if (category && category !== 'all') params.category = category;
-      if (destination && destination !== 'all') params.destination = destination;
+  async listArticlesFromApi({ search = '', category = 'all', destination = 'all', signal } = {}) {
+    const params = {};
+    if (search?.trim()) params.search = search.trim();
+    if (category && category !== 'all') params.category = category;
+    if (destination && destination !== 'all') params.destination = destination;
 
-      const response = await axiosClient.get('/api/culture/articles', { params });
-      const data = response?.result ?? response;
-      if (Array.isArray(data)) {
-        return data;
-      }
+    const response = await axiosClient.get('/api/culture/articles', { params, signal });
+    const data = response?.result ?? response;
+    if (!Array.isArray(data)) throw new Error('Invalid culture article response.');
+    return data;
+  },
+
+  async listArticles(filters = {}) {
+    try {
+      return await this.listArticlesFromApi(filters);
     } catch (e) {
       console.warn('Failed to fetch articles from API, using fallback:', e.message);
     }
-    return this.listArticlesSync({ search, category, destination });
+    return this.listArticlesSync(filters);
   },
 
   listArticlesSync({ search = '', category = 'all', destination = 'all' } = {}) {
