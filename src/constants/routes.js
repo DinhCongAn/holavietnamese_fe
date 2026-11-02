@@ -26,7 +26,7 @@ export const ROUTES = {
   ACHIEVEMENTS: '/achievements',
   NOTIFICATIONS: '/notifications',
 
-  // Courses & Learning (Người 2)
+  // Courses & Learning 
   COURSES: '/courses',
   ALPHABET: '/alphabet',
   COURSE_DETAIL: '/courses/:courseId',
@@ -34,7 +34,7 @@ export const ROUTES = {
   LEARN_RESUME: '/courses/:courseId/learn',
   LEARN_LESSON: '/courses/:courseId/lessons/:lessonId',
 
-  // Vocabulary (Người 3)
+  // Vocabulary 
   VOCABULARY: '/vocabulary',
   VOCABULARY_CATALOG_DETAIL: '/vocabulary/:id',
   VOCABULARY_NOTEBOOK: '/vocabulary/notebook',
@@ -61,7 +61,7 @@ export const ROUTES = {
   COURSE_LESSON_QUIZ_ATTEMPT: '/courses/:courseId/lessons/:lessonId/quiz-attempts/:attemptId',
   COURSE_LESSON_QUIZ_RESULT: '/courses/:courseId/lessons/:lessonId/quiz-attempts/:attemptId/result',
 
-  // Văn hóa & AI Tutor & Roleplay (Người 4)
+  // Văn hóa & AI Tutor & Roleplay 
   CULTURE: '/culture',
   CULTURE_DETAIL: '/culture/:id',
   AI_TUTOR: '/ai-tutor',
@@ -70,7 +70,7 @@ export const ROUTES = {
   AI_ROLEPLAY: '/ai-roleplay/:id',
   AI_SESSION_RESULT: '/ai-sessions/:id/result',
 
-  // Admin (Người 1)
+  // Admin 
   ADMIN: '/admin',
   CONTENT_COURSES: '/content/courses',
   CONTENT_COURSE_CREATE: '/content/courses/new',
@@ -96,7 +96,7 @@ export const ROUTES = {
   ADMIN_XP_RULES: '/admin/xp-rules',
   ADMIN_AUDIT_LOGS: '/admin/audit-logs',
 
-  // Admin Văn hóa & AI Tutor & Roleplay (Người 4)
+  // Admin Văn hóa & AI Tutor & Roleplay 
   ADMIN_CULTURE: '/admin/culture',
   ADMIN_CULTURE_EDIT: '/admin/culture/:id',
   ADMIN_CULTURE_NEW: '/admin/culture/new',
