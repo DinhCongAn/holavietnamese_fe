@@ -1,282 +1,94 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { Bell, CheckCheck, ArrowUpRight, BookOpen, Trophy, Flame, Settings, Clock } from 'lucide-react';
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { Bell, BookOpen, CheckCheck, Flame, LockKeyhole, ShieldCheck, Sparkles, Trophy } from 'lucide-react';
 import { useNotifications } from '@/features/account/hooks/useNotifications';
+import { formatRelativeTime } from '@/constants/notifications';
 
-/**
- * Return matching icon and color badge according to notification category
- */
-function getCategoryIcon(type) {
-  switch (type) {
-    case 'lesson':
-      return {
-        icon: BookOpen,
-        colorClass: 'text-emerald-700 bg-emerald-100 border-emerald-200',
-      };
-    case 'achievement':
-      return {
-        icon: Trophy,
-        colorClass: 'text-amber-700 bg-amber-100 border-amber-200',
-      };
-    case 'streak':
-      return {
-        icon: Flame,
-        colorClass: 'text-orange-700 bg-orange-100 border-orange-200',
-      };
-    default:
-      return {
-        icon: Bell,
-        colorClass: 'text-[#EA580C] bg-[#FFF0DC] border-[#E8E5DF]',
-      };
-  }
-}
+const TYPE_ICONS = {
+  COURSE: BookOpen, LESSON: BookOpen, QUIZ: Sparkles, ACHIEVEMENT: Trophy,
+  STREAK: Flame, SECURITY: LockKeyhole, CONTENT_REVIEW: ShieldCheck,
+};
 
-/**
- * Header Notification Popover Dropdown with Real-Time Sync & Audio Feedback
- */
 export function NotificationDropdown() {
   const [open, setOpen] = useState(false);
-  const [filter, setFilter] = useState('all'); // 'all' | 'unread'
-  const dropdownRef = useRef(null);
-  const reduceMotion = useReducedMotion();
+  const [unreadOnly, setUnreadOnly] = useState(false);
+  const rootRef = useRef(null);
   const navigate = useNavigate();
+  const reduceMotion = useReducedMotion();
+  const { notifications, unreadCount, busy, error, markAsRead, markAllAsRead } = useNotifications();
+  const items = useMemo(() => unreadOnly ? notifications.filter((item) => !item.isRead) : notifications,
+    [notifications, unreadOnly]);
 
-  const {
-    notifications,
-    unreadCount,
-    busy,
-    error,
-    markAsRead,
-    markAllAsRead,
-  } = useNotifications();
-
-  // Close on outside click or Escape key
   useEffect(() => {
-    function handleKeyDown(event) {
+    const onPointerDown = (event) => {
+      if (!rootRef.current?.contains(event.target)) setOpen(false);
+    };
+    const onKeyDown = (event) => {
       if (event.key === 'Escape') setOpen(false);
-    }
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleKeyDown);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
     };
   }, []);
 
-  const filteredItems =
-    filter === 'unread'
-      ? notifications.filter((n) => !n.read)
-      : notifications;
-
-  const handleItemClick = (notification) => {
-    if (!notification.read) {
-      markAsRead(notification.id);
-    }
-    const targetLink = notification.linkUrl || notification.link;
-    if (targetLink) {
+  const openNotification = async (item) => {
+    if (!item.isRead) await markAsRead(item.id);
+    if (item.linkUrl) {
       setOpen(false);
-      navigate(targetLink);
+      navigate(item.linkUrl);
     }
   };
 
   return (
-    <div className="notification-menu relative" ref={dropdownRef}>
-      {/* Bell Trigger Button */}
-      <button
-        className="notification-menu__trigger relative p-2 rounded-xl text-[#253044] hover:bg-[#FFF0DC]/60 transition-colors cursor-pointer flex items-center justify-center"
-        type="button"
-        onClick={() => setOpen((prev) => !prev)}
-        aria-label={bilingualLabel("Thông báo", "Notifications")}
-        aria-expanded={open}
-        aria-haspopup="dialog"
-      >
-        <Bell size={19} aria-hidden="true" className={unreadCount > 0 ? 'text-[#EA580C]' : ''} />
+    <div className="notification-menu relative" ref={rootRef}>
+      <button type="button" onClick={() => setOpen((value) => !value)}
+        className="notification-menu__trigger relative p-2 rounded-xl text-[#253044] hover:bg-[#FFF0DC] transition-colors"
+        aria-label={`Thông báo${unreadCount ? `, ${unreadCount} chưa đọc` : ''}`} aria-expanded={open} aria-haspopup="dialog">
+        <Bell size={20} className={unreadCount ? 'text-[#EA580C]' : ''} aria-hidden="true" />
         {unreadCount > 0 && (
-          <span
-            className="notification-menu__count absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#EA580C] text-white text-[10px] font-black flex items-center justify-center shadow-xs border-2 border-white animate-pulse"
-            aria-label={bilingualLabel(`${unreadCount} thông báo chưa đọc`, `${unreadCount} unread notifications`)}
-          >
-            {Math.min(unreadCount, 99)}
+          <span className="absolute -right-1 -top-1 min-w-[19px] h-[19px] px-1 rounded-full bg-[#EA580C] text-white text-[10px] font-black flex items-center justify-center border-2 border-white">
+            {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
       </button>
 
-      {/* Popover Panel */}
       <AnimatePresence>
         {open && (
-          <motion.section
-            className="notification-menu__panel absolute right-0 top-[calc(100%+10px)] w-[min(380px,calc(100vw-24px))] z-50 bg-white/95 backdrop-blur-md rounded-2xl border border-[#E8E5DF]/80 shadow-[0_20px_50px_rgba(67,25,20,0.14)] overflow-hidden text-left"
-            role="dialog"
-            aria-label={bilingualLabel("Thông báo gần đây", "Recent notifications")}
-            initial={reduceMotion ? false : { opacity: 0, y: -10, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={reduceMotion ? undefined : { opacity: 0, y: -8, scale: 0.98 }}
-            transition={{ duration: reduceMotion ? 0 : 0.18 }}
-          >
-            {/* Header */}
-            <header className="p-3.5 bg-[#FFF7E8] border-b border-[#E8E5DF]/60 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <strong className="text-sm font-black text-[#253044]">
-                  <BilingualText>Thông báo</BilingualText>
-                </strong>
-                {unreadCount > 0 ? (
-                  <span className="px-2 py-0.5 rounded-full bg-[#EA580C] text-white text-[10px] font-bold">
-                    <BilingualText vi={`${unreadCount} mới`} en={`${unreadCount} new`} />
-                  </span>
-                ) : (
-                  <span className="px-2 py-0.5 rounded-full bg-[#EDF0E5] text-[#24382B] text-[10px] font-bold">
-                    <BilingualText vi="Đã đọc hết" en="All read" />
-                  </span>
-                )}
-              </div>
-
-              {unreadCount > 0 && (
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={markAllAsRead}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-[#EA580C] hover:bg-[#FFF0DC] transition-colors cursor-pointer"
-                  title={bilingualLabel("Đánh dấu tất cả đã đọc", "Mark all as read")}
-                >
-                  <CheckCheck size={14} />
-                  <span><BilingualText vi="Đọc tất cả" en="Mark all read" /></span>
-                </button>
-              )}
+          <motion.section role="dialog" aria-label="Thông báo gần đây"
+            initial={reduceMotion ? false : { opacity: 0, y: -8, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={reduceMotion ? undefined : { opacity: 0, y: -6, scale: 0.98 }}
+            className="absolute right-0 top-[calc(100%+10px)] z-50 w-[min(390px,calc(100vw-24px))] overflow-hidden rounded-2xl border border-[#E8E5DF] bg-white shadow-[0_20px_50px_rgba(67,25,20,0.16)] text-left">
+            <header className="flex items-center justify-between gap-3 border-b border-[#E8E5DF] bg-[#FFF7E8] p-4">
+              <div><strong className="text-sm text-[#253044]">Thông báo</strong><p className="text-[11px] text-[#64748B]">{unreadCount} thông báo chưa đọc</p></div>
+              {unreadCount > 0 && <button type="button" disabled={busy} onClick={markAllAsRead}
+                className="inline-flex items-center gap-1 text-xs font-bold text-[#EA580C] disabled:opacity-50"><CheckCheck size={14} /> Đọc tất cả</button>}
             </header>
-
-            {/* Quick Filter Tabs */}
-            <div className="flex items-center gap-1.5 px-3 py-2 bg-[#FFFCF7] border-b border-[#E8E5DF]/40 text-xs">
-              <button
-                type="button"
-                onClick={() => setFilter('all')}
-                className={`px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${
-                  filter === 'all'
-                    ? 'bg-[#EA580C] text-white shadow-2xs'
-                    : 'text-[#64748B] hover:text-[#253044] hover:bg-white'
-                }`}
-              >
-                <BilingualText vi={`Tất cả (${notifications.length})`} en={`All (${notifications.length})`} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilter('unread')}
-                className={`px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${
-                  filter === 'unread'
-                    ? 'bg-[#EA580C] text-white shadow-2xs'
-                    : 'text-[#64748B] hover:text-[#253044] hover:bg-white'
-                }`}
-              >
-                <BilingualText vi={`Chưa đọc (${unreadCount})`} en={`Unread (${unreadCount})`} />
-              </button>
+            <div className="flex gap-1 border-b border-[#E8E5DF] p-2">
+              <button type="button" onClick={() => setUnreadOnly(false)} className={`rounded-lg px-3 py-1.5 text-xs font-bold ${!unreadOnly ? 'bg-[#EA580C] text-white' : 'text-[#64748B] hover:bg-[#FFF7E8]'}`}>Tất cả</button>
+              <button type="button" onClick={() => setUnreadOnly(true)} className={`rounded-lg px-3 py-1.5 text-xs font-bold ${unreadOnly ? 'bg-[#EA580C] text-white' : 'text-[#64748B] hover:bg-[#FFF7E8]'}`}>Chưa đọc</button>
             </div>
-
-            {error && (
-              <p className="p-2.5 bg-red-50 text-red-700 text-xs font-medium border-b border-red-200" role="alert">
-                {error}
-              </p>
-            )}
-
-            {/* Notification List */}
-            <div className="max-h-[380px] overflow-y-auto divide-y divide-[#E8E5DF]/40 overscroll-contain">
-              {filteredItems.length === 0 ? (
-                <div className="py-12 px-6 text-center space-y-2">
-                  <div className="w-12 h-12 rounded-2xl bg-[#FFF7E8] border border-[#E8E5DF] text-[#64748B] flex items-center justify-center mx-auto">
-                    <Bell size={22} className="opacity-60" />
-                  </div>
-                  <h4 className="text-xs font-bold text-[#253044]">
-                    {filter === 'unread' ? <BilingualText vi="Tuyệt vời! Không còn thông báo chưa đọc" en="Great! No unread notifications" /> : <BilingualText vi="Chưa có thông báo nào" en="No notifications yet" />}
-                  </h4>
-                  <p className="text-[11px] text-[#64748B]">
-                    <BilingualText
-                      vi="Các cập nhật bài học, huy hiệu và sự kiện sẽ hiển thị tại đây."
-                      en="Lesson updates, badges, and events will appear here."
-                    />
-                  </p>
-                </div>
-              ) : (
-                filteredItems.map((item) => {
-                  const { icon: CatIcon, colorClass } = getCategoryIcon(item.type);
-                  return (
-                    <article
-                      key={item.id}
-                      onClick={() => handleItemClick(item)}
-                      className={`p-3.5 transition-all cursor-pointer flex items-start gap-3 relative group ${
-                        item.read
-                          ? 'bg-white hover:bg-[#FFFCF7]'
-                          : 'bg-[#FFF7E8]/70 hover:bg-[#FFF7E8]'
-                      }`}
-                    >
-                      {/* Unread indicator dot */}
-                      {!item.read && (
-                        <span className="absolute top-4 right-3 w-2 h-2 rounded-full bg-[#EA580C] ring-2 ring-white" />
-                      )}
-
-                      {/* Icon Pill */}
-                      <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 mt-0.5 ${colorClass}`}>
-                        <CatIcon size={15} />
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0 space-y-1">
-                        <div className="flex items-center justify-between gap-2 pr-3">
-                          <h4 className={`text-xs truncate ${item.read ? 'font-medium text-[#253044]' : 'font-black text-[#EA580C]'}`}>
-                            <BilingualText vi={item.titleVi || item.title} en={item.title} />
-                          </h4>
-                        </div>
-
-                        <p className="text-[11px] text-[#64748B] line-clamp-2 leading-relaxed">
-                          {item.message}
-                        </p>
-
-                        <div className="flex items-center gap-2 pt-0.5 text-[10px] text-stone-400">
-                          <span className="flex items-center gap-1">
-                            <Clock size={10} />
-                            {item.time}
-                          </span>
-                          {item.xpReward && (
-                            <span className="px-1.5 py-0.2 rounded font-black text-[#EA580C] bg-[#FFF0DC]">
-                              {item.xpReward}
-                            </span>
-                          )}
-                          {item.link && (
-                            <span className="text-[#EA580C] font-bold inline-flex items-center gap-0.5 ml-auto group-hover:underline">
-                              <span><BilingualText vi="Xem" en="View" /></span>
-                              <ArrowUpRight size={10} />
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })
-              )}
+            {error && <p className="border-b border-red-200 bg-red-50 px-4 py-2 text-xs text-red-700" role="alert">{error}</p>}
+            <div className="max-h-[420px] overflow-y-auto divide-y divide-[#E8E5DF]">
+              {items.length === 0 ? (
+                <div className="px-6 py-12 text-center"><Bell className="mx-auto mb-3 text-[#C5BDB3]" /><strong className="block text-sm text-[#253044]">{unreadOnly ? 'Bạn đã đọc hết thông báo' : 'Chưa có thông báo'}</strong></div>
+              ) : items.map((item) => {
+                const Icon = TYPE_ICONS[item.type] || Bell;
+                return <button type="button" key={item.id} onClick={() => openNotification(item)}
+                  className={`relative flex w-full gap-3 p-4 text-left transition-colors hover:bg-[#FFF7E8] ${item.isRead ? 'bg-white' : 'bg-orange-50/70'}`}>
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFF0DC] text-[#EA580C]"><Icon size={17} /></span>
+                  <span className="min-w-0 flex-1"><strong className={`block truncate text-xs ${item.isRead ? 'text-[#253044]' : 'text-[#C2410C]'}`}>{item.title}</strong>
+                    <span className="mt-1 line-clamp-2 block text-[11px] leading-relaxed text-[#64748B]">{item.message}</span>
+                    <small className="mt-1.5 block text-[10px] text-stone-400">{formatRelativeTime(item.createdAt)}</small></span>
+                  {!item.isRead && <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#EA580C]" aria-label="Chưa đọc" />}
+                </button>;
+              })}
             </div>
-
-            {/* Footer */}
-            <footer className="p-2.5 bg-[#FFF7E8] border-t border-[#E8E5DF]/60 flex items-center justify-between text-xs font-bold text-[#EA580C]">
-              <Link
-                to="/notifications"
-                onClick={() => setOpen(false)}
-                className="hover:underline flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/60 transition-colors"
-              >
-                <span><BilingualText vi="Xem toàn bộ thông báo" en="View all notifications" /></span>
-                <ArrowUpRight size={13} />
-              </Link>
-              <Link
-                to="/settings"
-                onClick={() => setOpen(false)}
-                className="text-[#64748B] hover:text-[#253044] p-1.5 rounded-lg hover:bg-white/60 transition-colors"
-                title={bilingualLabel("Cài đặt thông báo", "Notification settings")}
-              >
-                <Settings size={15} />
-              </Link>
+            <footer className="border-t border-[#E8E5DF] bg-[#FFF7E8] p-3 text-center">
+              <Link to="/notifications" onClick={() => setOpen(false)} className="text-xs font-black text-[#EA580C] hover:underline">Xem tất cả thông báo</Link>
             </footer>
           </motion.section>
         )}

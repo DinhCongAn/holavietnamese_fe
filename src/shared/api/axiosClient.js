@@ -85,6 +85,7 @@ axiosClient.interceptors.response.use(
 
           if (refreshedToken) {
             localStorage.setItem('token', refreshedToken);
+            window.dispatchEvent(new CustomEvent('hola:auth-token-changed', { detail: { token: refreshedToken } }));
             originalRequest.headers = originalRequest.headers || {};
             originalRequest.headers.Authorization = `Bearer ${refreshedToken}`;
             return axiosClient(originalRequest);

@@ -29,6 +29,23 @@ export const AuthProvider = ({ children }) => {
   });
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const syncToken = (event) => {
+      const nextToken = event?.detail?.token ?? localStorage.getItem('token');
+      setAccessToken(nextToken || null);
+      setIsAuthenticated(Boolean(nextToken));
+    };
+    const syncStorageToken = (event) => {
+      if (event.key === 'token') syncToken();
+    };
+    window.addEventListener('hola:auth-token-changed', syncToken);
+    window.addEventListener('storage', syncStorageToken);
+    return () => {
+      window.removeEventListener('hola:auth-token-changed', syncToken);
+      window.removeEventListener('storage', syncStorageToken);
+    };
+  }, []);
+
   // Fetch user profile when authenticated
   const fetchProfile = useCallback(async () => {
     if (!localStorage.getItem('token')) {
@@ -83,6 +100,7 @@ export const AuthProvider = ({ children }) => {
         const { token, userId, username: uname, fullName, roles, permissions, onboardingCompleted } = data.result;
 
         localStorage.setItem('token', token);
+        window.dispatchEvent(new CustomEvent('hola:auth-token-changed', { detail: { token } }));
         markHasAccount();
 
         // Normalize roles array
@@ -156,6 +174,7 @@ export const AuthProvider = ({ children }) => {
         const { token, userId, username: uname, fullName, roles, permissions, onboardingCompleted } = data.result;
 
         localStorage.setItem('token', token);
+        window.dispatchEvent(new CustomEvent('hola:auth-token-changed', { detail: { token } }));
         markHasAccount();
 
         const normalizedRoles = normalizeRoles(roles);
@@ -193,6 +212,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout error:', error);
     } finally {
       localStorage.removeItem('token');
+      window.dispatchEvent(new CustomEvent('hola:auth-token-changed', { detail: { token: null } }));
       localStorage.removeItem('user');
       ['userId', 'username', 'fullName', 'roles', 'permissions'].forEach((key) => localStorage.removeItem(key));
       setAccessToken(null);
