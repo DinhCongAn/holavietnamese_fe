@@ -153,7 +153,7 @@ export function SelectionCard({
       </span>
       {badge && <em><BilingualText vi={badgeVi || badge} en={badge} /></em>}
       <span className="ob-check">
-        <Check size={16} strokeWidth={2.8} />
+        <Check size={16} strokeWidth={2.8} color={selected ? "#FFFFFF" : "transparent"} />
       </span>
     </motion.button>
   );

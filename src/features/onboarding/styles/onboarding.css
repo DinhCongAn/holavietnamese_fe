@@ -261,7 +261,11 @@
 }
 
 .ob-grid.two {
-  grid-template-columns: repeat(2, 1fr);
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+  width: 100% !important;
+  align-items: stretch !important;
 }
 
 .ob-grid.four {
@@ -284,8 +288,36 @@
    ========================================================================== */
 
 /* A. Default / Unselected State */
-.ob-selection,
-.answer-card {
+button.ob-selection,
+.ob-selection {
+  appearance: none;
+  position: relative;
+  width: 100% !important;
+  min-height: 92px !important;
+  height: 100% !important;
+  padding: 18px 20px !important;
+  display: grid !important;
+  grid-template-columns: 56px minmax(0, 1fr) 28px !important;
+  column-gap: 16px !important;
+  row-gap: 0 !important;
+  align-items: center !important;
+  justify-content: stretch !important;
+  justify-items: stretch !important;
+  text-align: left !important;
+  box-sizing: border-box !important;
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  border: 2px solid var(--ob-border) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--ob-shadow) !important;
+  cursor: pointer;
+  color: var(--ob-ink) !important;
+  font: inherit;
+  transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+.answer-card:not(.ob-selection) {
   appearance: none;
   position: relative;
   width: 100%;
@@ -297,7 +329,7 @@
   text-align: left;
   background-color: #FFFFFF !important;
   background: #FFFFFF !important;
-  border: 1.5px solid var(--ob-border) !important;
+  border: 2px solid var(--ob-border) !important;
   border-radius: 16px;
   box-shadow: var(--ob-shadow);
   cursor: pointer;
@@ -397,11 +429,12 @@
 
 /* 4-column cards (Daily Goals) */
 .ob-grid.four .ob-selection {
-  min-height: 160px;
-  padding: 22px 16px 18px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
+  min-height: 160px !important;
+  padding: 22px 16px 18px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
 }
 
 .ob-grid.four .ob-selection.is-selected {
@@ -412,18 +445,19 @@
 
 /* 5-column cards (Level Options - Wide, Clear & Spacious) */
 .ob-grid.five .ob-selection {
-  min-height: 224px;
-  padding: 26px 20px 24px;
-  border-radius: 20px;
+  min-height: 224px !important;
+  padding: 26px 20px 24px !important;
+  border-radius: 20px !important;
   border: 1.5px solid #E2E8F0 !important;
   background: #FFFFFF !important;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  text-align: left;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
+  position: relative !important;
 }
 
 .ob-grid.five .ob-selection:hover:not(:disabled) {
@@ -493,15 +527,26 @@
 
 /* Selection Card Icon */
 .ob-selection-icon {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border-radius: 12px;
+  grid-column: 1 !important;
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  display: grid !important;
+  place-items: center !important;
+  place-self: center !important;
+  border-radius: 14px !important;
   color: var(--ob-red);
   background: var(--ob-red-light);
-  flex: 0 0 44px;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
   transition: all 0.2s ease;
+}
+
+.ob-selection-icon svg {
+  width: 24px !important;
+  height: 24px !important;
+  flex-shrink: 0 !important;
 }
 
 .ob-grid.four .ob-selection-icon,
@@ -511,23 +556,41 @@
 
 /* Selection Copy (Typography) */
 .ob-selection-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  grid-column: 2 !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  text-align: left !important;
+  gap: 4px !important;
 }
 
 .ob-selection-copy strong {
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.35;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
   color: var(--ob-ink);
+  text-align: left !important;
+  display: block !important;
+  width: 100% !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  margin: 0 !important;
 }
 
 .ob-selection-copy small {
   color: var(--ob-muted);
-  font-size: 12.5px;
-  font-weight: 400;
-  line-height: 1.45;
+  font-size: 12.5px !important;
+  font-weight: 400 !important;
+  line-height: 1.45 !important;
+  text-align: left !important;
+  display: block !important;
+  width: 100% !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  margin: 0 !important;
 }
 
 /* Recommendation Badge on Card */
@@ -564,10 +627,56 @@
   transition: all 0.2s ease;
 }
 
-.is-selected > .ob-check {
-  background: var(--ob-red);
-  border-color: var(--ob-red);
-  color: #FFFFFF;
+.ob-selection > .ob-check {
+  position: static !important;
+  transform: none !important;
+  grid-column: 3 !important;
+  place-self: center !important;
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  max-width: 24px !important;
+  border-radius: 50% !important;
+  border: 2px solid #D1D5DB !important;
+  background: #FFFFFF !important;
+  color: #D1D5DB !important;
+  display: grid !important;
+  place-items: center !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.ob-selection:not(.is-selected):not(.selected):not([aria-selected="true"]):not([data-state="checked"]) > .ob-check svg {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+.is-selected > .ob-check,
+.selected > .ob-check,
+.ob-selection.is-selected > .ob-check,
+.ob-selection.selected > .ob-check,
+.ob-selection[aria-selected="true"] > .ob-check,
+.ob-selection[aria-pressed="true"] > .ob-check,
+.ob-selection[data-state="checked"] > .ob-check {
+  background: var(--ob-red, #EA580C) !important;
+  border-color: var(--ob-red, #EA580C) !important;
+  color: #FFFFFF !important;
+}
+
+.is-selected > .ob-check svg,
+.selected > .ob-check svg,
+.ob-selection.is-selected > .ob-check svg,
+.ob-selection.selected > .ob-check svg,
+.ob-selection[aria-selected="true"] > .ob-check svg,
+.ob-selection[aria-pressed="true"] > .ob-check svg,
+.ob-selection[data-state="checked"] > .ob-check svg {
+  opacity: 1 !important;
+  visibility: visible !important;
+  stroke: #FFFFFF !important;
+  color: #FFFFFF !important;
+  fill: none !important;
+  display: block !important;
 }
 
 .ob-grid.four .ob-check,
@@ -1822,6 +1931,14 @@
   outline-offset: 2px;
 }
 
+
+@media (max-width: 768px) {
+  .ob-grid.two {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+}
+
 /* ==========================================================================
    RESPONSIVE DESIGN (TABLET & MOBILE)
    ========================================================================== */
@@ -1917,7 +2034,7 @@
     font-size: 23px;
   }
   .ob-grid.two, .ob-benefits, .ob-paths {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
   .ob-lesson-phrases {
     grid-template-columns: 1fr;
@@ -1945,9 +2062,11 @@
     transform: translateY(-50%);
   }
   .ob-selection {
-    min-height: 78px;
-    padding: 14px 46px 14px 14px;
-    border-radius: 14px;
+    min-height: 80px !important;
+    padding: 14px 16px !important;
+    border-radius: 14px !important;
+    grid-template-columns: 56px minmax(0, 1fr) 28px !important;
+    column-gap: 12px !important;
   }
   .ob-selection-icon {
     width: 40px;
