@@ -96,6 +96,9 @@
   font-weight: 600;
   font-size: 12px;
   letter-spacing: 0.2px;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
 }
 
 .ob-progress-track, .ob-lesson-progress {
@@ -122,9 +125,10 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 7px;
+  line-height: 1;
   transition: color 0.18s ease;
 }
 
@@ -998,7 +1002,9 @@
 .ob-topbar-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: flex-end;
+  justify-self: end;
+  gap: 14px;
 }
 
 .ob-complete-actions {
