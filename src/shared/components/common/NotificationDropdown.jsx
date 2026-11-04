@@ -8,6 +8,7 @@ import { formatRelativeTime } from '@/constants/notifications';
 const TYPE_ICONS = {
   COURSE: BookOpen, LESSON: BookOpen, QUIZ: Sparkles, ACHIEVEMENT: Trophy,
   STREAK: Flame, SECURITY: LockKeyhole, CONTENT_REVIEW: ShieldCheck,
+  SYSTEM: Sparkles, AI_ROLEPLAY: Sparkles,
 };
 
 export function NotificationDropdown() {
@@ -47,8 +48,12 @@ export function NotificationDropdown() {
 
   const openNotification = async (item) => {
     if (!item.isRead) await markAsRead(item.id);
-    if (item.linkUrl) {
-      setOpen(false);
+    setOpen(false);
+    if (item.targetType === 'BADGE' && item.targetId) {
+      navigate(`/achievements?badgeId=${encodeURIComponent(item.targetId)}`);
+    } else if (item.type === 'ACHIEVEMENT') {
+      navigate(item.linkUrl || '/achievements');
+    } else if (item.linkUrl) {
       navigate(item.linkUrl);
     }
   };
@@ -130,7 +135,7 @@ export function NotificationDropdown() {
                 </div>
               ) : (
                 items.map((item) => {
-                  const Icon = TYPE_ICONS[item.type] || Bell;
+                  const Icon = (item.targetType === 'BADGE' || item.type === 'ACHIEVEMENT') ? Trophy : (TYPE_ICONS[item.type] || Bell);
                   return (
                     <div
                       key={item.id}

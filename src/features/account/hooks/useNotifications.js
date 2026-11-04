@@ -116,9 +116,24 @@ export function NotificationProvider({ children }) {
         totalPages: Math.ceil((current.totalElements + 1) / query.size),
       };
     });
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('notification:received', { detail: item }));
+      if (item.type === 'ACHIEVEMENT' || item.targetType === 'BADGE') {
+        window.dispatchEvent(new CustomEvent('reward:received', { detail: item }));
+      }
+    }
     toast(item.title, {
       description: item.message,
-      action: item.linkUrl ? { label: 'Xem ngay', onClick: () => navigate(item.linkUrl) } : undefined,
+      action: (item.linkUrl || item.targetType === 'BADGE') ? {
+        label: 'Xem ngay',
+        onClick: () => {
+          if (item.targetType === 'BADGE' && item.targetId) {
+            navigate(`/achievements?badgeId=${encodeURIComponent(item.targetId)}`);
+          } else if (item.linkUrl) {
+            navigate(item.linkUrl);
+          }
+        },
+      } : undefined,
     });
   }, [navigate, query]);
 

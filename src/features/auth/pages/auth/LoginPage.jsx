@@ -69,10 +69,10 @@ export function LoginPage() {
         const from = location.state?.from || searchParams.get('from');
         clearPostVerificationPath();
         const loggedUser = result.user;
-        const roles = loggedUser?.roles || [];
-        if (roles.includes('ADMIN') || roles.includes('ROLE_ADMIN')) {
+        const role = String(loggedUser?.role || '').replace(/^ROLE_/, '');
+        if (role === 'ADMIN') {
           navigate('/admin', { replace: true });
-        } else if (roles.includes('CONTENT_MANAGER') || roles.includes('ROLE_CONTENT_MANAGER')) {
+        } else if (role === 'CONTENT') {
           navigate(ROUTES.CONTENT_COURSES, { replace: true });
         } else {
           continueLearnerFlow(navigate, loggedUser, from);
@@ -149,11 +149,11 @@ export function LoginPage() {
 
   // If already authenticated, redirect by role
   if (isAuthenticated) {
-    const roles = user?.roles || [];
-    if (roles.includes('ADMIN') || roles.includes('ROLE_ADMIN')) {
+    const role = String(user?.role || '').replace(/^ROLE_/, '');
+    if (role === 'ADMIN') {
       return <Navigate to="/admin" replace />;
     }
-    if (roles.includes('CONTENT_MANAGER') || roles.includes('ROLE_CONTENT_MANAGER')) {
+    if (role === 'CONTENT') {
       return <Navigate to={ROUTES.CONTENT_COURSES} replace />;
     }
     return <Navigate to={user?.onboardingCompleted === true ? '/' : '/onboarding/reason'} replace />;
@@ -187,10 +187,10 @@ export function LoginPage() {
         const from = location.state?.from || searchParams.get('from');
         clearPostVerificationPath();
         const loggedUser = result.user;
-        const roles = loggedUser?.roles || [];
-        if (roles.includes('ADMIN') || roles.includes('ROLE_ADMIN')) {
+        const role = String(loggedUser?.role || '').replace(/^ROLE_/, '');
+        if (role === 'ADMIN') {
           navigate('/admin', { replace: true });
-        } else if (roles.includes('CONTENT_MANAGER') || roles.includes('ROLE_CONTENT_MANAGER')) {
+        } else if (role === 'CONTENT') {
           navigate(ROUTES.CONTENT_COURSES, { replace: true });
         } else {
           continueLearnerFlow(navigate, loggedUser, from);

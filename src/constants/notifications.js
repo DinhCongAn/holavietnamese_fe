@@ -26,12 +26,42 @@ export function normalizeNotification(item) {
   if (!item || item.id == null) return null;
   const rawType = String(item.type || 'SYSTEM').toUpperCase();
   const isRead = Boolean(item.isRead ?? item.read);
+  const linkUrl = item.linkUrl || null;
+  let targetType = item.targetType || null;
+  let targetId = item.targetId || null;
+
+  if (linkUrl) {
+    const badgeMatch = linkUrl.match(/[?&]badgeId=([^&#]+)/);
+    if (badgeMatch) {
+      targetType = targetType || 'BADGE';
+      targetId = targetId || badgeMatch[1];
+    } else {
+      const courseMatch = linkUrl.match(/\/courses\/([^/?&#]+)/);
+      if (courseMatch) {
+        targetType = targetType || 'COURSE';
+        targetId = targetId || courseMatch[1];
+      } else {
+        const lessonMatch = linkUrl.match(/\/lessons\/([^/?&#]+)/);
+        if (lessonMatch) {
+          targetType = targetType || 'LESSON';
+          targetId = targetId || lessonMatch[1];
+        }
+      }
+    }
+  }
+
+  if (!targetType && rawType === 'ACHIEVEMENT') {
+    targetType = 'BADGE';
+  }
+
   return {
     id: item.id,
     title: item.title || 'Thông báo mới',
     message: item.message || '',
     type: NOTIFICATION_TYPES.includes(rawType) ? rawType : 'SYSTEM',
-    linkUrl: item.linkUrl || null,
+    linkUrl,
+    targetType,
+    targetId: targetId ? String(targetId) : null,
     isRead,
     read: isRead,
     createdAt: item.createdAt || new Date().toISOString(),

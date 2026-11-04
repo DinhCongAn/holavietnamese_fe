@@ -20,9 +20,9 @@ export function AdminRoute() {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
-  const roles = user?.roles || [];
-  const isAdmin = roles.includes('ADMIN') || roles.includes('ROLE_ADMIN');
-  const isContentManager = roles.includes('CONTENT_MANAGER') || roles.includes('ROLE_CONTENT_MANAGER');
+  const role = String(user?.role || '').replace(/^ROLE_/, '');
+  const isAdmin = role === 'ADMIN';
+  const isContentManager = role === 'CONTENT';
   const contentPath = ['/content/courses', '/content/lessons', '/content/questions', '/content/quizzes', '/admin/courses', '/admin/lessons', '/admin/questions', '/admin/quizzes']
     .some(path => location.pathname === path || location.pathname.startsWith(`${path}/`));
   const vocabularyPath = ['/admin/vocabulary', '/admin/regional-language']

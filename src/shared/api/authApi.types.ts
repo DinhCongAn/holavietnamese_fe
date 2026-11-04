@@ -47,7 +47,7 @@ export interface LoginResult {
   userId: number;
   username: string;
   fullName?: string;
-  roles?: string[];
+  role: 'LEARNER' | 'CONTENT' | 'ADMIN';
   permissions?: string[];
 }
 

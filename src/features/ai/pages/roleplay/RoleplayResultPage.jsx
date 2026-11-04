@@ -13,18 +13,48 @@ export function RoleplayResultPage() {
   const isVi = (i18n?.resolvedLanguage || i18n?.language || 'vi').startsWith('vi');
   const bLabel = useBilingualLabel();
   const navigate = useNavigate();
-  const result = aiRoleplayService.getResult(id);
+  const [result, setResult] = useState(() => aiRoleplayService.getResult(id));
   const [toastMessage, setToastMessage] = useState('');
 
   useEffect(() => {
+    let isCurrent = true;
+    const resolvedScenarioId = aiRoleplayService.resolveScenarioId(id);
+    const initial = aiRoleplayService.getResult(id);
+    setResult(initial);
+
     if (id) {
-      const syncKey = `hola_rp_synced_${id}_${result?.sessionId || 'default'}`;
+      const syncKey = `hola_rp_synced_${id}_${initial?.sessionId || 'default'}`;
       if (!sessionStorage.getItem(syncKey)) {
         sessionStorage.setItem(syncKey, '1');
-        aiRoleplayService.syncCompletion(id, result?.totalScore || 85).catch(() => {});
+        aiRoleplayService.syncCompletion(resolvedScenarioId, initial?.totalScore || 85).catch(() => {});
+      }
+
+      if (localStorage.getItem('token')) {
+        axiosClient.get(`/api/ai/sessions/${id}`)
+          .then(res => {
+            if (!isCurrent) return;
+            const sessionData = res?.result ?? res;
+            if (sessionData) {
+              setResult(prev => {
+                const score = typeof sessionData.score === 'number' ? sessionData.score : (typeof sessionData.totalScore === 'number' ? sessionData.totalScore : prev?.totalScore ?? 85);
+                const scenario = aiRoleplayService.getScenario(sessionData.scenarioId || resolvedScenarioId);
+                return {
+                  ...(prev || aiRoleplayService.buildRoleplayResult(resolvedScenarioId)),
+                  sessionId: sessionData.id || id,
+                  scenarioId: sessionData.scenarioId || resolvedScenarioId,
+                  scenarioTitle: sessionData.title || scenario?.title || prev?.scenarioTitle,
+                  totalScore: score,
+                  rating: score >= 90 ? 'Xuất sắc' : score >= 80 ? 'Rất tốt' : score >= 65 ? 'Khá tốt' : score >= 50 ? 'Đạt yêu cầu' : 'Cần cố gắng thêm',
+                  aiFeedback: sessionData.feedbackSummary || prev?.aiFeedback,
+                };
+              });
+            }
+          })
+          .catch(() => {});
       }
     }
-  }, [id, result?.sessionId, result?.totalScore]);
+    return () => { isCurrent = false; };
+  }, [id]);
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -54,7 +84,8 @@ export function RoleplayResultPage() {
     e.preventDefault();
     setIsSubmittingReview(true);
     try {
-      const session = aiRoleplayService.getRoleplaySession(id);
+      const resolvedId = aiRoleplayService.resolveScenarioId(id);
+      const session = aiRoleplayService.getRoleplaySession(resolvedId);
       const effectiveSessionId = session?.backendSessionId || result?.sessionId || `session-${id}`;
       await axiosClient.post('/api/ai/reviews', {
         sessionId: effectiveSessionId,
@@ -94,8 +125,9 @@ export function RoleplayResultPage() {
   };
 
   const handleRetry = () => {
-    aiRoleplayService.resetRoleplaySession(id);
-    navigate(`/ai-roleplay/${id}`);
+    const resolvedId = aiRoleplayService.resolveScenarioId(id);
+    aiRoleplayService.resetRoleplaySession(resolvedId);
+    navigate(`/ai-roleplay/${resolvedId}`);
   };
 
   if (!result) return <EmptyState title={bLabel("Chưa có kết quả phiên hội thoại", "No conversation session results")} description={bLabel("Hoàn thành một cuộc trò chuyện để xem đánh giá.", "Complete a conversation to view the evaluation.")}><Link className="button" to="/ai-scenarios"><BilingualText vi="Chọn kịch bản →" en="Choose scenario →" /></Link></EmptyState>;

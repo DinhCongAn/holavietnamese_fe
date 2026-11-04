@@ -12,7 +12,7 @@ const groups = [
   { title: 'Tổng quan', links: [[ROUTES.ADMIN, 'Dashboard'], [ROUTES.ADMIN_USERS, 'Người dùng']] },
   { title: 'Nội dung học tập', links: [[ROUTES.CONTENT_COURSES, 'Khóa học'], [ROUTES.CONTENT_LESSONS, 'Bài học'], [ROUTES.ADMIN_VOCABULARY, 'Từ vựng'], [ROUTES.CONTENT_QUESTIONS, 'Ngân hàng câu hỏi'], [ROUTES.CONTENT_QUIZZES, 'Quiz']] },
   { title: 'Văn hóa & AI', links: [[ROUTES.ADMIN_DESTINATIONS, 'Điểm đến'], [ROUTES.ADMIN_CULTURE, 'Văn hóa'], [ROUTES.ADMIN_CULTURE_CATEGORIES, 'Danh mục văn hóa'], [ROUTES.ADMIN_AI_SCENARIOS, 'Kịch bản AI'], [ROUTES.ADMIN_AI_SETTINGS, 'Cấu hình AI'], [ROUTES.ADMIN_AI_USAGE, 'Sử dụng AI & chi phí'], [ROUTES.ADMIN_AI_REVIEWS, 'Chất lượng AI']] },
-  { title: 'Hệ thống', links: [[ROUTES.ADMIN_ACHIEVEMENTS, 'Thành tích'], [ROUTES.ADMIN_XP_RULES, 'Quy tắc XP'], [ROUTES.ADMIN_ROLES, 'Vai trò & phân quyền'], [ROUTES.ADMIN_AUDIT_LOGS, 'Nhật ký hệ thống'], [ROUTES.ADMIN_SITE_CONTENT, 'Menu & banner'], [ROUTES.ADMIN_SETTINGS, 'Cài đặt']] },
+  { title: 'Hệ thống', links: [[ROUTES.ADMIN_ACHIEVEMENTS, 'Thành tích'], [ROUTES.ADMIN_XP_RULES, 'Quy tắc XP'], [ROUTES.ADMIN_SITE_CONTENT, 'Menu & banner'], [ROUTES.ADMIN_SETTINGS, 'Cài đặt']] },
 ];
 export function AdminLayout() {
   const { user, logout, isAdmin, isContentManager } = useAuth();

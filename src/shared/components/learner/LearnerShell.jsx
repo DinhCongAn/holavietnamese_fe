@@ -101,8 +101,9 @@ export function LearnerTopbar({ user, stats, onLogout }) {
 
   const level = user?.targetLevel || user?.level || '—';
   const hasEnergy = stats?.hearts != null || stats?.energy != null;
-  const isAdmin = user?.roles?.includes('ADMIN') || user?.roles?.includes('ROLE_ADMIN');
-  const isContentManager = user?.roles?.includes('CONTENT_MANAGER') || user?.roles?.includes('ROLE_CONTENT_MANAGER');
+  const role = String(user?.role || '').replace(/^ROLE_/, '');
+  const isAdmin = role === 'ADMIN';
+  const isContentManager = role === 'CONTENT';
 
   return (
     <header className="learner-topbar">

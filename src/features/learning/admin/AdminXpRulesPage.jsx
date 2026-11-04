@@ -1,19 +1,432 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
-import { useCallback, useEffect, useState } from 'react';
 import { adminService } from '@/features/admin/api/adminService';
 import { useConfirmDialog } from '@/shared/components/common/ConfirmDialog';
+import { Zap, Plus, Edit2, Trash2, Power, ShieldAlert, Sparkles, BookOpen, Flame, Award, CheckCircle2 } from 'lucide-react';
 
-const empty = { event: '', points: 0, limitPerDay: '', antiSpam: '' };
+const PRESETS = [
+  { eventType: 'LESSON_COMPLETE', eventName: 'Hoàn thành 1 bài học', xpReward: 20, dailyCap: 200, icon: BookOpen },
+  { eventType: 'DAILY_LOGIN', eventName: 'Đăng nhập mỗi ngày', xpReward: 10, dailyCap: 10, icon: CheckCircle2 },
+  { eventType: 'DAILY_CHECKIN', eventName: 'Điểm danh hàng ngày', xpReward: 10, dailyCap: 10, icon: Flame },
+  { eventType: 'QUIZ_PASS', eventName: 'Đạt bài kiểm tra', xpReward: 15, dailyCap: 150, icon: Award },
+  { eventType: 'VOCAB_LEARNED', eventName: 'Học 1 từ mới', xpReward: 5, dailyCap: 50, icon: BookOpen },
+  { eventType: 'AI_ROLEPLAY_COMPLETE', eventName: 'Hoàn thành hội thoại AI', xpReward: 25, dailyCap: 100, icon: Sparkles },
+  { eventType: 'STREAK_MAINTAIN', eventName: 'Duy trì chuỗi học tập', xpReward: 30, dailyCap: 30, icon: Flame },
+];
+
+const emptyDraft = {
+  eventType: '',
+  eventName: '',
+  xpReward: 10,
+  dailyCap: 100,
+  active: true,
+};
+
 export function AdminXpRulesPage() {
   const { confirm, confirmationDialog } = useConfirmDialog();
-  const [items, setItems] = useState([]); const [draft, setDraft] = useState(empty); const [editing, setEditing] = useState(null); const [error, setError] = useState(''); const [loading, setLoading] = useState(true);
-  const load = useCallback(async () => { try { setItems(await adminService.getXpRules()); setError(''); } catch (e) { setError(e.message); } finally { setLoading(false); } }, []);
-  useEffect(() => { load(); }, [load]);
-  const submit = async (e) => { e.preventDefault(); try { editing ? await adminService.updateXpRule(editing, draft) : await adminService.createXpRule(draft); setEditing(null); setDraft(empty); load(); } catch (err) { setError(err.message); } };
-  const edit = item => { setEditing(item.id); setDraft({ event: item.event || item.eventType || '', points: item.points ?? item.xpAmount ?? 0, limitPerDay: item.limitPerDay || '', antiSpam: item.antiSpam || '' }); };
-  const remove = async id => { if (!await confirm({ title: bilingualLabel('Xóa quy tắc XP?', 'Delete XP rule?'), description: bilingualLabel('Quy tắc tính điểm này sẽ bị xóa khỏi hệ thống.', 'This scoring rule will be deleted from the system.'), confirmLabel: bilingualLabel('Xóa quy tắc', 'Delete rule') })) return; try { await adminService.deleteXpRule(id); load(); } catch (e) { setError(e.message); } };
-  return <div>{confirmationDialog}<h1><BilingualText vi="Quy tắc cộng điểm XP" en="XP Award Rules" /></h1><p className="lead"><BilingualText vi="Quản lý điểm thưởng cho từng hoạt động học tập." en="Manage reward points for each learning activity." /></p>{error && <div className="state" role="alert"><BilingualText>{error}</BilingualText></div>}
-    <form className="admin-card" onSubmit={submit} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 12, marginBottom: 20 }}><input placeholder={bilingualLabel("Sự kiện", "Event")} value={draft.event} onChange={e => setDraft({ ...draft, event: e.target.value })} required /><input type="number" placeholder="XP" value={draft.points} onChange={e => setDraft({ ...draft, points: Number(e.target.value) })} required /><input placeholder={bilingualLabel("Giới hạn/ngày", "Limit/day")} value={draft.limitPerDay} onChange={e => setDraft({ ...draft, limitPerDay: e.target.value })} /><input style={{ gridColumn: '1 / -1' }} placeholder={bilingualLabel("Cơ chế chống spam", "Anti-spam mechanism")} value={draft.antiSpam} onChange={e => setDraft({ ...draft, antiSpam: e.target.value })} /><div className="actions"><button><BilingualText vi={editing ? 'Lưu thay đổi' : 'Thêm quy tắc'} en={editing ? 'Save Changes' : 'Add Rule'} /></button>{editing && <button type="button" className="secondary" onClick={() => { setEditing(null); setDraft(empty); }}><BilingualText vi="Hủy" en="Cancel" /></button>}</div></form>
-    {loading ? <div className="state"><BilingualText>{"Đang tải…"}</BilingualText></div> : items.length === 0 ? <div className="state"><BilingualText>{"Chưa có quy tắc XP."}</BilingualText></div> : <div className="admin-card" style={{ padding: 0, overflowX: 'auto' }}><table className="admin-table"><thead><tr><th><BilingualText>{"Sự kiện"}</BilingualText></th><th><BilingualText>{"Điểm XP"}</BilingualText></th><th><BilingualText>{"Giới hạn"}</BilingualText></th><th><BilingualText>{"Chống spam"}</BilingualText></th><th><BilingualText>{"Thao tác"}</BilingualText></th></tr></thead><tbody>{items.map(item => <tr key={item.id}><td>{item.event || item.eventType}</td><td>+{item.points ?? item.xpAmount} XP</td><td>{item.limitPerDay || '—'}</td><td>{item.antiSpam || '—'}</td><td><button className="secondary" onClick={() => edit(item)}><BilingualText>{"Sửa"}</BilingualText></button>{' '}<button className="danger" onClick={() => remove(item.id)}><BilingualText>{"Xóa"}</BilingualText></button></td></tr>)}</tbody></table></div>}
-  </div>;
+  const [items, setItems] = useState([]);
+  const [draft, setDraft] = useState(emptyDraft);
+  const [editingId, setEditingId] = useState(null);
+  const [error, setError] = useState('');
+  const [msg, setMsg] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await adminService.getXpRules();
+      setItems(Array.isArray(data) ? data : []);
+      setError('');
+    } catch (e) {
+      setError(e.message || 'Không thể tải danh sách quy tắc XP.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const applyPreset = (preset) => {
+    setDraft({
+      eventType: preset.eventType,
+      eventName: preset.eventName,
+      xpReward: preset.xpReward,
+      dailyCap: preset.dailyCap,
+      active: true,
+    });
+  };
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    const payload = {
+      eventType: draft.eventType.trim().toUpperCase().replace(/\s+/g, '_'),
+      eventName: draft.eventName.trim(),
+      xpReward: parseInt(draft.xpReward, 10) || 0,
+      dailyCap: draft.dailyCap !== '' && draft.dailyCap !== null ? parseInt(draft.dailyCap, 10) : null,
+      active: Boolean(draft.active),
+    };
+
+    try {
+      if (editingId) {
+        await adminService.updateXpRule(editingId, payload);
+        setMsg('Đã cập nhật quy tắc XP thành công!');
+      } else {
+        await adminService.createXpRule(payload);
+        setMsg('Đã khởi tạo quy tắc XP mới!');
+      }
+      setEditingId(null);
+      setDraft(emptyDraft);
+      await load();
+      setTimeout(() => setMsg(''), 3000);
+    } catch (err) {
+      setError(err.message || 'Lỗi khi lưu quy tắc XP.');
+    }
+  };
+
+  const startEdit = (item) => {
+    setEditingId(item.id);
+    setDraft({
+      eventType: item.eventType || '',
+      eventName: item.eventName || '',
+      xpReward: item.xpReward ?? 0,
+      dailyCap: item.dailyCap ?? 0,
+      active: item.active !== false,
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setDraft(emptyDraft);
+  };
+
+  const toggleActive = async (item) => {
+    const nextActive = !item.active;
+    try {
+      await adminService.updateXpRule(item.id, {
+        eventType: item.eventType,
+        eventName: item.eventName,
+        xpReward: item.xpReward,
+        dailyCap: item.dailyCap,
+        active: nextActive,
+      });
+      setMsg(nextActive ? 'Đã kích hoạt quy tắc XP.' : 'Đã tạm dừng quy tắc XP.');
+      await load();
+      setTimeout(() => setMsg(''), 3000);
+    } catch (err) {
+      setError(err.message || 'Lỗi cập nhật trạng thái quy tắc XP.');
+    }
+  };
+
+  const remove = async (id, eventName) => {
+    const ok = await confirm({
+      title: bilingualLabel('Xóa quy tắc XP?', 'Delete XP rule?'),
+      description: bilingualLabel(
+        `Quy tắc tính điểm "${eventName}" sẽ bị xóa khỏi hệ thống. Bạn có chắc chắn?`,
+        `The scoring rule "${eventName}" will be deleted. Are you sure?`
+      ),
+      confirmLabel: bilingualLabel('Xóa quy tắc', 'Delete rule'),
+      tone: 'danger',
+    });
+    if (!ok) return;
+
+    try {
+      await adminService.deleteXpRule(id);
+      setMsg('Đã xóa quy tắc XP thành công.');
+      await load();
+      setTimeout(() => setMsg(''), 3000);
+    } catch (e) {
+      setError(e.message || 'Lỗi xóa quy tắc XP.');
+    }
+  };
+
+  const stats = useMemo(() => {
+    const total = items.length;
+    const active = items.filter((i) => i.active !== false).length;
+    const maxDailyPotential = items
+      .filter((i) => i.active !== false)
+      .reduce((acc, i) => acc + (i.dailyCap || 0), 0);
+    return { total, active, maxDailyPotential };
+  }, [items]);
+
+  return (
+    <div className="space-y-6">
+      {confirmationDialog}
+
+      {/* Header */}
+      <div className="flex flex-col gap-2">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-[#EA580C] text-xs font-bold w-fit">
+          <Zap size={13} /> QUY TẮC TÍNH ĐIỂM
+        </div>
+        <h1 className="text-2xl font-black text-[#253044] m-0">Quy tắc cộng điểm XP</h1>
+        <p className="text-sm text-[#64748B] m-0">
+          Quản lý cơ chế thưởng XP cho từng hoạt động học tập và cấu hình giới hạn chống cày điểm lạm phát.
+        </p>
+      </div>
+
+      {/* KPI Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-4 rounded-2xl bg-white border border-[#E8E5DF] shadow-2xs">
+          <div className="text-xs font-bold text-[#64748B] uppercase tracking-wide">Tổng số quy tắc</div>
+          <div className="text-2xl font-black text-[#253044] mt-1">{stats.total}</div>
+        </div>
+        <div className="p-4 rounded-2xl bg-white border border-[#E8E5DF] shadow-2xs">
+          <div className="text-xs font-bold text-emerald-700 uppercase tracking-wide">Đang áp dụng (Bật)</div>
+          <div className="text-2xl font-black text-emerald-600 mt-1">{stats.active}</div>
+        </div>
+        <div className="p-4 rounded-2xl bg-white border border-[#E8E5DF] shadow-2xs">
+          <div className="text-xs font-bold text-[#EA580C] uppercase tracking-wide">Giới hạn tối đa/ngày</div>
+          <div className="text-2xl font-black text-[#EA580C] mt-1">~{stats.maxDailyPotential} XP</div>
+        </div>
+      </div>
+
+      {/* Alert Notices */}
+      {error && (
+        <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center justify-between" role="alert">
+          <span>{error}</span>
+          <button type="button" onClick={() => setError('')} className="text-red-500 hover:text-red-700 font-bold ml-2">×</button>
+        </div>
+      )}
+      {msg && (
+        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center justify-between">
+          <span>{msg}</span>
+          <button type="button" onClick={() => setMsg('')} className="text-emerald-500 hover:text-emerald-700 font-bold ml-2">×</button>
+        </div>
+      )}
+
+      {/* Form Add / Edit */}
+      <div className="rounded-2xl border border-[#E8E5DF] bg-white p-5 shadow-2xs text-left">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+          <h2 className="text-base font-bold text-[#253044] m-0">
+            {editingId ? 'Chỉnh sửa quy tắc XP' : 'Thêm quy tắc XP mới'}
+          </h2>
+
+          {!editingId && (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-xs text-[#64748B] font-medium mr-1">Mẫu nhanh:</span>
+              {PRESETS.map((p) => (
+                <button
+                  key={p.eventType}
+                  type="button"
+                  onClick={() => applyPreset(p)}
+                  className="px-2.5 py-1 rounded-lg bg-orange-50 hover:bg-orange-100 text-[#EA580C] border border-orange-200 text-xs font-semibold transition-colors cursor-pointer !min-h-0"
+                  title={`Điền mẫu: ${p.eventName}`}
+                >
+                  {p.eventName}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <form onSubmit={submit} className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-[#253044] mb-1">
+                Mã sự kiện (Event Type) *
+              </label>
+              <input
+                type="text"
+                placeholder="VD: LESSON_COMPLETE"
+                value={draft.eventType}
+                onChange={(e) => setDraft({ ...draft, eventType: e.target.value.toUpperCase().replace(/\s+/g, '_') })}
+                className="w-full px-3 py-2 rounded-xl border border-[#E8E5DF] text-sm focus:outline-none focus:border-[#EA580C] font-mono"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#253044] mb-1">
+                Tên sự kiện hiển thị *
+              </label>
+              <input
+                type="text"
+                placeholder="VD: Hoàn thành 1 bài học"
+                value={draft.eventName}
+                onChange={(e) => setDraft({ ...draft, eventName: e.target.value })}
+                className="w-full px-3 py-2 rounded-xl border border-[#E8E5DF] text-sm focus:outline-none focus:border-[#EA580C]"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#253044] mb-1">
+                Điểm thưởng (XP) *
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="5"
+                placeholder="20"
+                value={draft.xpReward}
+                onChange={(e) => setDraft({ ...draft, xpReward: Math.max(0, parseInt(e.target.value, 10) || 0) })}
+                className="w-full px-3 py-2 rounded-xl border border-[#E8E5DF] text-sm focus:outline-none focus:border-[#EA580C]"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#253044] mb-1">
+                Giới hạn ngày (Daily Cap)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="10"
+                placeholder="200 (để trống = vô hạn)"
+                value={draft.dailyCap ?? ''}
+                onChange={(e) => setDraft({ ...draft, dailyCap: e.target.value === '' ? null : Math.max(0, parseInt(e.target.value, 10) || 0) })}
+                className="w-full px-3 py-2 rounded-xl border border-[#E8E5DF] text-sm focus:outline-none focus:border-[#EA580C]"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2 border-t border-[#E8E5DF]">
+            <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-bold text-[#253044]">
+              <input
+                type="checkbox"
+                checked={draft.active}
+                onChange={(e) => setDraft({ ...draft, active: e.target.checked })}
+                className="h-4 w-4 rounded text-[#EA580C] focus:ring-[#EA580C]"
+              />
+              Kích hoạt áp dụng quy tắc này ngay
+            </label>
+
+            <div className="flex items-center gap-2">
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="px-4 py-2 rounded-xl border border-[#E8E5DF] text-xs font-bold text-[#64748B] hover:bg-stone-50 transition-colors cursor-pointer !min-h-0"
+                >
+                  Hủy chỉnh sửa
+                </button>
+              )}
+              <button
+                type="submit"
+                className="px-5 py-2 rounded-xl bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer !min-h-0 !border-0"
+              >
+                {editingId ? 'Lưu thay đổi quy tắc' : '+ Thêm quy tắc XP'}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      {/* Rules Table */}
+      <div className="overflow-hidden rounded-2xl border border-[#E8E5DF] bg-white shadow-2xs">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-[#E8E5DF] bg-[#FFFBF5] text-xs font-bold uppercase tracking-wider text-[#64748B]">
+                <th className="py-3 px-4">Mã sự kiện (Event Type)</th>
+                <th className="py-3 px-4">Tên hoạt động</th>
+                <th className="py-3 px-4">Điểm XP thưởng</th>
+                <th className="py-3 px-4">Giới hạn / ngày (Chống spam)</th>
+                <th className="py-3 px-4 text-center">Trạng thái</th>
+                <th className="py-3 px-4 text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E8E5DF]">
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-[#64748B]">
+                    <span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-[#EA580C] border-t-transparent mr-2" />
+                    Đang tải danh sách quy tắc XP…
+                  </td>
+                </tr>
+              ) : items.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-[#64748B]">
+                    Chưa có quy tắc XP nào. Hãy chọn mẫu nhanh phía trên để tạo.
+                  </td>
+                </tr>
+              ) : (
+                items.map((item) => {
+                  const isActive = item.active !== false;
+
+                  return (
+                    <tr key={item.id} className="hover:bg-stone-50/70 transition-colors">
+                      {/* Event Type */}
+                      <td className="py-3 px-4 font-mono text-xs font-bold text-[#EA580C]">
+                        {item.eventType}
+                      </td>
+
+                      {/* Event Name */}
+                      <td className="py-3 px-4 font-semibold text-[#253044]">
+                        {item.eventName}
+                      </td>
+
+                      {/* XP Reward */}
+                      <td className="py-3 px-4">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
+                          +{item.xpReward} XP
+                        </span>
+                      </td>
+
+                      {/* Daily Cap */}
+                      <td className="py-3 px-4 text-xs text-[#64748B]">
+                        {item.dailyCap && item.dailyCap > 0 ? (
+                          <span className="font-semibold text-[#253044]">
+                            Tối đa {item.dailyCap} XP/ngày
+                          </span>
+                        ) : (
+                          <span className="text-stone-400 italic">Không giới hạn</span>
+                        )}
+                      </td>
+
+                      {/* Status Toggle */}
+                      <td className="py-3 px-4 text-center">
+                        <button
+                          type="button"
+                          onClick={() => toggleActive(item)}
+                          title={isActive ? 'Nhấn để tạm dừng' : 'Nhấn để kích hoạt'}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer !min-h-0 !border ${
+                            isActive
+                              ? 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100'
+                              : 'bg-stone-100 border-stone-300 text-stone-500 hover:bg-stone-200'
+                          }`}
+                        >
+                          <Power size={12} />
+                          {isActive ? 'Hoạt động' : 'Tạm dừng'}
+                        </button>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-3 px-4 text-right">
+                        <div className="inline-flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => startEdit(item)}
+                            className="p-1.5 rounded-lg text-stone-600 hover:text-[#EA580C] hover:bg-orange-50 border border-transparent hover:border-orange-200 transition-colors cursor-pointer !min-h-0"
+                            title="Sửa quy tắc"
+                          >
+                            <Edit2 size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => remove(item.id, item.eventName)}
+                            className="p-1.5 rounded-lg text-stone-600 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors cursor-pointer !min-h-0"
+                            title="Xóa quy tắc"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
 }
+
+export default AdminXpRulesPage;

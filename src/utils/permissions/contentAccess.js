@@ -15,11 +15,14 @@ const values = (items) => (Array.isArray(items) ? items : items ? [items] : [])
   .map((item) => typeof item === 'string' ? item : (item.name || item.authority))
   .filter(Boolean);
 
-export const userRoles = (user) => values(user?.roles).map((role) => role.replace(/^ROLE_/, ''));
 export const userPermissions = (user) => values(user?.permissions);
-export const hasRole = (user, role) => userRoles(user).includes(role);
+export const userRole = (user) => {
+  const role = typeof user?.role === 'string' ? user.role : (user?.role?.name || user?.role?.authority || '');
+  return role.replace(/^ROLE_/, '');
+};
+export const hasRole = (user, role) => userRole(user) === role.replace(/^ROLE_/, '');
 export const hasPermission = (user, permission) => userPermissions(user).includes(permission);
-export const isContentManager = (user) => hasRole(user, 'CONTENT_MANAGER');
+export const isContentManager = (user) => hasRole(user, 'CONTENT');
 export const isAdministrator = (user) => hasRole(user, 'ADMIN');
 
 const hasAny = (user, permissions) => permissions.some((permission) => hasPermission(user, permission));

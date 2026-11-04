@@ -28,7 +28,7 @@ function QuizBuilder({quiz,reload}){
  const[edit,setEdit]=useState(false),[adding,setAdding]=useState(false),[creatingQuestion,setCreatingQuestion]=useState(() => new URLSearchParams(window.location.search).has('newQuestion')),[busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState('');
  const navigate=useNavigate();
  const questions=quiz.questions||[];
- const canEdit=isAdmin ? quiz.courseAuthorRole!=='CONTENT_MANAGER' : isContentManager&&['DRAFT','REJECTED'].includes(quiz.courseStatus);
+ const canEdit=isAdmin ? quiz.courseAuthorRole!=='CONTENT' : isContentManager&&['DRAFT','REJECTED'].includes(quiz.courseStatus);
  const lessonResource=useAsyncResource(useCallback(signal=>quiz.lessonId?contentService.get('lessons',quiz.lessonId,signal):Promise.resolve(null),[quiz.lessonId]));
  const hasLinkedQuiz=lessonResource.data?.activities?.some(activity=>activity.activityType==='QUIZ'&&Number(activity.quizId)===Number(quiz.id));
  const breadcrumbItems=isContentManager&&!isAdmin?[{to:'/content/courses',label:bilingualLabel('Khóa học', 'Courses')},...(quiz.courseId?[{to:`/content/courses/${quiz.courseId}?step=curriculum`,label:bilingualLabel('Cấu trúc khóa học', 'Course curriculum')}]:[]),...(quiz.lessonId?[{to:`/content/lessons/${quiz.lessonId}`,label:bilingualLabel('Bài học', 'Lesson')}]:[]),{label:quiz.title}]:[{to:'/content/quizzes',label:'Quiz'},{label:quiz.title}];

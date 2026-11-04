@@ -1,15 +1,35 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
-import { Bell, BookOpen, Check, CheckCheck, ChevronLeft, ChevronRight, Flame, LockKeyhole, ShieldCheck, Sparkles, Trash2, Trophy } from 'lucide-react';
+import {
+  Award,
+  Bell,
+  BookOpen,
+  Check,
+  CheckCheck,
+  ChevronLeft,
+  ChevronRight,
+  Flame,
+  LockKeyhole,
+  ShieldCheck,
+  Sparkles,
+  Trash2,
+  Trophy,
+} from 'lucide-react';
 import { useNotifications } from '@/features/account/hooks/useNotifications';
 import { formatRelativeTime } from '@/constants/notifications';
 
 const PAGE_SIZE = 10;
 const TYPE_META = {
-  SYSTEM: ['Hệ thống', Bell], WELCOME: ['Chào mừng', Sparkles], COURSE: ['Khóa học', BookOpen],
-  LESSON: ['Bài học', BookOpen], QUIZ: ['Bài kiểm tra', Sparkles], ACHIEVEMENT: ['Thành tích', Trophy],
-  STREAK: ['Chuỗi học', Flame], CONTENT_REVIEW: ['Duyệt nội dung', ShieldCheck], SECURITY: ['Bảo mật', LockKeyhole],
+  SYSTEM: ['Hệ thống', Bell],
+  WELCOME: ['Chào mừng', Sparkles],
+  COURSE: ['Khóa học', BookOpen],
+  LESSON: ['Bài học', BookOpen],
+  QUIZ: ['Kiểm tra', Award],
+  ACHIEVEMENT: ['Thành tích', Trophy],
+  STREAK: ['Chuỗi học', Flame],
+  CONTENT_REVIEW: ['Duyệt nội dung', ShieldCheck],
+  SECURITY: ['Bảo mật', LockKeyhole],
 };
 
 export function NotificationsPage() {
@@ -33,7 +53,13 @@ export function NotificationsPage() {
 
   const openItem = async (item) => {
     if (!item.isRead) await markAsRead(item.id);
-    if (item.linkUrl) navigate(item.linkUrl);
+    if (item.targetType === 'BADGE' && item.targetId) {
+      navigate(`/achievements?badgeId=${encodeURIComponent(item.targetId)}`);
+    } else if (item.type === 'ACHIEVEMENT') {
+      navigate(item.linkUrl || '/achievements');
+    } else if (item.linkUrl) {
+      navigate(item.linkUrl);
+    }
   };
 
   const sortedNotifications = useMemo(() => {
@@ -105,100 +131,114 @@ export function NotificationsPage() {
           </div>
 
           {error && <div className="border-b border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700" role="alert">{error}</div>}
+
           {loading ? (
-            <div className="flex min-h-64 items-center justify-center" aria-label="Đang tải thông báo"><span className="h-9 w-9 animate-spin rounded-full border-4 border-[#EA580C] border-t-transparent" /></div>
+            <div className="flex min-h-64 items-center justify-center" aria-label="Đang tải thông báo">
+              <span className="h-9 w-9 animate-spin rounded-full border-4 border-[#EA580C] border-t-transparent" />
+            </div>
           ) : sortedNotifications.length === 0 ? (
-            <div className="px-6 py-20 text-center"><span className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-[#FFF0DC] text-[#EA580C]">{filter === 'unread' ? <Check size={30} /> : <Bell size={28} />}</span>
+            <div className="px-6 py-20 text-center">
+              <span className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-[#FFF0DC] text-[#EA580C]">
+                {filter === 'unread' ? <Check size={30} /> : <Bell size={28} />}
+              </span>
               <h2 className="font-black text-[#253044]">{filter === 'unread' ? 'Bạn đã đọc hết thông báo' : 'Chưa có thông báo nào'}</h2>
-              <p className="mt-1 text-sm text-[#64748B]">Thông báo mới sẽ xuất hiện tại đây.</p></div>
+              <p className="mt-1 text-sm text-[#64748B]">Thông báo mới sẽ xuất hiện tại đây.</p>
+            </div>
           ) : (
             <div className="divide-y divide-[#E8E5DF]">
               <AnimatePresence initial={false}>
                 {sortedNotifications.map((item) => {
-                  const [label, Icon] = TYPE_META[item.type] || TYPE_META.SYSTEM;
+                  const [metaLabel, MetaIcon] = TYPE_META[item.type] || TYPE_META.SYSTEM;
+                  const label = (item.targetType === 'BADGE' || item.type === 'ACHIEVEMENT') ? 'Thành tích' : metaLabel;
+                  const Icon = (item.targetType === 'BADGE' || item.type === 'ACHIEVEMENT') ? Trophy : MetaIcon;
+                  const isUnread = !item.isRead;
+
                   return (
                     <motion.article
                       key={item.id}
                       initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, x: 20 }}
-                      className={`group flex items-start gap-4 p-5 transition-colors !bg-white hover:!bg-stone-50/70 active:!bg-white text-left ${
-                        !item.isRead ? 'border-l-4 border-l-[#EA580C]' : 'border-l-4 border-l-transparent'
+                      onClick={() => openItem(item)}
+                      style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', textAlign: 'left' }}
+                      className={`group relative flex items-start gap-4 p-5 transition-all text-left cursor-pointer ${
+                        isUnread
+                          ? '!bg-[#FFFDFB] border-l-4 border-l-[#EA580C] hover:!bg-[#FFF9F2]'
+                          : '!bg-white border-l-4 border-l-transparent hover:!bg-stone-50/80'
                       }`}
                     >
+                      {/* Left Icon */}
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-orange-100 bg-[#FFF0DC] text-[#EA580C] mt-0.5">
                         <Icon size={20} />
                       </div>
 
-                      <div className="min-w-0 flex-1 flex flex-col items-start text-left gap-1.5">
-                        <div className="w-full flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-2">
-                            <span className="rounded-md bg-orange-50 border border-orange-200/80 px-2.5 py-0.5 text-[11px] font-bold text-[#EA580C]">
-                              {label}
+                      {/* Content Details */}
+                      <div
+                        className="min-w-0 flex-1 flex flex-col items-start text-left"
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', width: '100%' }}
+                      >
+                        {/* Meta Line: Category Tag + MỚI badge + Relative Time */}
+                        <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                          <span className="inline-flex items-center rounded-md bg-orange-50 border border-orange-200/80 px-2.5 py-0.5 text-[11px] font-bold text-[#EA580C] uppercase tracking-wide">
+                            {label}
+                          </span>
+                          {isUnread && (
+                            <span className="inline-flex items-center rounded-full bg-[#EA580C] px-2 py-0.5 text-[10px] font-black text-white shadow-2xs">
+                              MỚI
                             </span>
-                            {!item.isRead && (
-                              <span className="rounded-full bg-[#EA580C] px-2 py-0.5 text-[10px] font-black text-white shadow-2xs">
-                                MỚI
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="flex items-center gap-3">
-                            <time className="text-xs font-medium text-[#94A3B8]">
-                              {formatRelativeTime(item.createdAt)}
-                            </time>
-                            <div className="flex items-center gap-1">
-                              {!item.isRead && (
-                                <button
-                                  type="button"
-                                  disabled={busy}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    markAsRead(item.id);
-                                  }}
-                                  title="Đánh dấu đã đọc"
-                                  aria-label="Đánh dấu đã đọc"
-                                  className="rounded-xl !p-2 !min-h-0 !bg-white hover:!bg-emerald-50 active:!bg-white !border !border-[#E8E5DF] hover:!border-emerald-500 !text-[#64748B] hover:!text-emerald-600 transition-colors shadow-2xs disabled:opacity-40"
-                                >
-                                  <Check size={16} />
-                                </button>
-                              )}
-                              <button
-                                type="button"
-                                disabled={busy}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteNotification(item.id);
-                                }}
-                                title="Xóa thông báo"
-                                aria-label="Xóa thông báo"
-                                className="rounded-xl !p-2 !min-h-0 !bg-white hover:!bg-red-50 active:!bg-white !border !border-[#E8E5DF] hover:!border-red-500 !text-[#64748B] hover:!text-red-600 transition-colors shadow-2xs disabled:opacity-40"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
-                          </div>
+                          )}
+                          <span className="text-stone-300">·</span>
+                          <time className="text-xs font-medium text-[#94A3B8]">
+                            {formatRelativeTime(item.createdAt)}
+                          </time>
                         </div>
 
-                        <div
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => openItem(item)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              openItem(item);
-                            }
+                        {/* Title */}
+                        <h3 className={`w-full text-left text-base font-bold transition-colors group-hover:text-[#EA580C] m-0 ${
+                          isUnread ? 'text-[#0F172A]' : 'text-[#334155]'
+                        }`}>
+                          {item.title}
+                        </h3>
+
+                        {/* Description */}
+                        <p className="w-full text-left mt-1 text-sm leading-relaxed text-[#64748B] m-0">
+                          {item.message}
+                        </p>
+                      </div>
+
+                      {/* Right Action Buttons */}
+                      <div
+                        className="flex shrink-0 items-center gap-1.5 pt-0.5 ml-2"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {isUnread && (
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              markAsRead(item.id);
+                            }}
+                            title="Đánh dấu đã đọc"
+                            aria-label="Đánh dấu đã đọc"
+                            className="icon-action-btn read-btn"
+                          >
+                            <Check size={16} />
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteNotification(item.id);
                           }}
-                          className="notification-content w-full text-left flex flex-col items-start justify-start cursor-pointer focus:outline-none"
+                          title="Xóa thông báo"
+                          aria-label="Xóa thông báo"
+                          className="icon-action-btn delete-btn"
                         >
-                          <h3 className={`w-full text-left text-base font-bold transition-colors group-hover:text-[#EA580C] m-0 p-0 ${item.isRead ? 'text-[#253044]' : 'text-[#1E293B]'}`}>
-                            {item.title}
-                          </h3>
-                          <p className="w-full text-left mt-1 text-sm leading-relaxed text-[#64748B] m-0 p-0">
-                            {item.message}
-                          </p>
-                        </div>
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </motion.article>
                   );

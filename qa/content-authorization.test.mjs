@@ -13,7 +13,7 @@ import {
 } from '../src/utils/permissions/contentAccess.js';
 
 test('administrator can read and review but cannot edit Vocabulary or Explore', () => {
-  const administrator = { roles: ['ADMIN'], permissions: [] };
+  const administrator = { role: 'ADMIN', permissions: [] };
   assert.equal(canReadVocabulary(administrator), true);
   assert.equal(canWriteVocabulary(administrator), false);
   assert.equal(canImportVocabulary(administrator), false);
@@ -25,7 +25,7 @@ test('administrator can read and review but cannot edit Vocabulary or Explore', 
 });
 
 test('content manager receives the module management baseline', () => {
-  const manager = { roles: ['CONTENT_MANAGER'], permissions: [] };
+  const manager = { role: 'CONTENT', permissions: [] };
   assert.equal(canReadVocabulary(manager), true);
   assert.equal(canWriteVocabulary(manager), true);
   assert.equal(canImportVocabulary(manager), true);
@@ -35,8 +35,8 @@ test('content manager receives the module management baseline', () => {
 });
 
 test('an administrator can receive a narrowly scoped content permission', () => {
-  const vocabularyReader = { roles: ['ADMIN'], permissions: ['VOCABULARY_READ'] };
-  const exploreLinkManager = { roles: ['ADMIN'], permissions: ['EXPLORE_LINK_WRITE'] };
+  const vocabularyReader = { role: 'ADMIN', permissions: ['VOCABULARY_READ'] };
+  const exploreLinkManager = { role: 'ADMIN', permissions: ['EXPLORE_LINK_WRITE'] };
   assert.equal(canReadVocabulary(vocabularyReader), true);
   assert.equal(canWriteVocabulary(vocabularyReader), false);
   assert.equal(canReadExplore(exploreLinkManager), true);

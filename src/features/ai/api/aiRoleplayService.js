@@ -649,8 +649,27 @@ export const aiRoleplayService = {
     return result;
   },
 
+  resolveScenarioId(id) {
+    if (!id || typeof id !== 'string') return 'goi-mon-pho-ha-noi';
+    const direct = dynamicScenarios.find(s => s.id === id) || SCENARIOS.find(s => s.id === id);
+    if (direct) return direct.id;
+    if (id.startsWith('roleplay-')) {
+      const stripped = id.replace(/^roleplay-/, '');
+      const candidate1 = stripped.replace(/-[a-f0-9]{8}$/i, '');
+      const match1 = dynamicScenarios.find(s => s.id === candidate1) || SCENARIOS.find(s => s.id === candidate1);
+      if (match1) return match1.id;
+      const candidate2 = stripped.replace(/-[^-]+$/, '');
+      const match2 = dynamicScenarios.find(s => s.id === candidate2) || SCENARIOS.find(s => s.id === candidate2);
+      if (match2) return match2.id;
+    }
+    const anyMatch = [...dynamicScenarios, ...SCENARIOS].find(s => id.includes(s.id));
+    if (anyMatch) return anyMatch.id;
+    return id;
+  },
+
   getScenario(id) {
-    return dynamicScenarios.find(s => s.id === id) || SCENARIOS.find(s => s.id === id) || SCENARIOS[0];
+    const resolvedId = this.resolveScenarioId(id);
+    return dynamicScenarios.find(s => s.id === resolvedId) || SCENARIOS.find(s => s.id === resolvedId) || SCENARIOS.find(s => s.id === id) || SCENARIOS[0];
   },
 
   async fetchScenarios() {
@@ -685,9 +704,10 @@ export const aiRoleplayService = {
   },
 
   getRoleplaySession(scenarioId) {
-    const scenario = this.getScenario(scenarioId);
+    const resolvedId = this.resolveScenarioId(scenarioId);
+    const scenario = this.getScenario(resolvedId);
     try {
-      const stored = localStorage.getItem(getRoleplaySessionKey(scenarioId));
+      const stored = localStorage.getItem(getRoleplaySessionKey(resolvedId)) || (resolvedId !== scenarioId ? localStorage.getItem(getRoleplaySessionKey(scenarioId)) : null);
       if (stored) {
         const parsed = JSON.parse(stored);
         let completed = parsed.completedTasks || [];
@@ -698,7 +718,7 @@ export const aiRoleplayService = {
         });
         if (completed.length !== (parsed.completedTasks || []).length) {
           parsed.completedTasks = completed;
-          this.saveRoleplaySession(scenarioId, parsed);
+          this.saveRoleplaySession(resolvedId, parsed);
         }
         return parsed;
       }
@@ -708,7 +728,7 @@ export const aiRoleplayService = {
 
     // Default new session
     const session = {
-      scenarioId,
+      scenarioId: resolvedId,
       scenarioTitle: scenario.title,
       startTime: new Date().toISOString(),
       messages: [
@@ -960,8 +980,9 @@ export const aiRoleplayService = {
   },
 
   buildRoleplayResult(scenarioId) {
-    const session = this.getRoleplaySession(scenarioId);
-    const scenario = this.getScenario(scenarioId);
+    const resolvedId = this.resolveScenarioId(scenarioId);
+    const session = this.getRoleplaySession(resolvedId);
+    const scenario = this.getScenario(resolvedId);
 
     const userMessages = session.messages.filter(m => m.sender === 'user');
     const taskCount = scenario.objectives.length;
@@ -1014,12 +1035,14 @@ export const aiRoleplayService = {
           reason: 'Dùng từ "bao nhiêu tiền ạ" với người bán lớn tuổi thể hiện sự tôn trọng và lễ phép đúng chuẩn mực người Việt.',
         },
       ],
-      practicedExpressions: [
-        { phrase: 'Bát phở tái chín ít hành', meaning: 'Bowl of rare & cooked pho with less scallions' },
-        { phrase: 'Cho cháu xin thêm trà đá', meaning: 'Please give me extra iced green tea' },
-        { phrase: 'Của cháu hết bao nhiêu tiền ạ?', meaning: 'How much is my bill in total please?' },
-        { phrase: 'Cảm ơn cô nhiều ạ!', meaning: 'Thank you very much auntie!' },
-      ],
+      practicedExpressions: (scenario.vocabularyHints && scenario.vocabularyHints.length > 0)
+        ? scenario.vocabularyHints.map(vh => ({ phrase: vh.word, meaning: vh.meaning }))
+        : [
+            { phrase: 'Bát phở tái chín ít hành', meaning: 'Bowl of rare & cooked pho with less scallions' },
+            { phrase: 'Cho cháu xin thêm trà đá', meaning: 'Please give me extra iced green tea' },
+            { phrase: 'Của cháu hết bao nhiêu tiền ạ?', meaning: 'How much is my bill in total please?' },
+            { phrase: 'Cảm ơn cô nhiều ạ!', meaning: 'Thank you very much auntie!' },
+          ],
       nextScenario: SCENARIOS.find(s => s.id !== scenarioId) || SCENARIOS[1],
     };
 
@@ -1027,14 +1050,23 @@ export const aiRoleplayService = {
   },
 
   getResult(scenarioId) {
+    const resolvedId = this.resolveScenarioId(scenarioId);
     try {
-      localStorage.getItem(getRoleplayResultKey(scenarioId));
-      // Always recompute result from current session so score is never stuck on stale cache
+      const stored = localStorage.getItem(getRoleplayResultKey(resolvedId)) || (resolvedId !== scenarioId ? localStorage.getItem(getRoleplayResultKey(scenarioId)) : null);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed) {
+          if (scenarioId && String(scenarioId).startsWith('roleplay-')) {
+            parsed.sessionId = scenarioId;
+          }
+          return parsed;
+        }
+      }
     } catch {
       // fallback
     }
     const result = this.buildRoleplayResult(scenarioId);
-    localStorage.setItem(getRoleplayResultKey(scenarioId), JSON.stringify(result));
+    localStorage.setItem(getRoleplayResultKey(resolvedId), JSON.stringify(result));
     return result;
   },
 

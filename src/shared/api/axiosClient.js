@@ -47,7 +47,7 @@ axiosClient.interceptors.request.use(
 const clearAuthStorage = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
-  ['userId', 'username', 'fullName', 'roles'].forEach((key) => localStorage.removeItem(key));
+  ['userId', 'username', 'fullName', 'role', 'roles'].forEach((key) => localStorage.removeItem(key));
 };
 
 // RESPONSE interceptor: unwrap ApiResponse and centralize authentication failures
