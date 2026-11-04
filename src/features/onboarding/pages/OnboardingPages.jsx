@@ -432,7 +432,7 @@ function ExerciseRunner({ mode }) {
               </>
             ) : (
               <div className="ob-answer-grid">
-                {question.options.map((option, optionIndex) => {
+                {question.options.map((option) => {
                   const isSelected = selected === option;
                   const isCorrect = checked && option === question.answer;
                   const isWrong = checked && isSelected && !correct;
@@ -448,7 +448,6 @@ function ExerciseRunner({ mode }) {
                       data-state={isSelected ? 'checked' : 'unchecked'}
                       style={!isCorrect && !isWrong ? { backgroundColor: '#ffffff' } : undefined}
                     >
-                      <kbd>{optionIndex + 1}</kbd>
                       <span>{option}</span>
                       {isCorrect && <Check size={18} strokeWidth={2.8} />}
                       {isWrong && <X size={18} strokeWidth={2.8} />}

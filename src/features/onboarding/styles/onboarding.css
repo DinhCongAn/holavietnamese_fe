@@ -1428,22 +1428,33 @@ button.ob-selection,
 
 .ob-answer-grid button {
   min-height: 62px;
-  display: grid;
-  grid-template-columns: 36px 1fr 24px;
-  align-items: center;
-  text-align: left;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  text-align: left !important;
   gap: 14px;
-  padding: 12px 18px;
+  padding: 16px 22px !important;
   border: 2px solid var(--ob-border) !important;
   border-radius: 14px;
   background-color: #FFFFFF !important;
   background: #FFFFFF !important;
   color: var(--ob-ink) !important;
-  font: 700 14px 'Be Vietnam Pro', sans-serif;
+  font: 700 15px 'Be Vietnam Pro', sans-serif;
   cursor: pointer;
   box-shadow: var(--ob-shadow);
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   outline: none;
+}
+
+.ob-answer-grid button span {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+}
+
+.ob-answer-grid button > svg {
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .ob-answer-grid kbd {
