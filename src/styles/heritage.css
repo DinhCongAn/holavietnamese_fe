@@ -282,8 +282,9 @@ label>.bilingual-text { margin-bottom:7px; }
 .state:has(>h1)>h1 { color:var(--color-red); font-size:clamp(28px,4vw,52px); }
 .admin-wrapper { display:grid; grid-template-columns:256px minmax(0,1fr); background:#F8FAFC; min-height:100dvh; }
 .admin-sidebar { display:flex; flex-direction:column; align-items:stretch; width:256px; flex:0 0 256px; height:100dvh; position:sticky; top:0; padding:24px 16px 18px; background:#FFFFFF !important; color:#253044 !important; border-right:1px solid #E8E5DF !important; box-shadow:2px 0 12px rgba(0,0,0,0.02); overflow-y:auto; z-index:600; }
-.admin-sidebar-header { display:block; padding:0 10px 20px; font-size:22px; font-weight:800; color:#F97316 !important; border-bottom:1px solid #E8E5DF; text-decoration:none; }
-.admin-sidebar-header>span { display:block; font-size:9px; letter-spacing:.12em; color:#94A3B8 !important; margin-top:8px; font-weight:600; }
+.admin-sidebar-header { display:flex !important; align-items:center !important; padding:0 10px 20px !important; border-bottom:1px solid #E8E5DF !important; text-decoration:none !important; }
+.admin-sidebar-header .site-brand__logo { display:block !important; height:38px !important; width:auto !important; max-width:140px !important; object-fit:contain !important; }
+.admin-sidebar-header .site-brand__icon { display:none !important; }
 .admin-nav { display:block; padding-top:16px; flex:1; }
 .admin-nav-group { margin-bottom:18px; }
 .admin-nav-group>p { color:#94A3B8 !important; font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; padding:0 10px; margin:0 0 7px; }
