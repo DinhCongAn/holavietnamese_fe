@@ -9,8 +9,20 @@ import { normalizeNotification, unwrapSseNotification } from '@/constants/notifi
 const NotificationContext = createContext(null);
 const EMPTY_PAGE = { content: [], page: 1, size: 10, totalElements: 0, totalPages: 0 };
 
+export function sortNotifications(items) {
+  return [...items].sort((a, b) => {
+    const timeA = new Date(a.createdAt).getTime();
+    const timeB = new Date(b.createdAt).getTime();
+    if (!Number.isNaN(timeA) && !Number.isNaN(timeB) && timeA !== timeB) {
+      return timeB - timeA;
+    }
+    return Number(b.id) - Number(a.id);
+  });
+}
+
 function normalizePage(result, fallback) {
-  const content = (Array.isArray(result) ? result : result?.content || []).map(normalizeNotification).filter(Boolean);
+  const rawList = (Array.isArray(result) ? result : result?.content || []).map(normalizeNotification).filter(Boolean);
+  const content = sortNotifications(rawList);
   return {
     content,
     page: Number(result?.page ?? fallback.page),
@@ -43,7 +55,7 @@ export function NotificationProvider({ children }) {
         notificationService.getPage({ page: 1, size: 10 }),
         notificationService.getUnreadCount(),
       ]);
-      const items = normalizePage(result, { page: 1, size: 10 }).content;
+      const items = sortNotifications(normalizePage(result, { page: 1, size: 10 }).content);
       items.forEach((item) => seenIdsRef.current.add(String(item.id)));
       setRecent(items);
       setUnreadCount(count);
@@ -92,14 +104,14 @@ export function NotificationProvider({ children }) {
     if (seenIdsRef.current.has(id)) return;
     seenIdsRef.current.add(id);
     readEventIdsRef.current.delete(id);
-    setRecent((current) => [item, ...current].slice(0, 10));
+    setRecent((current) => sortNotifications([item, ...current].slice(0, 10)));
     if (!item.isRead) setUnreadCount((count) => count + 1);
     setPageData((current) => {
       if (query.page !== 1 || (query.isRead === false && item.isRead)
         || current.content.some((entry) => String(entry.id) === String(item.id))) return current;
       return {
         ...current,
-        content: [item, ...current.content].slice(0, query.size),
+        content: sortNotifications([item, ...current.content].slice(0, query.size)),
         totalElements: current.totalElements + 1,
         totalPages: Math.ceil((current.totalElements + 1) / query.size),
       };
