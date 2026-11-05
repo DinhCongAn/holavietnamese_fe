@@ -77,7 +77,7 @@ test('Import history keeps pagination and uses the persisted job detail endpoint
   calls.length = 0; result = { content: [], totalPages: 0 };
   await contentImportService.history(3); assert.deepEqual(calls[0].params, { page: 3, size: 20 });
   await contentImportService.get(jobId); assert.equal(calls[1].url, `/api/admin/imports/${jobId}`);
-  assert.equal(ROUTES.REGIONAL_VIETNAMESE, '/regional-vietnamese'); assert.equal(ROUTES.ADMIN_REGIONAL_LANGUAGE, '/admin/regional-language');
+  assert.equal(ROUTES.REGIONAL_VIETNAMESE, '/regional-vietnamese'); assert.equal(ROUTES.ADMIN_REGIONAL_LANGUAGE, '/content/regional-language');
   const app = await fs.readFile(new URL('../src/app/router/AppRouter.jsx', import.meta.url), 'utf8');
   const adminRoutes = app.slice(app.indexOf('<Route element={<AdminRoute />}>'));
   for (const route of ['ADMIN_REGIONAL_LANGUAGE', 'ADMIN_IMPORT', 'ADMIN_IMPORT_HISTORY']) assert.ok(adminRoutes.includes(`path={ROUTES.${route}}`));

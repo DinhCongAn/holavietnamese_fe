@@ -25,11 +25,11 @@ export function AdminRoute() {
   const isContentManager = role === 'CONTENT';
   const contentPath = ['/content/courses', '/content/lessons', '/content/questions', '/content/quizzes', '/admin/courses', '/admin/lessons', '/admin/questions', '/admin/quizzes']
     .some(path => location.pathname === path || location.pathname.startsWith(`${path}/`));
-  const vocabularyPath = ['/admin/vocabulary', '/admin/regional-language']
+  const vocabularyPath = ['/content/vocabulary', '/content/regional-language', '/admin/vocabulary', '/admin/regional-language']
     .some(path => location.pathname === path || location.pathname.startsWith(`${path}/`));
-  const importPath = ['/admin/import', '/admin/imports']
+  const importPath = ['/content/import', '/content/imports', '/admin/import', '/admin/imports']
     .some(path => location.pathname === path || location.pathname.startsWith(`${path}/`));
-  const explorePath = ['/admin/destinations', '/admin/journey']
+  const explorePath = ['/content/destinations', '/admin/destinations', '/admin/journey']
     .some(path => location.pathname === path || location.pathname.startsWith(`${path}/`));
   const moduleAllowed = vocabularyPath ? canReadVocabulary(user)
     : importPath ? canImportVocabulary(user)

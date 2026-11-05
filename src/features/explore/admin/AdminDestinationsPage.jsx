@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { generatePath, Link } from 'react-router-dom';
+import { generatePath } from 'react-router-dom';
 import { BilingualText, useBilingualLabel, bilingualLabel } from '@/shared/components/common/BilingualText';
 import { ContentImage } from '@/shared/components/common/ContentImage';
 import { Modal } from '@/shared/components/common/Modal';
@@ -9,11 +9,11 @@ import { useAsyncResource } from '@/shared/hooks/useAsyncResource';
 import { destinationDate, DESTINATION_REGIONS, DESTINATION_STATUSES } from '@/features/explore/models/Destination';
 import { adminDestinationService } from '@/features/explore/api/destinationService';
 import { ROUTES } from '@/constants/routes';
-import { Check, Eye, Loader2, Pencil, Power, Trash2, Undo2 } from 'lucide-react';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { canReviewExplore, canWriteExplore } from '@/utils/permissions/contentAccess';
 import { toast } from 'sonner';
 import { AdminPagination } from '@/shared/components/common/AdminPagination';
+import { AdminActionButton, AdminActionGroup, AdminActionLink } from '@/shared/components/common/AdminTableActions';
 
 const emptyFilters = { keyword: '', status: '', region: '' };
 
@@ -171,27 +171,6 @@ export function AdminDestinationsPage() {
     padding: '16px 14px',
     verticalAlign: 'middle',
     borderBottom: '1px solid rgba(15, 23, 42, 0.06)',
-  };
-
-  const actionBtnBase = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '5px',
-    height: '32px',
-    minHeight: '32px',
-    maxHeight: '32px',
-    minWidth: 'auto',
-    padding: '0 10px',
-    fontSize: '12px',
-    fontWeight: 600,
-    borderRadius: '8px',
-    whiteSpace: 'nowrap',
-    flexShrink: 0,
-    lineHeight: 1,
-    textDecoration: 'none',
-    cursor: 'pointer',
-    boxSizing: 'border-box',
   };
 
   return (
@@ -375,147 +354,49 @@ export function AdminDestinationsPage() {
                         </td>
 
                         <td style={{ ...tdStyle, textAlign: 'right', paddingRight: '20px', whiteSpace: 'nowrap' }}>
-                          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px', flexWrap: 'nowrap' }}>
-                            <Link
-                              to={detailPath}
-                              className="button secondary"
-                              style={{
-                                ...actionBtnBase,
-                                color: '#0f766e',
-                                background: '#f0fdfa',
-                                border: '1px solid #99f6e4',
-                              }}
-                              title={label('Xem chi tiết điểm đến', 'View destination detail')}
-                            >
-                              <Eye size={13} strokeWidth={2.2} />
-                              <span>{label('Chi tiết', 'Detail')}</span>
-                            </Link>
+                          <AdminActionGroup>
+                            <AdminActionLink to={detailPath} tone="detail" title={label('Xem chi tiết điểm đến', 'View destination detail')}>
+                              {label('Chi tiết', 'Detail')}
+                            </AdminActionLink>
 
                             {mayWrite && item.status === 'DRAFT' && (
                               <>
-                                <Link
-                                  to={`${detailPath}?edit=1`}
-                                  className="button secondary"
-                                  style={{
-                                    ...actionBtnBase,
-                                    color: '#334155',
-                                    background: '#ffffff',
-                                    border: '1px solid #cbd5e1',
-                                  }}
-                                  title={label('Chỉnh sửa điểm đến', 'Edit destination')}
-                                >
-                                  <Pencil size={13} strokeWidth={2.1} />
-                                  <span>{label('Sửa', 'Edit')}</span>
-                                </Link>
-                                <button
-                                  type="button"
-                                  className="button secondary"
-                                  style={{
-                                    ...actionBtnBase,
-                                    color: '#1d4ed8',
-                                    background: '#eff6ff',
-                                    border: '1px solid #bfdbfe',
-                                  }}
-                                  title={label('Gửi điểm đến đi duyệt', 'Submit destination for review')}
-                                  onClick={() => transition(item, 'SUBMIT')}
-                                >
-                                  <Check size={13} strokeWidth={2.4} />
-                                  <span>{label('Gửi duyệt', 'Submit')}</span>
-                                </button>
+                                <AdminActionLink to={`${detailPath}?edit=1`} tone="edit" title={label('Chỉnh sửa điểm đến', 'Edit destination')}>
+                                  {label('Sửa nháp', 'Edit draft')}
+                                </AdminActionLink>
+                                <AdminActionButton tone="submit" title={label('Gửi điểm đến đi duyệt', 'Submit destination for review')} onClick={() => transition(item, 'SUBMIT')}>
+                                  {label('Gửi duyệt', 'Submit')}
+                                </AdminActionButton>
                               </>
                             )}
 
                             {mayWrite && item.status === 'PUBLISHED' && (
-                              <button
-                                type="button"
-                                className="button secondary"
-                                style={{
-                                  ...actionBtnBase,
-                                  color: '#c2410c',
-                                  background: '#fff7ed',
-                                  border: '1px solid #fed7aa',
-                                }}
-                                title={label('Chuyển về nháp để sửa', 'Return to draft to revise')}
-                                onClick={() => transition(item, 'REVISE')}
-                              >
-                                <Power size={13} strokeWidth={2.2} />
-                                <span>{label('Sửa nháp', 'Revise')}</span>
-                              </button>
+                              <AdminActionButton tone="edit" title={label('Chuyển về nháp để sửa', 'Return to draft to revise')} onClick={() => transition(item, 'REVISE')}>
+                                {label('Sửa nháp', 'Revise')}
+                              </AdminActionButton>
                             )}
 
                             {mayWrite && ['DRAFT', 'PUBLISHED'].includes(item.status) && (
-                              <button
-                                type="button"
-                                className="button secondary"
-                                style={{
-                                  ...actionBtnBase,
-                                  width: '32px',
-                                  minWidth: '32px',
-                                  padding: 0,
-                                  color: '#b91c1c',
-                                  background: '#fef2f2',
-                                  border: '1px solid #fecaca',
-                                }}
-                                title={label('Lưu trữ điểm đến', 'Archive destination')}
-                                onClick={() => transition(item, 'ARCHIVE')}
-                              >
-                                <Trash2 size={13} strokeWidth={2.1} aria-hidden="true" />
-                              </button>
+                              <AdminActionButton tone="delete" iconOnly aria-label={label('Lưu trữ điểm đến', 'Archive destination')} title={label('Lưu trữ điểm đến', 'Archive destination')} onClick={() => transition(item, 'ARCHIVE')} />
                             )}
 
                             {mayWrite && item.status === 'ARCHIVED' && (
-                              <button
-                                type="button"
-                                className="button secondary"
-                                style={{
-                                  ...actionBtnBase,
-                                  color: '#15803d',
-                                  background: '#f0fdf4',
-                                  border: '1px solid #bbf7d0',
-                                }}
-                                title={label('Khôi phục bản nháp', 'Restore draft')}
-                                onClick={() => transition(item, 'RESTORE')}
-                              >
-                                <Undo2 size={13} strokeWidth={2.2} />
-                                <span>{label('Khôi phục', 'Restore')}</span>
-                              </button>
+                              <AdminActionButton tone="restore" title={label('Khôi phục bản nháp', 'Restore draft')} onClick={() => transition(item, 'RESTORE')}>
+                                {label('Khôi phục', 'Restore')}
+                              </AdminActionButton>
                             )}
 
                             {mayReview && item.status === 'PENDING_REVIEW' && (
                               <>
-                                <button
-                                  type="button"
-                                  className="button secondary"
-                                  style={{
-                                    ...actionBtnBase,
-                                    color: '#15803d',
-                                    background: '#f0fdf4',
-                                    border: '1px solid #bbf7d0',
-                                  }}
-                                  title={label('Phê duyệt & công khai', 'Approve & publish')}
-                                  onClick={() => transition(item, 'APPROVE')}
-                                >
-                                  <Check size={13} strokeWidth={2.4} />
-                                  <span>{label('Duyệt', 'Approve')}</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  className="button secondary"
-                                  style={{
-                                    ...actionBtnBase,
-                                    color: '#c2410c',
-                                    background: '#fff7ed',
-                                    border: '1px solid #fed7aa',
-                                  }}
-                                  title={label('Trả về bản nháp', 'Return to draft')}
-                                  onClick={() => transition(item, 'REJECT')}
-                                >
-                                  <Power size={13} strokeWidth={2.2} />
-                                  <span>{label('Từ chối', 'Reject')}</span>
-                                </button>
+                                <AdminActionButton tone="approve" title={label('Phê duyệt & công khai', 'Approve & publish')} onClick={() => transition(item, 'APPROVE')}>
+                                  {label('Duyệt', 'Approve')}
+                                </AdminActionButton>
+                                <AdminActionButton tone="edit" title={label('Trả về bản nháp', 'Return to draft')} onClick={() => transition(item, 'REJECT')}>
+                                  {label('Từ chối', 'Reject')}
+                                </AdminActionButton>
                               </>
                             )}
-                          </div>
+                          </AdminActionGroup>
                         </td>
                       </tr>
                     );

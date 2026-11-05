@@ -251,6 +251,12 @@ export function AppRouter() {
                 <Route path={ROUTES.ADMIN_IMPORT_HISTORY} element={<AdminImportHistoryPage />} />
                 <Route path={ROUTES.ADMIN_DESTINATIONS} element={<AdminDestinationsPage />} />
                 <Route path={ROUTES.ADMIN_DESTINATION_DETAIL} element={<AdminDestinationDetailPage />} />
+                <Route path="/admin/vocabulary" element={<LegacyRouteRedirect to={ROUTES.ADMIN_VOCABULARY} />} />
+                <Route path="/admin/regional-language" element={<LegacyRouteRedirect to={ROUTES.ADMIN_REGIONAL_LANGUAGE} />} />
+                <Route path="/admin/import" element={<LegacyRouteRedirect to={ROUTES.ADMIN_IMPORT} />} />
+                <Route path="/admin/imports" element={<LegacyRouteRedirect to={ROUTES.ADMIN_IMPORT_HISTORY} />} />
+                <Route path="/admin/destinations" element={<LegacyRouteRedirect to={ROUTES.ADMIN_DESTINATIONS} />} />
+                <Route path="/admin/destinations/:id" element={<LegacyRouteRedirect to={ROUTES.ADMIN_DESTINATION_DETAIL} />} />
                 <Route path={ROUTES.ADMIN_JOURNEY} element={<Navigate to={ROUTES.ADMIN_DESTINATIONS} replace />} />
                 <Route path={ROUTES.ADMIN} element={<AdminDashboardPage />} />
                 <Route path={ROUTES.ADMIN_USERS} element={<AdminUsersPage />} />

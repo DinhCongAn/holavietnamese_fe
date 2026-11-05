@@ -149,7 +149,7 @@ test('An aborted request never reaches the backend adapter', async () => {
 test('Destination routes preserve legacy Explore and the existing Vocabulary flow', () => {
   const keys = ['ADMIN_DESTINATIONS', 'ADMIN_DESTINATION_DETAIL', 'EXPLORE', 'DESTINATION_DETAIL', 'EXPLORE_VIETNAM', 'LEARNER_DESTINATION_DETAIL', 'VOCABULARY', 'VOCABULARY_NOTEBOOK', 'VOCABULARY_REVIEW'];
   const routes = keys.map(id => ({ id, path: ROUTES[id] }));
-  for (const [path, id] of [['/admin/destinations', 'ADMIN_DESTINATIONS'], ['/admin/destinations/1', 'ADMIN_DESTINATION_DETAIL'], ['/explore', 'EXPLORE'], ['/explore/1', 'DESTINATION_DETAIL'], ['/explore-vietnam', 'EXPLORE_VIETNAM'], ['/destinations/1', 'LEARNER_DESTINATION_DETAIL'], ['/vocabulary', 'VOCABULARY'], ['/vocabulary/notebook', 'VOCABULARY_NOTEBOOK'], ['/vocabulary/review', 'VOCABULARY_REVIEW']]) {
+  for (const [path, id] of [['/content/destinations', 'ADMIN_DESTINATIONS'], ['/content/destinations/1', 'ADMIN_DESTINATION_DETAIL'], ['/explore', 'EXPLORE'], ['/explore/1', 'DESTINATION_DETAIL'], ['/explore-vietnam', 'EXPLORE_VIETNAM'], ['/destinations/1', 'LEARNER_DESTINATION_DETAIL'], ['/vocabulary', 'VOCABULARY'], ['/vocabulary/notebook', 'VOCABULARY_NOTEBOOK'], ['/vocabulary/review', 'VOCABULARY_REVIEW']]) {
     assert.equal(matchRoutes(routes, path).at(-1).route.id, id);
   }
 });

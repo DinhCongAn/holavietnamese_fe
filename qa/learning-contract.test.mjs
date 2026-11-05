@@ -92,7 +92,7 @@ test('API failure propagates to UI rather than being converted to successful dat
   assert.equal(fixture.session,original);
 });
 
-test('Active routes keep their paths except for canonical course learning routes', async () => {
+test('Active routes keep their paths except for canonical learning and content-management routes', async () => {
   const original=execFileSync('git',['show','HEAD:src/constants/routes.js'],{encoding:'utf8'});
   const current=await fs.readFile(new URL('../src/constants/routes.js',import.meta.url),'utf8');
   const routeMap=text=>Object.fromEntries([...text.matchAll(/(\w+):\s*'([^']+)'/g)].map(([,key,path])=>[key,path]));
@@ -117,9 +117,18 @@ test('Active routes keep their paths except for canonical course learning routes
     ADMIN_QUIZ_BUILDER: ['CONTENT_QUIZ_BUILDER', '/content/quizzes/:quizId'],
     ADMIN_QUIZ_PREVIEW: ['CONTENT_QUIZ_PREVIEW', '/content/quizzes/:quizId/preview'],
   };
+  const canonicalManagementRoutes = {
+    ADMIN_VOCABULARY: '/content/vocabulary',
+    ADMIN_REGIONAL_LANGUAGE: '/content/regional-language',
+    ADMIN_IMPORT: '/content/import',
+    ADMIN_IMPORT_HISTORY: '/content/imports',
+    ADMIN_DESTINATIONS: '/content/destinations',
+    ADMIN_DESTINATION_DETAIL: '/content/destinations/:id',
+  };
   for(const [key,path] of Object.entries(before)) {
     if (key === 'ADMIN_VOCABULARY_TOPICS') assert.equal(after[key],undefined);
     else if (canonicalCourseRoutes[key]) assert.equal(after[key],canonicalCourseRoutes[key],key);
+    else if (canonicalManagementRoutes[key]) assert.equal(after[key], canonicalManagementRoutes[key], key);
     else if (canonicalContentRoutes[key]) {
       const [newKey, newPath] = canonicalContentRoutes[key];
       assert.equal(after[key], undefined, `${key} is replaced by ${newKey}`);
