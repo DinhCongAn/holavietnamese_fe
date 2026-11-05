@@ -1,39 +1,68 @@
-import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
-import { useState, useEffect } from 'react';
+import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { adminService } from '@/features/admin/api/adminService';
+import { useAuth } from '@/features/auth/context/AuthContext';
+
+const EDITABLE_ROLES = ['LEARNER', 'CONTENT'];
+const ROLE_LABELS = {
+  LEARNER: { vi: 'Học viên', en: 'Learner' },
+  CONTENT: { vi: 'Quản lý nội dung', en: 'Content' },
+  ADMIN: { vi: 'Quản trị viên', en: 'Administrator' },
+};
 
 export function AdminUserDetailPage() {
-  useTextLanguage();
+  const { isAdmin } = useAuth();
   const { id } = useParams();
   const [user, setUser] = useState(null);
   const [selectedRole, setSelectedRole] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('ACTIVE');
-  const [msg, setMsg] = useState('');
+  const [notice, setNotice] = useState({ type: '', message: '' });
+  const [savingRole, setSavingRole] = useState(false);
 
-  useEffect(() => {
-    adminService.getUserById(id).then(u => {
+  const loadUser = useCallback(async () => {
+    try {
+      const u = await adminService.getUserById(id);
       setUser(u);
-      setSelectedRole(String(u.roles?.[0] || u.role || 'LEARNER').replace('ROLE_', ''));
+      const userRole = String(u.role || '').replace(/^ROLE_/, '').trim();
+      setSelectedRole(EDITABLE_ROLES.includes(userRole) ? userRole : 'LEARNER');
       setSelectedStatus(u.status || 'ACTIVE');
-    }).catch(error => setMsg(error.message));
+      return u;
+    } catch (error) {
+      setNotice({ type: 'error', message: error.message });
+      return null;
+    }
   }, [id]);
 
+  useEffect(() => { loadUser(); }, [loadUser]);
+
   const handleRoleChange = async () => {
-    try {const res = await adminService.updateUserRole(id, selectedRole);
-    setMsg(res.message);
-    setTimeout(() => setMsg(''), 3000); }catch(error){setMsg(error.message);}
+    if (!isAdmin || String(user?.role || '').replace(/^ROLE_/, '') === 'ADMIN') return;
+    setSavingRole(true);
+    setNotice({ type: '', message: '' });
+    try {
+      const res = await adminService.updateUserRole(id, selectedRole);
+      const refreshed = await loadUser();
+      if (refreshed) setNotice({ type: 'success', message: res.message || bilingualLabel('Đã cập nhật vai trò.', 'Role updated successfully.') });
+    } catch(error) {
+      setNotice({ type: 'error', message: error.message });
+    } finally {
+      setSavingRole(false);
+    }
   };
 
   const handleStatusChange = async () => {
     try {
       const res = await adminService.updateUserStatus(id, selectedStatus);
-      setUser((value) => ({ ...value, status: selectedStatus }));
-      setMsg(res.message || bilingualLabel('Đã cập nhật trạng thái.', 'Status updated successfully.'));
-    } catch (error) { setMsg(error.message); }
+      const refreshed = await loadUser();
+      if (refreshed) setNotice({ type: 'success', message: res.message || bilingualLabel('Đã cập nhật trạng thái.', 'Status updated successfully.') });
+    } catch (error) { setNotice({ type: 'error', message: error.message }); }
   };
 
-  if (!user) return <div className="state" role={msg?"alert":"status"}><BilingualText>{msg || "Đang tải chi tiết người dùng…"}</BilingualText></div>;
+  if (!user) return <div className="state" role={notice.message ? "alert" : "status"}><BilingualText>{notice.message || "Đang tải chi tiết người dùng…"}</BilingualText></div>;
+
+  const userRole = String(user.role || '').replace(/^ROLE_/, '');
+  const canEditRole = isAdmin && userRole !== 'ADMIN';
 
   return (
     <div>
@@ -53,13 +82,14 @@ export function AdminUserDetailPage() {
         </span>
       </div>
 
-      {msg && (
-        <div style={{ padding: '10px 16px', background: 'var(--color-sage-soft)', color: 'var(--color-ink)', borderRadius: '8px', marginBottom: '16px' }}>
-          ✓ <BilingualText>{msg}</BilingualText>
+      {notice.message && (
+        <div role={notice.type === 'error' ? 'alert' : 'status'} style={{ padding: '10px 16px', background: notice.type === 'error' ? 'var(--color-red-soft)' : 'var(--color-sage-soft)', color: notice.type === 'error' ? 'var(--color-red)' : 'var(--color-forest)', borderRadius: '8px', marginBottom: '16px' }}>
+          {notice.type === 'success' ? '✓ ' : ''}<BilingualText>{notice.message}</BilingualText>
         </div>
       )}
 
-      <div className="admin-card" style={{ marginBottom: 20 }}>
+      {/* Account Status Changer */}
+      <div className="admin-card" style={{ marginBottom: '20px' }}>
         <h3><BilingualText>{"Trạng thái tài khoản"}</BilingualText></h3>
         <div className="actions">
           <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
@@ -75,7 +105,7 @@ export function AdminUserDetailPage() {
           <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: '0 0 16px 0' }}><BilingualText>{"Thông tin hồ sơ học viên"}</BilingualText></h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--color-muted)', fontWeight: 700 }}><BilingualText>{"Thư điện tử"}</BilingualText></span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--color-muted)', fontWeight: 700 }}><BilingualText>{"EMAIL"}</BilingualText></span>
               <p style={{ margin: '4px 0 0 0', fontWeight: 600 }}>{user.email}</p>
             </div>
             <div>
@@ -95,20 +125,28 @@ export function AdminUserDetailPage() {
 
         <div className="admin-card">
           <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: '0 0 16px 0' }}><BilingualText>{"Phân vai trò"}</BilingualText></h3>
+          {canEditRole ? <>
           <p style={{ fontSize: '0.85rem', color: 'var(--color-muted)', marginBottom: '16px' }}><BilingualText>{"Thay đổi quyền hạn truy cập của người dùng này."}</BilingualText></p>
           <div style={{ display: 'flex', gap: '10px' }}>
             <select
               value={selectedRole}
               onChange={e => setSelectedRole(e.target.value)}
+              disabled={savingRole}
               style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--color-border)' }}
             >
-              <option value="LEARNER">{bilingualLabel("Học viên", "Learner")}</option>
-              <option value="INSTRUCTOR">{bilingualLabel("Giảng viên", "Instructor")}</option>
-              <option value="ADMIN">{bilingualLabel("Quản trị viên", "Administrator")}</option>
+              {EDITABLE_ROLES.map((role) => (
+                <option key={role} value={role}>
+                  {bilingualLabel(
+                    ROLE_LABELS[role]?.vi ? `${ROLE_LABELS[role].vi} (${role})` : role,
+                    ROLE_LABELS[role]?.en ? `${ROLE_LABELS[role].en} (${role})` : role
+                  )}
+                </option>
+              ))}
             </select>
             <button
               type="button"
               onClick={handleRoleChange}
+              disabled={savingRole}
               style={{
                 padding: '8px 16px',
                 borderRadius: '8px',
@@ -118,8 +156,9 @@ export function AdminUserDetailPage() {
                 fontWeight: 600,
                 cursor: 'pointer',
               }}
-            ><BilingualText>{"Cập nhật"}</BilingualText></button>
+            ><BilingualText>{savingRole ? 'Đang cập nhật…' : 'Cập nhật'}</BilingualText></button>
           </div>
+          </> : <div><span className="admin-badge admin-badge-info">{userRole || '—'}</span>{userRole === 'ADMIN' && <p className="muted"><BilingualText vi="Vai trò ADMIN chỉ được quản lý trực tiếp trong database." en="The ADMIN role can only be managed directly in the database." /></p>}</div>}
         </div>
       </div>
 
@@ -129,11 +168,11 @@ export function AdminUserDetailPage() {
           <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: '0 0 16px 0' }}><BilingualText>{"Khóa học đã đăng ký"}</BilingualText></h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {user.enrolledCourses?.map(c => (
-              <div key={c.id} style={{ padding: '12px', borderRadius: '8px', background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+              <div key={c.id} style={{ padding: '12px', borderRadius: '8px', background: 'var(--color-cream)', border: '1px solid var(--color-border)' }}>
                 <strong style={{ display: 'block', fontSize: '0.9rem', color: 'var(--color-ink)' }}>{c.name}</strong>
-                <span style={{ fontSize: '0.75rem', color: 'var(--color-muted)' }}><BilingualText>{"Đăng ký ngày"}</BilingualText>{c.enrolledAt}<BilingualText>{"• Tiến độ:"}</BilingualText>{c.progress}%</span>
-                <div style={{ height: '6px', background: 'var(--color-sage-soft)', borderRadius: '3px', marginTop: '6px' }}>
-                  <div style={{ height: '100%', width: `${c.progress}%`, background: 'var(--color-sage)', borderRadius: '3px' }} />
+                <span style={{ fontSize: '0.75rem', color: 'var(--color-muted)' }}><BilingualText>{"Đăng ký ngày"}</BilingualText>{c.enrolledAt} • <BilingualText>{"Tiến độ:"}</BilingualText>{c.progress}%</span>
+                <div style={{ height: '6px', background: 'var(--color-border)', borderRadius: '3px', marginTop: '6px' }}>
+                  <div style={{ height: '100%', width: `${c.progress}%`, background: 'var(--color-red)', borderRadius: '3px' }} />
                 </div>
               </div>
             ))}
@@ -155,3 +194,5 @@ export function AdminUserDetailPage() {
     </div>
   );
 }
+
+export default AdminUserDetailPage;
