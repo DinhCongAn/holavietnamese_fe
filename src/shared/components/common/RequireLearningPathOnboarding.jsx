@@ -17,7 +17,10 @@ export function RequireLearningPathOnboarding() {
     );
   }
 
-  if (user.onboardingCompleted !== true) {
+  const role = String(user.role || '').replace(/^ROLE_/, '');
+  const isBackOfficeAccount = role === 'ADMIN' || role === 'CONTENT';
+
+  if (!isBackOfficeAccount && user.onboardingCompleted !== true) {
     return (
       <Navigate
         to="/onboarding/reason"
