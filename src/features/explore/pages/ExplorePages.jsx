@@ -273,7 +273,7 @@ export function DestinationDetailPage() {
                 to={backRoute}
               >
                 <ArrowLeft size={14} />
-                <BilingualText vi="← Khám phá Việt Nam" en="← Explore Vietnam" />
+                <BilingualText vi="Khám phá Việt Nam" en="← Explore Vietnam" />
               </Link>
             </div>
           </section>
