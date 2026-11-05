@@ -67,9 +67,9 @@ export function AdminLayout() {
         }
         return [
           finalTo,
-          isContentManager && !isAdmin && to === ROUTES.CONTENT_COURSES
+            isContentManager && !isAdmin && to === ROUTES.CONTENT_COURSES
             ? 'Biên soạn khóa học'
-            : (isAdmin && (to === ROUTES.ADMIN_CULTURE || to === ROUTES.CONTENT_CULTURE) ? 'Duyệt bài viết văn hóa' : label),
+            : (isAdmin && (to === ROUTES.ADMIN_CULTURE || to === ROUTES.CONTENT_CULTURE) ? 'Quản lý bài viết' : label),
         ];
       }),
     };
@@ -102,7 +102,10 @@ export function AdminLayout() {
                   onClick={() => setOpen(false)}
                   className={({ isActive }) => `admin-nav-item ${isActive || (isContentManager && !isAdmin && to === ROUTES.CONTENT_COURSES && inContentFlow) ? 'active' : ''}`}
                 >
-                  <BilingualText vi={label} en={label === 'Biên soạn khóa học' ? 'Course authoring' : undefined} />
+                  <BilingualText
+                    vi={label}
+                    en={label === 'Biên soạn khóa học' ? 'Course authoring' : label === 'Quản lý bài viết' ? 'Manage articles' : undefined}
+                  />
                 </NavLink>
               ))}
             </div>

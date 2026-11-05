@@ -13,7 +13,7 @@ import {
   Maximize2,
   Mic,
   MicOff,
-  RotateCcw,
+  Plus,
   Send,
   Sparkles,
   Volume2,
@@ -794,7 +794,7 @@ Pick a suggested question below or ask me anything!`,
               title={isVi ? 'Bắt đầu cuộc trò chuyện mới' : 'New chat'}
               aria-label={isVi ? 'Cuộc trò chuyện mới' : 'New chat'}
             >
-              <RotateCcw size={15} />
+              <Plus size={16} strokeWidth={2.5} />
             </button>
 
             <Link

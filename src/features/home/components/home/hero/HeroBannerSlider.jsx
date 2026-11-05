@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from 'motion/react';
-import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { HeroSlideContent } from '@/features/home/components/home/hero/HeroSlideContent';
 import { HeroStageVisual } from '@/features/home/components/home/hero/HeroStageVisual';
@@ -19,7 +19,6 @@ export function HeroBannerSlider() {
   const language = i18n.resolvedLanguage || i18n.language || 'en';
   const reduceMotion = useReducedMotion();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [manualPaused, setManualPaused] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [focusWithin, setFocusWithin] = useState(false);
   const [timerKey, setTimerKey] = useState(0);
@@ -27,7 +26,7 @@ export function HeroBannerSlider() {
   const touchEnd = useRef(null);
   const locked = useRef(false);
   const unlockTimer = useRef(null);
-  const paused = manualPaused || hovered || focusWithin || reduceMotion;
+  const paused = hovered || focusWithin || reduceMotion;
   const slideTitles = banners.map((banner) => localizedSiteField(banner, 'title', language));
 
   const goTo = useCallback((nextIndex, manual = true) => {
@@ -99,9 +98,6 @@ export function HeroBannerSlider() {
             <span>{index === currentSlide && <i key={`${currentSlide}-${timerKey}`} className={paused ? 'is-paused' : ''} />}</span>
           </button>
         ))}
-        <button type="button" className="guest-cultural-banner__pause" onClick={() => setManualPaused((value) => !value)} aria-label={manualPaused ? t('resumeSlides') : t('pauseSlides')} title={manualPaused ? t('resumeSlides') : t('pauseSlides')}>
-          {manualPaused ? <Play size={12} fill="currentColor" /> : <Pause size={12} fill="currentColor" />}
-        </button>
       </div>}
     </section>
   );

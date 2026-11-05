@@ -97,6 +97,14 @@ export const ROUTES = {
   ADMIN_XP_RULES: '/admin/xp-rules',
   ADMIN_AUDIT_LOGS: '/admin/audit-logs',
 
+  // Content Manager data tools
+  CONTENT_REGIONAL_LANGUAGE: '/content/regional-language',
+  CONTENT_IMPORT: '/content/import',
+  CONTENT_IMPORT_HISTORY: '/content/imports',
+  CONTENT_VOCABULARY: '/content/vocabulary',
+  CONTENT_DESTINATIONS: '/content/destinations',
+  CONTENT_DESTINATION_DETAIL: '/content/destinations/:id',
+
   // Content Manager Văn hóa
   CONTENT_CULTURE: '/content/culture',
   CONTENT_CULTURE_EDIT: '/content/culture/:id',
@@ -113,3 +121,24 @@ export const ROUTES = {
   ADMIN_AI_SCENARIO_NEW: '/admin/ai-scenarios/new',
   ADMIN_AI_SETTINGS: '/admin/ai-settings',
 };
+
+export function getBackOfficeRoutes(pathname = '') {
+  const adminArea = pathname === ROUTES.ADMIN || pathname.startsWith(`${ROUTES.ADMIN}/`);
+  return adminArea
+    ? {
+        vocabulary: ROUTES.ADMIN_VOCABULARY,
+        regionalLanguage: ROUTES.ADMIN_REGIONAL_LANGUAGE,
+        importData: ROUTES.ADMIN_IMPORT,
+        importHistory: ROUTES.ADMIN_IMPORT_HISTORY,
+        destinations: ROUTES.ADMIN_DESTINATIONS,
+        destinationDetail: ROUTES.ADMIN_DESTINATION_DETAIL,
+      }
+    : {
+        vocabulary: ROUTES.CONTENT_VOCABULARY,
+        regionalLanguage: ROUTES.CONTENT_REGIONAL_LANGUAGE,
+        importData: ROUTES.CONTENT_IMPORT,
+        importHistory: ROUTES.CONTENT_IMPORT_HISTORY,
+        destinations: ROUTES.CONTENT_DESTINATIONS,
+        destinationDetail: ROUTES.CONTENT_DESTINATION_DETAIL,
+      };
+}

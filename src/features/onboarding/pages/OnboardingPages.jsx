@@ -1,8 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { BookOpen, Check, ChevronRight, Medal, Play, ShieldCheck, Volume2, X } from 'lucide-react';
-import { benefits, dailyGoals, firstLessonQuestions, learningReasons, levelOptions, placementBands, placementQuestions } from '../data/onboardingData';
+import {
+  benefits, dailyGoals, firstLessonQuestions, learningReasons, levelOptions,
+  placementBands, placementQuestions, getPlacementQuestions, evaluatePlacementTest,
+  PLACEMENT_DISTRIBUTIONS, TIER_THRESHOLDS,
+} from '../data/onboardingData';
 import { useOnboarding } from '../context/OnboardingContext';
 import { Brand, Confetti, LessonHeader, Mascot, OnboardingLayout, PrimaryButton, SelectionCard } from '../components/OnboardingUI';
 import { buildLearningPathPath, buildOnboardingRecommendation } from '../services/recommendationEngine';
@@ -153,33 +157,35 @@ export function LevelPage() {
   const navigate = useNavigate();
   if (!data.learningReasons.length) return <Navigate to="/onboarding/reason" replace />;
 
+  const isLevelSelected = Boolean(data.selectedLevel || data.currentLevel);
+
   return (
     <OnboardingLayout
       eyebrow={<BilingualText vi="ĐIỂM BẮT ĐẦU CỦA BẠN" en="YOUR STARTING POINT" />}
-      title={<BilingualText vi="Bạn đã biết bao nhiêu tiếng Việt rồi?" en="How much Vietnamese do you already know?" />}
-      mascotMessage={data.currentLevel
-        ? <BilingualText vi="Tuyệt vời — bạn vẫn có thể chọn nơi bắt đầu sau." en="Perfect — you’ll still get to choose where to begin." />
-        : <BilingualText vi="Không có câu trả lời nào sai cả. Hãy chọn đúng với bạn nhé!" en="There is no wrong answer. Be honest!" />}
+      title={<BilingualText vi="Bạn muốn kiểm tra hoặc bắt đầu từ trình độ nào?" en="Which level do you want to assess or start with?" />}
+      mascotMessage={isLevelSelected
+        ? <BilingualText vi="Tuyệt vời — hệ thống sẽ chuẩn bị bài kiểm tra phù hợp với trình độ bạn chọn!" en="Great — we’ll prepare a placement test tailored to your chosen level!" />
+        : <BilingualText vi="Hãy chọn cấp độ bạn tự tin nhất hoặc muốn thử sức nhé!" en="Select the level you feel most confident in or want to challenge yourself with!" />}
       wide
     >
-      <div className="ob-grid five">
+      <div className="ob-grid six">
         {levelOptions.map((item) => (
           <SelectionCard
             key={item.id}
             {...item}
-            selected={data.currentLevel === item.id}
-            onClick={() => update({ currentLevel: item.id })}
+            selected={data.selectedLevel === item.id || data.currentLevel === item.id}
+            onClick={() => update({ currentLevel: item.id, selectedLevel: item.id })}
           />
         ))}
       </div>
       <p className="ob-note">
         <BilingualText
-          vi="Đánh giá nhanh này chỉ giúp gợi ý lộ trình phù hợp, không phải chứng chỉ chính thức."
-          en="This self-assessment only helps us recommend a path. It does not certify your level."
+          vi="Hệ thống sẽ cung cấp bài test 15 câu gồm các tầng kiến thức nền tảng tương ứng với cấp độ bạn đã chọn."
+          en="A 15-question test with tiered questions will evaluate both your foundation and chosen level."
         />
       </p>
       <div className="ob-actions">
-        <PrimaryButton disabled={!data.currentLevel} onClick={() => navigate('/onboarding/benefits')} />
+        <PrimaryButton disabled={!isLevelSelected} onClick={() => navigate('/onboarding/benefits')} />
       </div>
     </OnboardingLayout>
   );
@@ -188,7 +194,7 @@ export function LevelPage() {
 export function BenefitsPage() {
   const navigate = useNavigate();
   const { data } = useOnboarding();
-  if (!data.currentLevel) return <Navigate to="/onboarding/level" replace />;
+  if (!data.currentLevel && !data.selectedLevel) return <Navigate to="/onboarding/level" replace />;
 
   return (
     <OnboardingLayout
@@ -230,7 +236,7 @@ export function BenefitsPage() {
 export function DailyGoalPage() {
   const { data, update } = useOnboarding();
   const navigate = useNavigate();
-  if (!data.currentLevel) return <Navigate to="/onboarding/level" replace />;
+  if (!data.currentLevel && !data.selectedLevel) return <Navigate to="/onboarding/level" replace />;
   const selected = dailyGoals.find((goal) => goal.minutes === data.dailyGoalMinutes);
 
   return (
@@ -276,45 +282,59 @@ export function DailyGoalPage() {
 export function LearningPathPage() {
   const { data, update } = useOnboarding();
   const navigate = useNavigate();
-  if (!data.learningReasons.length || !data.currentLevel) return <Navigate to="/onboarding/reason" replace />;
+  const activeLevel = data.selectedLevel || data.currentLevel || 'A1';
+
+  if (!data.learningReasons.length || (!data.currentLevel && !data.selectedLevel)) {
+    return <Navigate to="/onboarding/reason" replace />;
+  }
+
   const choosePlacement = () => {
     update({ learningPath: 'placement' });
     window.setTimeout(() => navigate('/onboarding/placement-test'), 180);
   };
-  return <OnboardingLayout
-    eyebrow={<BilingualText vi="XÁC ĐỊNH TRÌNH ĐỘ" en="FIND YOUR LEVEL" />}
-    title={<BilingualText vi="Tìm điểm bắt đầu phù hợp với bạn" en="Find the right place to start" />}
-    mascotMessage={<BilingualText vi="Làm bài kiểm tra ngắn để mình gợi ý bài học phù hợp nhất nhé!" en="Take a short test and I’ll find the right lessons for you!" />}
-    wide
-  >
-    <div className="ob-paths ob-paths-single">
-      <motion.button
-        whileHover={{ y: -2 }}
-        whileTap={{ scale: 0.99 }}
-        type="button"
-        className={`ob-path-card answer-card placement ${data.learningPath === 'placement' ? 'is-selected' : ''}`}
-        aria-selected={data.learningPath === 'placement'}
-        data-state={data.learningPath === 'placement' ? 'checked' : 'unchecked'}
-        style={{ backgroundColor: '#ffffff' }}
-        onClick={choosePlacement}
-      >
-        <em><BilingualText vi="KIỂM TRA TRÌNH ĐỘ · 5 PHÚT" en="PLACEMENT CHECK · 5 MINUTES" /></em>
-        <h2><BilingualText vi="Kiểm tra trình độ" en="Find My Level" /></h2>
-        <p><BilingualText vi="Trả lời các câu hỏi từ dễ đến khó để hệ thống xác định bài học phù hợp với bạn." en="Answer questions from easy to challenging so we can find the right lessons for you." /></p>
-        <div className="ob-path-details">
-          <span><Check size={16} /> <BilingualText vi="15 câu · Khoảng 5 phút" en="15 questions · About 5 minutes" /></span>
-          <span><BookOpen size={16} /> <BilingualText vi="Xác định trình độ A0–C1" en="Determine your A0–C1 level" /></span>
-        </div>
-        <strong><BilingualText vi="LÀM BÀI KIỂM TRA" en="TAKE THE TEST" /> <ChevronRight size={16} /></strong>
-      </motion.button>
-    </div>
-  </OnboardingLayout>;
+
+  return (
+    <OnboardingLayout
+      eyebrow={<BilingualText vi="XÁC ĐỊNH TRÌNH ĐỘ" en="FIND YOUR LEVEL" />}
+      title={<BilingualText vi="Tìm điểm bắt đầu phù hợp với bạn" en="Find the right place to start" />}
+      mascotMessage={<BilingualText vi={`Làm bài kiểm tra 15 câu theo cấp độ ${activeLevel} để mình xếp lớp chính xác nhất nhé!`} en={`Take a 15-question test tailored to level ${activeLevel} to find your exact placement!`} />}
+      wide
+    >
+      <div className="ob-paths ob-paths-single">
+        <motion.button
+          whileHover={{ y: -2 }}
+          whileTap={{ scale: 0.99 }}
+          type="button"
+          className={`ob-path-card answer-card placement ${data.learningPath === 'placement' ? 'is-selected' : ''}`}
+          aria-selected={data.learningPath === 'placement'}
+          data-state={data.learningPath === 'placement' ? 'checked' : 'unchecked'}
+          style={{ backgroundColor: '#ffffff' }}
+          onClick={choosePlacement}
+        >
+          <em><BilingualText vi={`BÀI TEST TRÌNH ĐỘ ${activeLevel} · 5 PHÚT`} en={`PLACEMENT TEST · LEVEL ${activeLevel} · 5 MIN`} /></em>
+          <h2><BilingualText vi={`Kiểm tra trình độ ${activeLevel}`} en={`Find My Level (${activeLevel})`} /></h2>
+          <p><BilingualText vi={`Hệ thống phân bổ 15 câu hỏi kiểm tra nền tảng và kiến thức trọng tâm cấp độ ${activeLevel}.`} en={`15 questions evaluating foundational knowledge up to level ${activeLevel}.`} /></p>
+          <div className="ob-path-details">
+            <span><Check size={16} /> <BilingualText vi="15 câu · Khoảng 5 phút" en="15 questions · About 5 minutes" /></span>
+            <span><BookOpen size={16} /> <BilingualText vi="Đánh giá theo từng tầng kiến thức" en="Tiered waterfall assessment" /></span>
+          </div>
+          <strong><BilingualText vi="LÀM BÀI KIỂM TRA" en="TAKE THE TEST" /> <ChevronRight size={16} /></strong>
+        </motion.button>
+      </div>
+    </OnboardingLayout>
+  );
 }
 
 function ExerciseRunner({ mode }) {
-  const questions = mode === 'lesson' ? firstLessonQuestions : placementQuestions;
   const { data, update } = useOnboarding();
   const navigate = useNavigate();
+  const activeLevel = data.selectedLevel || data.currentLevel || 'A1';
+
+  const questions = useMemo(
+    () => (mode === 'lesson' ? firstLessonQuestions : getPlacementQuestions(activeLevel)),
+    [mode, activeLevel]
+  );
+
   const storedIndex = mode === 'lesson' ? data.lessonQuestionIndex : data.placementQuestionIndex;
   const [index, setIndex] = useState(Math.min(storedIndex || 0, questions.length - 1));
   const [answers, setAnswers] = useState(mode === 'lesson' ? (data.lessonAnswers || []) : (data.placementAnswers || []));
@@ -323,7 +343,7 @@ function ExerciseRunner({ mode }) {
   const [checked, setChecked] = useState(false);
   const [sound, setSound] = useState(true);
 
-  const question = questions[index];
+  const question = questions[index] || questions[0];
   const response = question.type === 'arrange' ? tokens.join(' ') : selected;
   const correct = response === question.answer;
 
@@ -343,30 +363,63 @@ function ExerciseRunner({ mode }) {
     setAnswers(nextAnswers);
 
     if (index === questions.length - 1) {
-      const score = nextAnswers.filter((item) => item?.correct).length;
-      const accuracy = Math.round((score / questions.length) * 100);
-      const completion = mode === 'lesson'
-        ? { firstLessonCompleted: true, firstLessonResult: { correct: score, total: questions.length, accuracy, targetLevel: 'A0', xp: 20 }, lessonAnswers: nextAnswers }
-        : (() => {
-          const band = [...placementBands].reverse().find((item) => score >= item.min);
-          return {
-            placementTestCompleted: true,
-            placementResult: {
-              correct: score,
-              total: questions.length,
-              accuracy,
-              level: band.label,
-              levelVi: band.labelVi,
-              targetLevel: band.targetLevel,
-              recommendation: band.recommendation,
-              completedAt: new Date().toISOString(),
-              xp: 30,
-            },
-            placementAnswers: nextAnswers,
-          };
-        })();
+      if (mode === 'lesson') {
+        const score = nextAnswers.filter((item) => item?.correct).length;
+        const accuracy = Math.round((score / questions.length) * 100);
+        const completion = {
+          firstLessonCompleted: true,
+          firstLessonResult: {
+            correct: score,
+            total: questions.length,
+            accuracy,
+            targetLevel: 'A0',
+            xp: 20,
+          },
+          lessonAnswers: nextAnswers,
+        };
+        const recommendation = buildOnboardingRecommendation({
+          ...data,
+          ...completion,
+          guestExperienceCompleted: true,
+        });
+        update({ ...completion, recommendation, guestExperienceCompleted: true });
+        navigate('/onboarding/completed', { state: { mode } });
+        return;
+      }
 
-      const recommendation = buildOnboardingRecommendation({ ...data, ...completion, guestExperienceCompleted: true });
+      // Placement test evaluation using the Tiered Waterfall algorithm
+      const evaluation = evaluatePlacementTest(activeLevel, nextAnswers, questions);
+      const completion = {
+        selectedLevel: evaluation.selectedLevel,
+        assessedLevel: evaluation.assessedLevel,
+        placementScore: evaluation.placementScore,
+        tierScores: evaluation.tierScores,
+        placementTestCompleted: true,
+        placementResult: {
+          selectedLevel: evaluation.selectedLevel,
+          assessedLevel: evaluation.assessedLevel,
+          placementScore: evaluation.placementScore,
+          correct: evaluation.placementScore,
+          total: evaluation.totalQuestions,
+          accuracy: evaluation.accuracy,
+          tierScores: evaluation.tierScores,
+          targetLevel: evaluation.assessedLevel,
+          level: evaluation.assessedLevel,
+          explanationVi: evaluation.explanationVi,
+          explanationEn: evaluation.explanationEn,
+          completedAt: new Date().toISOString(),
+          xp: 30,
+        },
+        placementAnswers: nextAnswers,
+      };
+
+      const recommendation = buildOnboardingRecommendation({
+        ...data,
+        ...completion,
+        targetLevel: evaluation.assessedLevel,
+        guestExperienceCompleted: true,
+      });
+
       update({ ...completion, recommendation, guestExperienceCompleted: true });
       navigate('/onboarding/completed', { state: { mode } });
       return;
@@ -394,8 +447,33 @@ function ExerciseRunner({ mode }) {
       <LessonHeader current={index + 1} total={questions.length} onExit={exit} sound={sound} onSound={() => setSound(!sound)} />
       <main className="ob-exercise">
         <div className="ob-exercise-title">
-          <span>{mode === 'lesson' ? <BilingualText vi="BÀI 1 · LỜI CHÀO CĂN BẢN" en="LESSON 1 · BASIC GREETINGS" /> : <BilingualText vi="KIỂM TRA NHANH TRÌNH ĐỘ" en="QUICK PLACEMENT CHECK" />}</span>
-          <strong>{mode === 'lesson' ? <BilingualText vi="Học qua thực hành" en="Learn by doing" /> : <BilingualText vi={`Câu hỏi ${index + 1} / ${questions.length}`} en={`Question ${index + 1} of ${questions.length}`} />}</strong>
+          <span>
+            {mode === 'lesson' ? (
+              <BilingualText vi="BÀI 1 · LỜI CHÀO CĂN BẢN" en="LESSON 1 · BASIC GREETINGS" />
+            ) : (
+              <BilingualText
+                vi={`KIỂM TRA TRÌNH ĐỘ · MỤC TIÊU ${activeLevel}`}
+                en={`PLACEMENT TEST · TARGET ${activeLevel}`}
+              />
+            )}
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {mode === 'placement' && question?.level && (
+              <span className={`ob-tier-pill level-${question.level.toLowerCase()}`}>
+                <BilingualText vi={`Tầng ${question.level}`} en={`Tier ${question.level}`} />
+              </span>
+            )}
+            <strong>
+              {mode === 'lesson' ? (
+                <BilingualText vi="Học qua thực hành" en="Learn by doing" />
+              ) : (
+                <BilingualText
+                  vi={`Câu hỏi ${index + 1} / ${questions.length}`}
+                  en={`Question ${index + 1} of ${questions.length}`}
+                />
+              )}
+            </strong>
+          </div>
         </div>
         <div className="ob-coach">
           <Mascot compact message={question.type === 'listen' ? <BilingualText vi="Chạm vào loa và lắng nghe kỹ nhé!" en="Tap the speaker and listen closely!" /> : index === 0 ? <BilingualText vi="Bình tĩnh làm nhé — mình ở ngay đây!" en="Take your time — I’m right here!" /> : <BilingualText vi="Làm tốt lắm. Tiếp tục nào!" en="Nice momentum. Keep going!" />} />
@@ -555,6 +633,9 @@ export function CompletionPage() {
     }
   };
 
+  const selectedLvl = result.selectedLevel || data.selectedLevel || data.currentLevel || 'A1';
+  const assessedLvl = result.assessedLevel || recommendation.targetLevel;
+
   return (
     <div className="ob-complete">
       <Confetti />
@@ -571,8 +652,122 @@ export function CompletionPage() {
           <BilingualText vi="Lộ trình cá nhân hóa của bạn đã sẵn sàng" en="Your personalized learning path is ready" />
         </h1>
         <p>
-          <BilingualText vi="Đề xuất này kết hợp mục tiêu học, trình độ hiện tại và thời gian bạn có thể duy trì mỗi ngày." en="This recommendation combines your learning goals, current level, and the time you can sustain each day." />
+          <BilingualText vi="Đề xuất này kết hợp mục tiêu học, kết quả đánh giá phân tầng và thời gian bạn có thể duy trì mỗi ngày." en="This recommendation combines your goals, tiered placement results, and your daily rhythm." />
         </p>
+
+        {mode === 'placement' && (
+          <div className="ob-placement-assessment">
+            <div className="ob-placement-summary-cards">
+              <div className="ob-summary-card">
+                <span className="ob-card-label">
+                  <BilingualText vi="CẤP BẠN CHỌN" en="SELECTED LEVEL" />
+                </span>
+                <strong className="ob-card-val target">
+                  {selectedLvl}
+                </strong>
+                <small className="ob-card-sub">
+                  <BilingualText vi="Mục tiêu ban đầu" en="Initial goal" />
+                </small>
+              </div>
+
+              <div className="ob-summary-card primary">
+                <span className="ob-card-label">
+                  <BilingualText vi="HỆ THỐNG ĐÁNH GIÁ" en="ASSESSED LEVEL" />
+                </span>
+                <strong className="ob-card-val assessed">
+                  {assessedLvl}
+                </strong>
+                <small className="ob-card-sub">
+                  <BilingualText vi="Điểm xuất phát tối ưu" en="Optimal starting point" />
+                </small>
+              </div>
+
+              <div className="ob-summary-card">
+                <span className="ob-card-label">
+                  <BilingualText vi="TỔNG ĐIỂM TEST" en="TOTAL SCORE" />
+                </span>
+                <strong className="ob-card-val score">
+                  {result.placementScore ?? result.correct}/{result.total}
+                </strong>
+                <small className="ob-card-sub">
+                  {result.accuracy}% <BilingualText vi="chính xác" en="accuracy" />
+                </small>
+              </div>
+            </div>
+
+            {result.tierScores && Object.keys(result.tierScores).length > 0 && (
+              <div className="ob-tier-breakdown">
+                <div className="ob-tier-heading">
+                  <ShieldCheck size={18} />
+                  <span>
+                    <BilingualText
+                      vi="Đánh giá chi tiết theo từng tầng kiến thức"
+                      en="Detailed Tier-by-Tier Evaluation"
+                    />
+                  </span>
+                </div>
+                <div className="ob-tier-grid">
+                  {Object.values(result.tierScores).map((tierItem) => (
+                    <div
+                      key={tierItem.tier}
+                      className={`ob-tier-card ${tierItem.passed ? 'passed' : 'failed'}`}
+                    >
+                      <div className="ob-tier-card-header">
+                        <span className="ob-tier-name">Tầng {tierItem.tier}</span>
+                        <span className={`ob-tier-status ${tierItem.passed ? 'pass' : 'fail'}`}>
+                          {tierItem.passed ? (
+                            <>
+                              <Check size={14} strokeWidth={3} />
+                              <BilingualText vi="Đạt chuẩn" en="Passed" />
+                            </>
+                          ) : (
+                            <>
+                              <X size={14} strokeWidth={3} />
+                              <BilingualText vi="Chưa đạt" en="Not yet" />
+                            </>
+                          )}
+                        </span>
+                      </div>
+                      <div className="ob-tier-score-row">
+                        <strong>
+                          {tierItem.correct}/{tierItem.total}
+                        </strong>
+                        <span>({tierItem.percent}%)</span>
+                      </div>
+                      <div className="ob-tier-bar">
+                        <div
+                          className="ob-tier-fill"
+                          style={{
+                            width: `${Math.min(100, tierItem.percent)}%`,
+                            backgroundColor: tierItem.passed ? '#16A34A' : '#F59E0B',
+                          }}
+                        />
+                      </div>
+                      <small className="ob-tier-req">
+                        <BilingualText
+                          vi={`Yêu cầu đạt: ≥ ${tierItem.threshold}%`}
+                          en={`Passing threshold: ≥ ${tierItem.threshold}%`}
+                        />
+                      </small>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {(result.explanationVi || result.explanationEn) && (
+              <div className="ob-assessment-explanation">
+                <p>
+                  <BilingualText
+                    vi={result.explanationVi}
+                    en={result.explanationEn || result.explanationVi}
+                  />
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="ob-stats">
           <article>
             <strong>{recommendation.targetLevel}</strong>
@@ -614,14 +809,6 @@ export function CompletionPage() {
             <small><BilingualText vi={`Dự kiến ${recommendation.estimatedWeeks} tuần để hoàn thành chặng đầu tiên.`} en={`About ${recommendation.estimatedWeeks} weeks for your first milestone.`} /></small>
           </section>
         </div>
-        {mode === 'placement' && (
-          <p className="ob-assessment-note">
-            <BilingualText
-              vi={`Kết quả kiểm tra: ${result.correct}/${result.total} câu đúng (${result.accuracy}%). Đây là gợi ý đầu vào, không phải chứng chỉ CEFR chính thức.`}
-              en={`Placement result: ${result.correct}/${result.total} correct (${result.accuracy}%). This is a starting recommendation, not an official CEFR certificate.`}
-            />
-          </p>
-        )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', alignItems: 'center' }}>
           <PrimaryButton disabled={saving} onClick={handleShowRecommendations}>
             {saving
