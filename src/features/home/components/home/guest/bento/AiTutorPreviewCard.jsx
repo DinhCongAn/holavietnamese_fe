@@ -79,23 +79,26 @@ export function AiTutorPreviewCard() {
       <div className="space-y-1.5">
         <span className="text-[10px] uppercase font-bold text-[#F97316]"><BilingualText vi="Chọn câu trả lời thử:" en="Select sample reply:" /></span>
         <div className="flex flex-wrap gap-1.5">
-          {AI_PROMPTS.map((p, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => {
-                setAiMessageIndex(idx);
-                audioFeedback.playTap();
-              }}
-              className={`px-2.5 py-1 rounded-xl text-[11px] font-semibold transition-all ${
-                aiMessageIndex === idx
-                  ? 'bg-[#F97316] text-white font-bold shadow-xs'
-                  : 'bg-[#FFF7E8] text-[#64748B] hover:bg-[#FFF0DC] border border-[#E8E5DF]'
-              }`}
-            >
-              {p.user}
-            </button>
-          ))}
+          {AI_PROMPTS.map((p, idx) => {
+            const isSelected = aiMessageIndex === idx;
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => {
+                  setAiMessageIndex(idx);
+                  audioFeedback.playTap();
+                }}
+                className={`!min-h-0 !min-w-0 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all cursor-pointer border ${
+                  isSelected
+                    ? 'bg-[#FFF7E8] border-2 border-[#EA580C] text-[#253044] font-bold shadow-xs scale-[1.02]'
+                    : 'bg-white text-[#64748B] hover:bg-[#FFF7E8]/70 hover:text-[#253044] border-[#E8E5DF] hover:border-[#EA580C]'
+                } active:bg-[#FFF0DC] active:border-[#EA580C]`}
+              >
+                {p.user}
+              </button>
+            );
+          })}
         </div>
       </div>
 

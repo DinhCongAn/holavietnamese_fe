@@ -11,11 +11,23 @@ const steps = [
   '/onboarding/daily-goal', '/onboarding/learning-path',
 ];
 
-export function Brand({ light = false }) {
+export function Brand({ light = false, compact = false, className = '' }) {
   return (
-    <Link to="/welcome" className={`ob-brand ${light ? 'is-light' : ''}`} aria-label="HolaVietnamese home">
-      <span className="ob-brand-mark">H</span>
-      <span>Hola<span>Vietnamese</span></span>
+    <Link
+      to="/"
+      className={`ob-brand site-brand ${light ? 'is-light' : ''} ${compact ? 'is-compact' : ''} ${className}`.trim()}
+      aria-label="HolaVietnamese"
+    >
+      <img
+        src="/design/hola-vietnamese-logo.png"
+        alt="Hola Vietnamese"
+        className="ob-brand-logo site-brand__logo"
+      />
+      <img
+        src="/design/hola-vietnamese-icon.png"
+        alt="Hola Vietnamese"
+        className="ob-brand-icon site-brand__icon"
+      />
     </Link>
   );
 }
@@ -183,9 +195,12 @@ export function PrimaryButton({
 export function LessonHeader({ current, total, onExit, sound, onSound }) {
   return (
     <header className="ob-lesson-header">
-      <button type="button" onClick={onExit} aria-label={bilingualLabel("Thoát bài học", "Exit lesson")}>
-        <X size={20} />
-      </button>
+      <div className="flex items-center gap-2.5 shrink-0">
+        <button type="button" onClick={onExit} aria-label={bilingualLabel("Thoát bài học", "Exit lesson")}>
+          <X size={20} />
+        </button>
+        <Brand compact className="ob-lesson-brand" />
+      </div>
       <div className="ob-lesson-progress">
         <motion.span
           animate={{ width: `${(current / total) * 100}%` }}

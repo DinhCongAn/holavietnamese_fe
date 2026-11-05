@@ -74,7 +74,7 @@ export function DiacriticKeyboardCard() {
               if (typedText) speakVietnamese(typedText);
             }}
             disabled={!typedText}
-            className="!min-h-0 !min-w-0 !p-0 w-8 h-8 rounded-lg bg-[#FFF0DC] hover:bg-[#EA580C] text-[#EA580C] hover:text-white flex items-center justify-center transition-colors shrink-0 disabled:opacity-40 cursor-pointer"
+            className="!min-h-0 !min-w-0 !p-0 w-8 h-8 rounded-lg bg-[#FFF0DC] hover:bg-[#FDE1B3] active:bg-[#FCD8A2] text-[#EA580C] border border-[#EA580C]/30 flex items-center justify-center transition-colors shrink-0 disabled:opacity-40 cursor-pointer"
             title={bilingualLabel("Phát âm từ vừa gõ", "Pronounce typed word")}
             aria-label={bilingualLabel("Phát âm từ vừa gõ", "Pronounce typed word")}
           >
@@ -94,7 +94,7 @@ export function DiacriticKeyboardCard() {
               speakVietnamese(char);
               audioFeedback.playTap();
             }}
-            className="py-2 rounded-xl bg-white border border-[#E8E5DF] hover:border-[#EA580C] font-black text-sm text-[#253044] hover:text-[#EA580C] shadow-[0_2px_0_#E8E5DF] hover:shadow-[0_2px_0_#EA580C] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+            className="py-2 rounded-xl bg-white hover:bg-[#FFF7E8] active:bg-[#FFF0DC] border border-[#E8E5DF] hover:border-[#EA580C] active:border-[#EA580C] font-black text-sm text-[#253044] hover:text-[#EA580C] shadow-[0_2px_0_#E8E5DF] hover:shadow-[0_2px_0_#EA580C] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
           >
             {char}
           </button>

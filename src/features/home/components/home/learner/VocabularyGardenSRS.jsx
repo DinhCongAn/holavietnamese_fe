@@ -60,7 +60,7 @@ export function VocabularyGardenSRS({
                 <button
                   type="button"
                   onClick={() => speakVietnamese(item.vi)}
-                  className="!min-h-0 !min-w-0 !p-0 w-8 h-8 rounded-lg bg-white border border-[#E8E5DF] hover:bg-[#EA580C] text-[#EA580C] hover:text-white flex items-center justify-center transition-all shadow-2xs shrink-0 cursor-pointer group/audio audio-btn"
+                  className="!min-h-0 !min-w-0 !p-0 w-8 h-8 rounded-lg bg-white border border-[#E8E5DF] hover:bg-[#FFF7E8] active:bg-[#FFF0DC] text-[#EA580C] hover:border-[#EA580C] flex items-center justify-center transition-all shadow-2xs shrink-0 cursor-pointer group/audio audio-btn"
                   title={bilingualLabel(`Phát âm "${item.vi}"`, `Pronounce "${item.vi}"`)}
                   aria-label={bilingualLabel(`Phát âm ${item.vi}`, `Pronounce ${item.vi}`)}
                 >
@@ -76,7 +76,7 @@ export function VocabularyGardenSRS({
                   className={`text-[10px] font-bold px-2 py-0.5 rounded-md transition-colors cursor-pointer ${
                     isWatered
                       ? 'bg-emerald-200 text-emerald-800'
-                      : 'bg-[#FFF0DC] text-[#EA580C] hover:bg-[#EA580C] hover:text-white'
+                      : 'bg-[#FFF0DC] text-[#EA580C] hover:bg-[#FDE1B3] active:bg-[#FCD8A2] border border-[#EA580C]/30'
                   }`}
                 >
                   {isWatered ? <BilingualText vi="✓ Đã thuộc" en="✓ Mastered" /> : '+5 XP'}

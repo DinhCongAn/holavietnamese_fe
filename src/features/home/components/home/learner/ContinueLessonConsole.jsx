@@ -48,7 +48,7 @@ export function ContinueLessonConsole({ currentLesson }) {
         <button
           type="button"
           onClick={() => speakVietnamese('Cho tôi một ly cà phê sữa đá ít đường nhé')}
-          className="!min-h-0 !min-w-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FFF0DC] text-[#EA580C] hover:bg-[#EA580C] hover:text-white transition-all text-xs font-bold shrink-0 cursor-pointer"
+          className="!min-h-0 !min-w-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FFF0DC] text-[#EA580C] hover:bg-[#FDE1B3] active:bg-[#FCD8A2] border border-[#EA580C]/30 transition-all text-xs font-bold shrink-0 cursor-pointer"
         >
           <Volume2 className="w-4 h-4 shrink-0" strokeWidth={2.2} />
           <span><BilingualText vi="Nghe câu mẫu" en="Listen to audio" /></span>

@@ -51,8 +51,8 @@ export function SituationalDrillsCard() {
               className={`p-3 rounded-2xl border text-left transition-all space-y-1 cursor-pointer ${
                 isSelected
                   ? 'bg-[#FFF7E8] border-2 border-[#EA580C] shadow-xs'
-                  : 'bg-[#FFFCF7] border-[#E8E5DF]/70 hover:border-[#EA580C]'
-              }`}
+                  : 'bg-[#FFFCF7] border-[#E8E5DF]/70 hover:border-[#EA580C] hover:bg-[#FFF7E8]/60'
+              } active:bg-[#FFF0DC] active:border-[#EA580C]`}
             >
               
               <h4 className="text-xs font-bold text-[#253044] truncate">{item.title}</h4>
@@ -76,7 +76,7 @@ export function SituationalDrillsCard() {
           <button
             type="button"
             onClick={() => speakVietnamese(currentSituation.phraseVi)}
-            className="!min-h-0 !min-w-0 !p-0 w-9 h-9 rounded-xl bg-[#EA580C] text-white flex items-center justify-center shadow-xs hover:bg-[#C2410C] transition-colors shrink-0 ml-2 cursor-pointer"
+            className="!min-h-0 !min-w-0 !p-0 w-9 h-9 rounded-xl bg-[#FFF0DC] hover:bg-[#FDE1B3] active:bg-[#FCD8A2] text-[#EA580C] border border-[#EA580C]/30 flex items-center justify-center shadow-xs transition-colors shrink-0 ml-2 cursor-pointer"
             title={bilingualLabel("Nghe câu mẫu", "Listen to sample sentence")}
             aria-label={bilingualLabel("Nghe câu mẫu", "Listen to sample sentence")}
           >

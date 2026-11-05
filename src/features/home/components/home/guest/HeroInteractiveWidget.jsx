@@ -94,7 +94,7 @@ export function HeroInteractiveWidget() {
           <button
             type="button"
             onClick={() => speakVietnamese(exercise.phrase, 0.9)}
-            className="!min-h-0 !min-w-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#FFF0DC] hover:bg-[#EA580C] text-[#EA580C] hover:text-white transition-all text-[11px] font-bold shadow-2xs cursor-pointer"
+            className="!min-h-0 !min-w-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#FFF0DC] hover:bg-[#FDE1B3] active:bg-[#FCD8A2] text-[#EA580C] border border-[#EA580C]/30 transition-all text-[11px] font-bold shadow-2xs cursor-pointer"
             title={t('widget.normalAudio')}
             aria-label={t('widget.normalAudio')}
           >

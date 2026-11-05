@@ -109,7 +109,7 @@ export function LearnerTopbar({ user, stats, onLogout }) {
     <header className="learner-topbar">
       <div className="learner-topbar__welcome">
         <span>HOLAVIETNAMESE</span>
-        <strong>{title} <em className="learner-topbar__level">{isVi ? 'Sơ cấp · A1' : 'Beginner · A1'}</em></strong>
+        <strong>{title}</strong>
       </div>
       <div className="learner-topbar__stats" aria-label="Learning statistics">
         <Link to="/progress" title={isVi ? 'Trình độ hiện tại' : 'Current learning level'}>

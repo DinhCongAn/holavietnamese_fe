@@ -57,7 +57,7 @@ export function TonePitchCard() {
                 isSelected
                   ? 'bg-[#FFF7E8] border-2 border-[#EA580C] shadow-md scale-105'
                   : 'bg-white hover:bg-[#FFF7E8]/60 border-[#E8E5DF]/70 hover:border-[#EA580C]'
-              }`}
+              } active:bg-[#FFF0DC] active:border-[#EA580C]`}
             >
               <span className="text-[10px] font-bold text-[#64748B] uppercase">{t.name}</span>
               <span className="text-lg font-black text-[#253044]">{t.word}</span>

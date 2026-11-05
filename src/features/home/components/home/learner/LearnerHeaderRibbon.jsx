@@ -26,7 +26,7 @@ export function LearnerHeaderRibbon({
           {user?.fullName || user?.username || <BilingualText vi="Học viên" en="Learner" />}!
         </h1>
         <p className="text-xs sm:text-sm text-[#64748B]">
-          <BilingualText vi="Cấp độ hiện tại:" en="Current Level:" /> <strong className="text-[#253044]"><BilingualText vi="Sơ cấp A1 • Trạm 3" en="Elementary A1 • Stop 3" /></strong> — <BilingualText vi="Duy trì ngọn lửa học tập mỗi ngày." en="Keep your learning streak burning every day." />
+          <BilingualText vi="Duy trì ngọn lửa học tập mỗi ngày." en="Keep your learning streak burning every day." />
         </p>
       </div>
 

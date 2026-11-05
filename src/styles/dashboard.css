@@ -376,7 +376,9 @@
 .learner-topbar__stats b{font-size:11px}
 .learner-topbar__actions{display:flex;align-items:center;gap:7px}
 .learner-language{width:38px;height:38px;min-height:38px;padding:0;border:1px solid #E8E5DF;border-radius:11px;background:#fffcf7;color:#EA580C;font-size:9px;font-weight:900}
-.learner-topbar .notification-menu__trigger{width:38px!important;height:38px!important;min-height:38px!important;padding:0!important;border:1px solid #E8E5DF!important;border-radius:11px!important;background:#fffcf7!important;color:#EA580C!important}
+.learner-topbar .notification-menu__trigger{width:38px!important;height:38px!important;min-height:38px!important;padding:0!important;border:1px solid #E8E5DF!important;border-radius:11px!important;background:#ffffff!important;color:#253044!important;outline:none!important;box-shadow:none!important}
+.learner-topbar .notification-menu__trigger:hover{background:#f8fafc!important;border-color:#cbd5e1!important}
+.learner-topbar .notification-menu__trigger:focus,.learner-topbar .notification-menu__trigger:focus-visible,.learner-topbar .notification-menu__trigger:active{outline:none!important;box-shadow:none!important;border-color:#E8E5DF!important}
 
 /* Main content and footer reflow */
 .learner-app__main{flex:1;width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;padding:16px clamp(20px,2.2vw,36px) 60px!important;box-sizing:border-box!important}
@@ -892,15 +894,15 @@
   align-items: center;
   gap: 10px;
   border-radius: 14px;
-  color: #fff;
-  background: #FFFFFF;
+  color: #FFFFFF !important;
+  background: linear-gradient(135deg, #FF8008, #FF6A00) !important;
   box-shadow: 0 13px 26px rgba(255, 106, 0, .28);
   font-size: .9rem;
   font-weight: 800;
   text-decoration: none;
   transition: transform .2s ease, box-shadow .2s ease;
 }
-.guest-cultural-copy>a:hover { transform: translateY(-2px); box-shadow: 0 17px 32px rgba(126, 28, 22, .28); }
+.guest-cultural-copy>a:hover { transform: translateY(-2px); box-shadow: 0 17px 32px rgba(126, 28, 22, .28); color: #FFFFFF !important; }
 .guest-cultural-copy>a svg { transition: transform .2s ease; }
 .guest-cultural-copy>a:hover svg { transform: translateX(3px); }
 .guest-cultural-photo {

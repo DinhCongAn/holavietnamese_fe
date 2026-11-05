@@ -586,7 +586,7 @@ function CourseOverviewView({ course, enrollment, lastAccessedLessonId }) {
                                 <Lock size={15} />
                               </button>
                             ) : (
-                              <span className="w-7 h-7 rounded-lg bg-[#FFF0DC] text-[#EA580C] flex items-center justify-center text-xs font-bold group-hover:bg-[#EA580C] group-hover:text-white transition-all">
+                              <span className="w-7 h-7 rounded-lg bg-[#FFF0DC] text-[#EA580C] flex items-center justify-center text-xs font-bold group-hover:bg-[#FDE1B3] group-hover:text-[#EA580C] border border-[#EA580C]/20 transition-all">
                                 <Play size={12} fill="currentColor" />
                               </span>
                             )}

@@ -49,7 +49,7 @@ export function ExpatTestimonials() {
               <button
                 type="button"
                 onClick={() => speakVietnamese(testimonial.favPhrase.replace(/["“”]/g, ''))}
-                className="!min-h-0 !min-w-0 text-[11px] font-bold text-[#EA580C] bg-[#FFF0DC] hover:bg-[#EA580C] hover:text-white px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 cursor-pointer"
+                className="!min-h-0 !min-w-0 text-[11px] font-bold text-[#EA580C] bg-[#FFF0DC] hover:bg-[#FDE1B3] active:bg-[#FCD8A2] text-[#EA580C] border border-[#EA580C]/30 px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 cursor-pointer"
                 title={t('stories.listen', { phrase: testimonial.favPhrase })}
                 aria-label={t('stories.listen', { phrase: testimonial.favPhrase })}
               >

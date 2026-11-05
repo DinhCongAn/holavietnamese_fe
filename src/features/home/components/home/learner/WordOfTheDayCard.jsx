@@ -17,7 +17,7 @@ export function WordOfTheDayCard({ wordData = WORD_OF_THE_DAY }) {
         <button
           type="button"
           onClick={() => speakVietnamese(wordData.speechText || wordData.word)}
-          className="!min-h-0 !min-w-0 !p-0 w-8 h-8 rounded-full bg-white border border-[#E8E5DF] text-[#EA580C] flex items-center justify-center hover:bg-[#EA580C] hover:text-white transition-all shadow-2xs shrink-0 cursor-pointer group/wod audio-btn"
+          className="!min-h-0 !min-w-0 !p-0 w-8 h-8 rounded-full bg-white border border-[#E8E5DF] text-[#EA580C] flex items-center justify-center hover:bg-[#FFF7E8] active:bg-[#FFF0DC] hover:border-[#EA580C] transition-all shadow-2xs shrink-0 cursor-pointer group/wod audio-btn"
           title={bilingualLabel(`Nghe: ${wordData.speechText || wordData.word}`, `Listen to: ${wordData.speechText || wordData.word}`)}
           aria-label={bilingualLabel(`Nghe phát âm ${wordData.word}`, `Listen to pronunciation of ${wordData.word}`)}
         >

@@ -51,6 +51,45 @@
   white-space: nowrap;
 }
 
+.ob-brand-logo {
+  display: block;
+  height: 38px;
+  width: auto;
+  max-width: 155px;
+  object-fit: contain;
+}
+
+.ob-brand-icon {
+  display: none;
+  height: 36px;
+  width: 36px;
+  object-fit: contain;
+}
+
+.ob-brand.is-compact .ob-brand-logo {
+  display: none !important;
+}
+
+.ob-brand.is-compact .ob-brand-icon {
+  display: block !important;
+}
+
+.ob-lesson-brand {
+  display: inline-flex;
+  align-items: center;
+}
+
+.ob-lesson-brand .ob-brand-logo {
+  height: 28px;
+  max-width: 110px;
+}
+
+.ob-lesson-brand .ob-brand-icon {
+  height: 28px;
+  width: 28px;
+}
+
+
 .ob-brand > span:last-child > span {
   color: var(--ob-red);
 }

@@ -443,3 +443,113 @@ body .vocabulary-ui .vocabulary-review-completion strong { color:var(--color-for
 @media(prefers-reduced-motion:reduce) { .admin-sidebar { transition:none; } }
 
 .tutor-current-mode-banner .current-mode-icon,.tutor-current-mode-banner .current-mode-badge { background:var(--color-sage) !important; color:var(--color-forest) !important; }
+\n
+/* ==========================================================================
+   Clean Notifications System - Pure White Minimalist Palette
+   Explicit Override: Prevent heritage.css button selector from turning notifications orange
+   ========================================================================== */
+.notifications-page,
+.notifications-page button,
+.notifications-page .button,
+.notifications-page article,
+.notifications-page .notification-card,
+.notifications-page .notification-item,
+.notification-dropdown,
+.notification-dropdown button,
+.notification-dropdown .button,
+.notification-dropdown .notification-item,
+.notification-menu,
+.notification-menu__trigger,
+.notification-item {
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  color: #1E293B !important;
+  min-height: unset !important;
+  box-shadow: none !important;
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+.notifications-page button:hover,
+.notifications-page .button:hover,
+.notifications-page article:hover,
+.notifications-page .notification-card:hover,
+.notifications-page .notification-item:hover,
+.notification-dropdown button:hover,
+.notification-dropdown .button:hover,
+.notification-dropdown .notification-item:hover,
+.notification-menu__trigger:hover,
+.notification-item:hover {
+  background-color: #F8FAFC !important;
+  background: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+  color: #1E293B !important;
+}
+
+.notifications-page button:active,
+.notifications-page article:active,
+.notifications-page .notification-card:active,
+.notification-dropdown button:active,
+.notification-dropdown .notification-item:active,
+.notification-item:active {
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+}
+
+/* Ensure unread accent dot is orange, but NEVER background of card or item */
+.notification-unread-dot {
+  background-color: #F97316 !important;
+  background: #F97316 !important;
+}
+
+/* Icon container */
+.notification-icon-box {
+  background-color: #F8FAFC !important;
+  background: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+  color: #64748B !important;
+}
+
+/* Custom Thin Elegant Scrollbar for Notification Dropdown */
+.notification-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.notification-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.notification-scroll::-webkit-scrollbar-thumb {
+  background: #E2E8F0;
+  border-radius: 9999px;
+}
+.notification-scroll::-webkit-scrollbar-thumb:hover {
+  background: #CBD5E1;
+}
+.notification-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #E2E8F0 transparent;
+}
+
+/* Ensure bilingual-text does not cause inline-grid line-height collisions */
+.notification-dropdown .bilingual-text,
+.notifications-page .bilingual-text {
+  display: inline !important;
+  text-align: inherit !important;
+  line-height: inherit !important;
+  max-width: 100% !important;
+}
+.notification-dropdown button:has(.bilingual-text),
+.notifications-page button:has(.bilingual-text) {
+  min-height: unset !important;
+  text-align: left !important;
+}
+
+/* Ensure all buttons across the entire app show warm skin tone on click/active, never solid orange */
+button:not(:disabled):active,
+.button:not([aria-disabled="true"]):active {
+  background: #FFF7E8 !important;
+  background-color: #FFF7E8 !important;
+  color: #EA580C !important;
+  border-color: #EA580C !important;
+}
