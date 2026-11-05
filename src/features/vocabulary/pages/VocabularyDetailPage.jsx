@@ -1,4 +1,5 @@
 import { BilingualText } from '@/shared/components/common/BilingualText';
+import { useTranslation } from 'react-i18next';
 import { useCallback, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, BookOpen, MapPin } from 'lucide-react';
@@ -37,6 +38,8 @@ export function VocabularyDetailPage() {
 }
 
 function DictionaryEntry({ entry, links, regional, onNotebookChanged }) {
+  const { i18n } = useTranslation();
+  const language = (i18n.resolvedLanguage || i18n.language || 'en').startsWith('vi') ? 'vi' : 'en';
   const notebook = useVocabulary({ search: '', courseId: '', lessonId: '' });
   const [meaningIndex, setMeaningIndex] = useState(0);
   const meaning = entry.meanings?.[meaningIndex];
@@ -45,7 +48,7 @@ function DictionaryEntry({ entry, links, regional, onNotebookChanged }) {
   function changed() { notebook.reload(); onNotebookChanged(); }
   return <article className="dictionary-entry-detail">
     <header className="dictionary-word-header"><p className="eyebrow"><BookOpen size={15} /> <BilingualText vi="MỤC TỪ TIẾNG VIỆT" en="VIETNAMESE DICTIONARY ENTRY" /></p>
-      <div className="dictionary-word-title"><h1 lang="vi">{entry.word}</h1><span className="dictionary-pos">{partOfSpeechLabel(entry.partOfSpeech)}</span></div>
+      <div className="dictionary-word-title"><h1 lang="vi">{entry.word}</h1><span className="dictionary-pos">{partOfSpeechLabel(entry.partOfSpeech, language)}</span></div>
       {entry.pronunciation && <p className="dictionary-ipa">{entry.pronunciation}</p>}
       {entry.lexical?.pronunciations?.length > 0 && <details className="dictionary-pronunciations"><summary><BilingualText vi="Phát âm theo dữ liệu nguồn" en="Recorded pronunciations" /></summary><ul>{entry.lexical.pronunciations.map((item, index) => <li key={index}><span>{item.labels?.join(', ') || 'IPA'}</span><span>{item.ipa}</span></li>)}</ul></details>}
       <DictionaryAudio entry={entry} />
@@ -57,9 +60,10 @@ function DictionaryEntry({ entry, links, regional, onNotebookChanged }) {
     <section className="dictionary-senses"><div className="dictionary-section-heading"><h2><BilingualText vi="Nghĩa & cách dùng" en="Meanings & usage" /></h2><span><BilingualText vi={`${entry.meanings?.length || 0} nghĩa`} en={`${entry.meanings?.length || 0} meanings`} /></span></div>
       {(entry.meanings || []).map((item, index) => <section className="dictionary-sense" key={item.id ?? index}><span className="dictionary-sense-number">{String(index + 1).padStart(2, '0')}</span><div>
         {item.labels?.length > 0 && <p className="dictionary-sense-labels">{item.labels.map(label => <span key={label}>{label}</span>)}</p>}
-        <h3 lang={item.definitionVi ? 'vi' : 'en'}>{definitionOf(item)}</h3>
-        {item.definitionVi && item.translationEn && <p className="dictionary-english" lang="en"><span>EN</span> {item.translationEn}</p>}
-        {item.definitionEn && item.definitionEn !== item.translationEn && <p lang="en">{item.definitionEn}</p>}
+        <h3 lang={language}>{definitionOf(item, language)}</h3>
+        {language === 'vi' && item.definitionVi && item.translationEn && <p className="dictionary-english" lang="en"><span>EN</span> {item.translationEn}</p>}
+        {language === 'en' && item.definitionVi && <p className="dictionary-english" lang="vi"><span>VI</span> {item.definitionVi}</p>}
+        {language === 'vi' && item.definitionEn && item.definitionEn !== item.translationEn && <p lang="en">{item.definitionEn}</p>}
         {item.usageNote && <p className="dictionary-usage-note">{item.usageNote}</p>}
         {item.examples?.length > 0 && <div className="dictionary-examples"><h4><BilingualText vi="Trong câu" en="In a sentence" /></h4>{item.examples.map((example, exampleIndex) => <DictionaryExample key={example.id ?? exampleIndex} example={example} word={entry.word} />)}</div>}
       </div></section>)}

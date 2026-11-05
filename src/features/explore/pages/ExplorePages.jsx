@@ -29,9 +29,9 @@ export function ExploreVietnamPage() {
   const location = useLocation();
   const detailRoute = location.pathname === ROUTES.EXPLORE ? ROUTES.DESTINATION_DETAIL : ROUTES.LEARNER_DESTINATION_DETAIL;
   const resource = useAsyncResource(useCallback(async signal => {
-    if (!isAuthenticated) throw Object.assign(new Error('Đăng nhập để khám phá điểm đến.'), { status: 401 });
+    if (!isAuthenticated) throw Object.assign(new Error(isVi ? 'Đăng nhập để khám phá điểm đến.' : 'Sign in to explore destinations.'), { status: 401 });
     return destinationService.list(query, { signal });
-  }, [query, viewerId, isAuthenticated]));
+  }, [query, viewerId, isAuthenticated, isVi]));
 
   const handleRegionClick = (val) => {
     setQuery(current => ({ ...current, region: val }));

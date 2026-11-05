@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import { dictionaryMeaning, definitionOf, dictionaryQuery, highlightedParts } from '../src/features/vocabulary/models/Dictionary.js';
+import { dictionaryMeaning, definitionOf, dictionaryQuery, highlightedParts, partOfSpeechLabel } from '../src/features/vocabulary/models/Dictionary.js';
 import { vocabularyDraft, vocabularyPayload } from '../src/features/vocabulary/models/AdminVocabulary.js';
 
 test('Dictionary search URL keeps only bilingual keyword and pagination', () => {
@@ -16,6 +16,10 @@ test('Vietnamese-only meanings fit Notebook and highlights remain plain text wit
   assert.equal(dictionaryMeaning({ translationEn: 'table', definitionVi: 'Đồ vật.' }), 'table');
   assert.equal(dictionaryMeaning({ definitionVi: 'x'.repeat(1100) }).length, 1000);
   assert.equal(definitionOf({ translationEn: 'table', definitionVi: 'Đồ vật.' }), 'Đồ vật.');
+  assert.equal(definitionOf({ translationEn: 'table', definitionVi: 'Đồ vật.' }, 'en'), 'table');
+  assert.equal(definitionOf({ definitionEn: 'A piece of furniture.', translationEn: 'table', definitionVi: 'Đồ vật.' }, 'en-US'), 'A piece of furniture.');
+  assert.equal(partOfSpeechLabel('noun', 'vi'), 'Danh từ');
+  assert.equal(partOfSpeechLabel('noun', 'en'), 'Noun');
   const parts=highlightedParts('Bàn và cái bàn. <script>alert(1)</script>', 'bàn');
   assert.deepEqual(parts.filter(part => part.match).map(part => part.text), ['Bàn', 'bàn']);
   assert.equal(parts.map(part => part.text).join(''), 'Bàn và cái bàn. <script>alert(1)</script>');

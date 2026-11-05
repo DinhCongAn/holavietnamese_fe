@@ -1,6 +1,26 @@
 export const dictionaryMeaning = meaning => (meaning?.translationEn || meaning?.definitionVi || meaning?.definitionEn || '').trim().slice(0, 1000);
-export const definitionOf = meaning => meaning?.definitionVi || meaning?.definitionEn || meaning?.translationEn || '';
-export const partOfSpeechLabel = value => ({ noun: 'Danh từ', verb: 'Động từ', adj: 'Tính từ', adv: 'Phó từ', pron: 'Đại từ', num: 'Số từ', particle: 'Trợ từ', conj: 'Liên từ', prep: 'Giới từ', intj: 'Thán từ', phrase: 'Cụm từ', proverb: 'Tục ngữ', name: 'Tên riêng', abbrev: 'Viết tắt', det: 'Định từ', prefix: 'Tiền tố', suffix: 'Hậu tố', classifier: 'Loại từ' })[String(value).toLowerCase()] || value;
+
+export const definitionOf = (meaning, language = 'vi') => {
+  const isVi = String(language).toLowerCase().startsWith('vi');
+  return isVi
+    ? meaning?.definitionVi || meaning?.translationEn || meaning?.definitionEn || ''
+    : meaning?.definitionEn || meaning?.translationEn || meaning?.definitionVi || '';
+};
+
+const PARTS_OF_SPEECH = {
+  noun: { vi: 'Danh từ', en: 'Noun' }, verb: { vi: 'Động từ', en: 'Verb' }, adj: { vi: 'Tính từ', en: 'Adjective' },
+  adv: { vi: 'Phó từ', en: 'Adverb' }, pron: { vi: 'Đại từ', en: 'Pronoun' }, num: { vi: 'Số từ', en: 'Numeral' },
+  particle: { vi: 'Trợ từ', en: 'Particle' }, conj: { vi: 'Liên từ', en: 'Conjunction' }, prep: { vi: 'Giới từ', en: 'Preposition' },
+  intj: { vi: 'Thán từ', en: 'Interjection' }, phrase: { vi: 'Cụm từ', en: 'Phrase' }, proverb: { vi: 'Tục ngữ', en: 'Proverb' },
+  name: { vi: 'Tên riêng', en: 'Proper noun' }, abbrev: { vi: 'Viết tắt', en: 'Abbreviation' }, det: { vi: 'Định từ', en: 'Determiner' },
+  prefix: { vi: 'Tiền tố', en: 'Prefix' }, suffix: { vi: 'Hậu tố', en: 'Suffix' }, classifier: { vi: 'Loại từ', en: 'Classifier' },
+};
+
+export const partOfSpeechLabel = (value, language = 'vi') => {
+  const labels = PARTS_OF_SPEECH[String(value).toLowerCase()];
+  if (!labels) return value;
+  return String(language).toLowerCase().startsWith('vi') ? labels.vi : labels.en;
+};
 
 export function dictionaryQuery(params) {
   const rawPage = Number(params.get('page') || 0);

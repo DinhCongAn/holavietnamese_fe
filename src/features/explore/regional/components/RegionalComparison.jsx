@@ -11,9 +11,9 @@ export function RegionalVariantCard({ variant }) {
     <p className="eyebrow"><BilingualText vi={region?.vi || variant.region} en={region?.en || variant.region} /></p>
     <div className="regional-word"><h3 lang="vi">{variant.word}</h3>{variant.audioUrl && <SpeakButton text={variant.word} audioUrl={variant.audioUrl} />}</div>
     {variant.pronunciation && <p className="muted">{variant.pronunciation}</p>}
-    <p className="preserve-lines">{variant.meaning}</p>
-    {variant.exampleSentence && <blockquote lang="vi" className="preserve-lines">{variant.exampleSentence}</blockquote>}
-    {variant.usageNote && <p className="muted preserve-lines">{variant.usageNote}</p>}
+    <p className="preserve-lines"><BilingualText vi={variant.meaningVi || variant.meaning} en={variant.meaningEn || variant.meaning} /></p>
+    {(variant.exampleSentenceVi || variant.exampleSentence) && <blockquote lang="vi" className="preserve-lines"><BilingualText vi={variant.exampleSentenceVi || variant.exampleSentence} en={variant.exampleSentenceEn || variant.exampleSentence} /></blockquote>}
+    {(variant.usageNoteVi || variant.usageNote) && <p className="muted preserve-lines"><BilingualText vi={variant.usageNoteVi || variant.usageNote} en={variant.usageNoteEn || variant.usageNote} /></p>}
   </article>;
 }
 export function RegionalComparison({ comparison }) {

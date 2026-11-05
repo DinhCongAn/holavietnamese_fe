@@ -12,6 +12,8 @@ export function AdminScenarioBuilderPage() {
   const [formData, setFormData] = useState({
     id: '',
     title: '',
+    titleVi: '',
+    titleEn: '',
     topic: 'dining',
     topicName: 'Ẩm thực & Quán xá',
     level: 'A1',
@@ -21,6 +23,8 @@ export function AdminScenarioBuilderPage() {
     thumbnail: 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=800&q=80',
     coverImage: 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=1200&q=80',
     overview: '',
+    overviewVi: '',
+    overviewEn: '',
     contextStory: '',
     learnerRole: '',
     aiRole: {
@@ -56,6 +60,10 @@ export function AdminScenarioBuilderPage() {
       if (existing) {
         setFormData({
           ...existing,
+          titleVi: existing.titleVi || existing.title || '',
+          titleEn: existing.titleEn || '',
+          overviewVi: existing.overviewVi || existing.overview || '',
+          overviewEn: existing.overviewEn || '',
           objectives: existing.objectives?.map(o => typeof o === 'string' ? o : o.label) || [],
           sampleHints: existing.sampleHints || [],
           criteria: existing.criteria || ['Lưu loát', 'Vốn từ vựng', 'Ngữ pháp', 'Sắc thái văn hóa'],
@@ -114,13 +122,15 @@ export function AdminScenarioBuilderPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title.trim()) {
+    if (!(formData.titleVi || formData.title || '').trim()) {
       toast.error(bilingualLabel('Vui lòng nhập tên kịch bản.', 'Please enter a scenario name.'));
       return;
     }
 
     const payload = {
       ...formData,
+      title: formData.titleVi || formData.title,
+      overview: formData.overviewVi || formData.overview,
       id: formData.id || `sc-${Date.now()}`,
       objectives: formData.objectives.filter(Boolean).map((label, idx) => ({
         id: `task-${idx + 1}`,
@@ -162,7 +172,7 @@ export function AdminScenarioBuilderPage() {
           <nav style={{ fontSize: '13px', color: 'var(--color-forest)', marginBottom: '6px' }}>
             <Link to="/admin/ai-scenarios" style={{ color: 'var(--color-red-hover)', textDecoration: 'none' }}><BilingualText>{"← Danh sách kịch bản AI"}</BilingualText></Link>
           </nav>
-          <h1 style={{ margin: 0, fontSize: '30px' }}><BilingualText vi={<>Trình tạo kịch bản: {formData.title || 'Kịch bản mới'}</>} en={<>Scenario builder: {formData.title || 'New scenario'}</>} />
+          <h1 style={{ margin: 0, fontSize: '30px' }}><BilingualText vi={<>Trình tạo kịch bản: {formData.titleVi || formData.title || 'Kịch bản mới'}</>} en={<>Scenario builder: {formData.titleEn || formData.titleVi || formData.title || 'New scenario'}</>} />
           </h1>
         </div>
 
@@ -197,20 +207,36 @@ export function AdminScenarioBuilderPage() {
               <div className="admin-card">
                 <h3 style={{ margin: '0 0 14px', fontSize: '16px', color: 'var(--color-ink)' }}><BilingualText>{"1. Thông tin chung & Bối cảnh"}</BilingualText></h3>
 
-                <label><BilingualText>{"Tên kịch bản nhập vai:"}</BilingualText><input
+                <label><BilingualText vi="Tên kịch bản nhập vai tiếng Việt:" en="Vietnamese scenario title:" /><input
                     type="text"
                     required
-                    value={formData.title}
-                    onChange={e => setFormData({ ...formData, title: e.target.value })}
+                    value={formData.titleVi || formData.title}
+                    onChange={e => setFormData({ ...formData, titleVi: e.target.value, title: e.target.value })}
                     placeholder={vietnameseLabel("Ví dụ: Gọi món tại quán Phở gia truyền Hà Nội...")}
                   />
                 </label>
 
-                <label style={{ marginTop: '12px' }}><BilingualText>{"Bối cảnh tình huống:"}</BilingualText><textarea
+                <label style={{ marginTop: '12px' }}><BilingualText vi="Tên kịch bản nhập vai tiếng Anh:" en="English scenario title:" /><input
+                    type="text"
+                    value={formData.titleEn || ''}
+                    onChange={e => setFormData({ ...formData, titleEn: e.target.value })}
+                    placeholder="Example: Ordering at a traditional Hanoi pho shop..."
+                  />
+                </label>
+
+                <label style={{ marginTop: '12px' }}><BilingualText vi="Bối cảnh tình huống tiếng Việt:" en="Vietnamese scenario overview:" /><textarea
                     rows={3}
-                    value={formData.overview}
-                    onChange={e => setFormData({ ...formData, overview: e.target.value })}
+                    value={formData.overviewVi || formData.overview}
+                    onChange={e => setFormData({ ...formData, overviewVi: e.target.value, overview: e.target.value })}
                     placeholder={vietnameseLabel("Mô tả hoàn cảnh xuất phát khi học viên bắt đầu kịch bản...")}
+                  />
+                </label>
+
+                <label style={{ marginTop: '12px' }}><BilingualText vi="Bối cảnh tình huống tiếng Anh:" en="English scenario overview:" /><textarea
+                    rows={3}
+                    value={formData.overviewEn || ''}
+                    onChange={e => setFormData({ ...formData, overviewEn: e.target.value })}
+                    placeholder="Describe the situation when the learner starts the scenario..."
                   />
                 </label>
               </div>
@@ -417,7 +443,7 @@ export function AdminScenarioBuilderPage() {
         <div className="admin-card" style={{ maxWidth: '800px', margin: '0 auto', background: 'var(--color-surface)' }}>
           <div style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '14px', marginBottom: '18px' }}>
             <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-red-hover)', textTransform: 'uppercase' }}><BilingualText>{"SIMULATION TEST SANDBOX"}</BilingualText></span>
-            <h2 style={{ margin: '4px 0', fontSize: '20px' }}><BilingualText>{"Thử nghiệm kịch bản:"}</BilingualText>{formData.aiRole.name} (<BilingualText vi={formData.titleVi || formData.title} en={formData.title} />)
+            <h2 style={{ margin: '4px 0', fontSize: '20px' }}><BilingualText>{"Thử nghiệm kịch bản:"}</BilingualText>{formData.aiRole.name} (<BilingualText vi={formData.titleVi || formData.title} en={formData.titleEn || formData.titleVi || formData.title} />)
             </h2>
           </div>
 

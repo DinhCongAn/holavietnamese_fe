@@ -27,8 +27,9 @@ const { contentImportService } = await service('contentImportService');
 const jobId = 'e7c658d0-7bc0-49d0-9ac0-221e5538d0ca';
 
 test('Regional request validates identity and region and excludes server owned fields', () => {
-  const payload = regionalPayload({ ...regionalDraft(), vocabularyId: '12', region: 'SOUTH', word: ' Thơm ', meaning: ' Pineapple ', status: 'PUBLISHED', id: 99, actorId: 42, createdAt: 'forged' });
-  assert.equal(payload.vocabularyId, 12); assert.equal(payload.word, 'Thơm'); assert.equal(payload.meaning, 'Pineapple');
+  const payload = regionalPayload({ ...regionalDraft(), vocabularyId: '12', region: 'SOUTH', word: ' Thơm ', meaning: ' Trái dứa ', meaningEn: ' Pineapple ', exampleSentenceEn: ' I bought a pineapple. ', usageNoteEn: 'Southern usage.', status: 'PUBLISHED', id: 99, actorId: 42, createdAt: 'forged' });
+  assert.equal(payload.vocabularyId, 12); assert.equal(payload.word, 'Thơm'); assert.equal(payload.meaning, 'Trái dứa');
+  assert.equal(payload.meaningEn, 'Pineapple'); assert.equal(payload.exampleSentenceEn, 'I bought a pineapple.'); assert.equal(payload.usageNoteEn, 'Southern usage.');
   assert.equal(payload.pronunciation, null); assert.ok(!('id' in payload)); assert.ok(!('actorId' in payload));
   for (const override of [{ vocabularyId: '' }, { vocabularyId: '-1' }, { region: 'WEST' }, { word: ' ' }, { status: 'UNKNOWN' }])
     assert.throws(() => regionalPayload({ ...payload, ...override }));

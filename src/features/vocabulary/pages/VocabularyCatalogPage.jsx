@@ -136,7 +136,7 @@ export function VocabularyCatalogPage() {
                     <article className="dictionary-entry" key={item.id}>
                       <div className="dictionary-entry-top">
                         <span className="dictionary-pos">
-                          <BilingualText>{partOfSpeechLabel(item.partOfSpeech)}</BilingualText>
+                          {partOfSpeechLabel(item.partOfSpeech, isVi ? 'vi' : 'en')}
                         </span>
                       </div>
 
@@ -148,12 +148,15 @@ export function VocabularyCatalogPage() {
 
                       {item.pronunciation && <p className="dictionary-ipa">{item.pronunciation}</p>}
 
-                      <p className="dictionary-definition-preview" lang={meaning?.definitionVi ? 'vi' : 'en'}>
-                        {definitionOf(meaning)}
+                      <p className="dictionary-definition-preview" lang={isVi ? 'vi' : 'en'}>
+                        {definitionOf(meaning, isVi ? 'vi' : 'en')}
                       </p>
 
-                      {meaning?.definitionVi && meaning.translationEn && (
+                      {isVi && meaning?.definitionVi && meaning.translationEn && (
                         <p className="dictionary-english" lang="en">{meaning.translationEn}</p>
+                      )}
+                      {!isVi && meaning?.definitionVi && (
+                        <p className="dictionary-english" lang="vi"><span>VI</span> {meaning.definitionVi}</p>
                       )}
 
                       <DictionaryAudio entry={item} />

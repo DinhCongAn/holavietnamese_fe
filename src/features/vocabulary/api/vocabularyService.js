@@ -31,6 +31,9 @@ export const vocabularyService = {
 }
 
 function validate(data) {
-  if (!data.word?.trim() || !data.meaning?.trim()) throw new Error("Word and meaning are required.")
+  if (!data.word?.trim() || !data.meaning?.trim()) {
+    const isVi = typeof localStorage !== 'undefined' && (localStorage.getItem('hola:ui-language') || 'en').startsWith('vi')
+    throw new Error(isVi ? 'Từ và nghĩa không được để trống.' : 'Word and meaning are required.')
+  }
   return { ...data, word: data.word.trim(), meaning: data.meaning.trim() }
 }

@@ -44,8 +44,12 @@ export function VocabularyReviewPage() {
           <ReviewDeck key={session.sessionId} session={session} onRestart={restart} />
         ) : (
           <EmptyState
-            title={session.notebookCount ? 'Bạn đã ôn hết các từ đến hạn' : 'Sổ tay của bạn đang chờ từ đầu tiên'}
-            description={session.notebookCount ? 'Lịch ôn tiếp theo đã được lưu trong sổ tay.' : 'Thêm từ hoặc lưu từ trong khi học để bắt đầu ôn tập.'}
+            title={session.notebookCount
+              ? <BilingualText vi="Bạn đã ôn hết các từ đến hạn" en="You have reviewed every word due today" />
+              : <BilingualText vi="Sổ tay của bạn đang chờ từ đầu tiên" en="Your notebook is waiting for its first word" />}
+            description={session.notebookCount
+              ? <BilingualText vi="Lịch ôn tiếp theo đã được lưu trong sổ tay." en="Your next review schedule has been saved." />
+              : <BilingualText vi="Thêm từ hoặc lưu từ trong khi học để bắt đầu ôn tập." en="Add or save a word while learning to begin reviewing." />}
           >
             <Link className="button" to={ROUTES.VOCABULARY_NOTEBOOK}>
               <BilingualText>{session.notebookCount ? 'Về sổ tay' : 'Thêm từ vựng'}</BilingualText>

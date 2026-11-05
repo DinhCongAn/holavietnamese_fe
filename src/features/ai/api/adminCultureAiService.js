@@ -10,9 +10,16 @@ const STORAGE_ADMIN_REVIEWS = 'hola_admin_ai_reviews_v1';
 
 export function scenarioToApiPayload(data) {
   return {
-    id: data.id || undefined, title: data.title, level: data.level, topic: data.topic,
+    id: data.id || undefined,
+    title: data.titleVi || data.title,
+    titleVi: data.titleVi || data.title,
+    titleEn: data.titleEn || undefined,
+    level: data.level, topic: data.topic,
     destination: data.destination, difficulty: data.difficulty, duration: data.duration,
-    thumbnail: data.thumbnail, coverImage: data.coverImage, overview: data.overview,
+    thumbnail: data.thumbnail, coverImage: data.coverImage,
+    overview: data.overviewVi || data.overview,
+    overviewVi: data.overviewVi || data.overview,
+    overviewEn: data.overviewEn || undefined,
     aiRoleName: data.aiRoleName || data.aiRole?.name,
     aiRoleTitle: data.aiRoleTitle || data.aiRole?.role,
     aiRoleAvatar: data.aiRoleAvatar || data.aiRole?.avatar,

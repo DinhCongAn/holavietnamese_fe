@@ -44,4 +44,6 @@ export function destinationPayload(draft) {
   };
 }
 
-export const destinationDate = value => value ? new Date(value).toLocaleString('vi-VN') : '—';
+export const destinationDate = (value, language = 'vi') => value
+  ? new Date(value).toLocaleString(String(language).startsWith('vi') ? 'vi-VN' : 'en-US')
+  : '—';

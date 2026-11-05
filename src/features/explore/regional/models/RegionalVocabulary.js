@@ -5,7 +5,7 @@ export const REGIONAL_REGIONS = [
 ];
 export const REGIONAL_STATUSES = ['DRAFT', 'PENDING_REVIEW', 'PUBLISHED', 'ARCHIVED'];
 export function regionalDraft(entry) {
-  return Object.fromEntries(['vocabularyId', 'region', 'word', 'meaning', 'pronunciation', 'audioUrl', 'exampleSentence', 'usageNote', 'status']
+  return Object.fromEntries(['vocabularyId', 'region', 'word', 'meaning', 'meaningEn', 'pronunciation', 'audioUrl', 'exampleSentence', 'exampleSentenceEn', 'usageNote', 'usageNoteEn', 'status']
     .map(key => [key, entry?.[key] ?? (key === 'status' ? 'DRAFT' : '')]));
 }
 export function regionalPayload(draft) {
@@ -19,6 +19,7 @@ export function regionalPayload(draft) {
     return value || null;
   };
   return { vocabularyId: Number(draft.vocabularyId), region: draft.region, status: draft.status,
-    word: text('word', 200, true), meaning: text('meaning', 1000, true), pronunciation: text('pronunciation', 200),
-    audioUrl: text('audioUrl', 2048), exampleSentence: text('exampleSentence', 2000), usageNote: text('usageNote', 2000) };
+    word: text('word', 200, true), meaning: text('meaning', 1000, true), meaningEn: text('meaningEn', 1000), pronunciation: text('pronunciation', 200),
+    audioUrl: text('audioUrl', 2048), exampleSentence: text('exampleSentence', 2000), exampleSentenceEn: text('exampleSentenceEn', 2000),
+    usageNote: text('usageNote', 2000), usageNoteEn: text('usageNoteEn', 2000) };
 }

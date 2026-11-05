@@ -1,4 +1,5 @@
 import { BilingualText } from '@/shared/components/common/BilingualText';
+import { useTranslation } from 'react-i18next';
 import { destinationDate, DESTINATION_REGIONS } from '@/features/explore/models/Destination';
 
 export function DestinationRegion({ value }) {
@@ -11,11 +12,13 @@ export function DestinationStatusBadge({ status }) {
 }
 
 export function DestinationMetadata({ entry }) {
+  const { i18n } = useTranslation();
+  const language = i18n.resolvedLanguage || i18n.language || 'en';
   return <dl>
     <dt>ID</dt><dd>{entry.id}</dd>
-    <dt><BilingualText>Ngày xuất bản</BilingualText></dt><dd>{destinationDate(entry.publishedAt)}</dd>
-    <dt><BilingualText>Ngày lưu trữ</BilingualText></dt><dd>{destinationDate(entry.archivedAt)}</dd>
-    <dt><BilingualText>Ngày tạo</BilingualText></dt><dd>{destinationDate(entry.createdAt)}</dd>
-    <dt><BilingualText>Cập nhật lần cuối</BilingualText></dt><dd>{destinationDate(entry.updatedAt)}</dd>
+    <dt><BilingualText vi="Ngày xuất bản" en="Published" /></dt><dd>{destinationDate(entry.publishedAt, language)}</dd>
+    <dt><BilingualText vi="Ngày lưu trữ" en="Archived" /></dt><dd>{destinationDate(entry.archivedAt, language)}</dd>
+    <dt><BilingualText vi="Ngày tạo" en="Created" /></dt><dd>{destinationDate(entry.createdAt, language)}</dd>
+    <dt><BilingualText vi="Cập nhật lần cuối" en="Last updated" /></dt><dd>{destinationDate(entry.updatedAt, language)}</dd>
   </dl>;
 }

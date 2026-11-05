@@ -103,9 +103,12 @@ function RegionalEditor({ entry, masters, onClose, onSaved }) {
       <label><BilingualText>{"Vùng sử dụng *"}</BilingualText><select required value={draft.region} onChange={event => change('region', event.target.value)}><option value="">{label("Chọn vùng miền", "Select region")}</option>{REGIONAL_REGIONS.map(item => <option key={item.value} value={item.value}>{label(item)}</option>)}</select></label>
       <label><BilingualText>{"Biến thể *"}</BilingualText><input required maxLength={200} value={draft.word} onChange={event => change('word', event.target.value)} /></label>
       <label><BilingualText>{"Phiên âm"}</BilingualText><input maxLength={200} value={draft.pronunciation} onChange={event => change('pronunciation', event.target.value)} /></label>
-      <label><BilingualText>{"Nghĩa hoặc giải thích *"}</BilingualText><textarea required maxLength={1000} value={draft.meaning} onChange={event => change('meaning', event.target.value)} /></label>
-      <label><BilingualText>{"Câu ví dụ"}</BilingualText><textarea maxLength={2000} value={draft.exampleSentence} onChange={event => change('exampleSentence', event.target.value)} /></label>
-      <label><BilingualText>{"Ghi chú cách dùng"}</BilingualText><textarea maxLength={2000} value={draft.usageNote} onChange={event => change('usageNote', event.target.value)} /></label>
+      <label><BilingualText vi="Nghĩa hoặc giải thích tiếng Việt *" en="Vietnamese meaning or explanation *" /><textarea required maxLength={1000} value={draft.meaning} onChange={event => change('meaning', event.target.value)} /></label>
+      <label><BilingualText vi="Nghĩa hoặc giải thích tiếng Anh" en="English meaning or explanation" /><textarea maxLength={1000} value={draft.meaningEn} onChange={event => change('meaningEn', event.target.value)} /></label>
+      <label><BilingualText vi="Câu ví dụ tiếng Việt" en="Vietnamese example sentence" /><textarea maxLength={2000} value={draft.exampleSentence} onChange={event => change('exampleSentence', event.target.value)} /></label>
+      <label><BilingualText vi="Bản dịch câu ví dụ tiếng Anh" en="English example translation" /><textarea maxLength={2000} value={draft.exampleSentenceEn} onChange={event => change('exampleSentenceEn', event.target.value)} /></label>
+      <label><BilingualText vi="Ghi chú cách dùng tiếng Việt" en="Vietnamese usage note" /><textarea maxLength={2000} value={draft.usageNote} onChange={event => change('usageNote', event.target.value)} /></label>
+      <label><BilingualText vi="Ghi chú cách dùng tiếng Anh" en="English usage note" /><textarea maxLength={2000} value={draft.usageNoteEn} onChange={event => change('usageNoteEn', event.target.value)} /></label>
       <label><BilingualText>{"Audio URL"}</BilingualText><input maxLength={2048} value={draft.audioUrl} onChange={event => change('audioUrl', event.target.value)} /></label>
       <p><strong><BilingualText>{"Trạng thái:"}</BilingualText></strong> <BilingualText>{"DRAFT"}</BilingualText></p>
     </fieldset>{error && <Notice kind="error">{error.message}</Notice>}
