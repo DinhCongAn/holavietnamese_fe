@@ -5,8 +5,8 @@ import { ResourceState } from '@/shared/components/common/ResourceState';
 import { AdminVocabularyModal } from '@/features/vocabulary/components/admin/AdminVocabularyModal';
 import { VOCABULARY_STATUSES } from '@/features/vocabulary/models/AdminVocabulary';
 import { Breadcrumb, PageHeader } from '@/shared/components/common/Ui';
-import { Link } from 'react-router-dom';
-import { ROUTES } from '@/constants/routes';
+import { Link, useLocation } from 'react-router-dom';
+import { getBackOfficeRoutes, ROUTES } from '@/constants/routes';
 import { Plus } from 'lucide-react';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { canImportVocabulary, canReviewVocabulary, canWriteVocabulary } from '@/utils/permissions/contentAccess';
@@ -18,6 +18,9 @@ const emptyFilters = { keyword: '', status: '', partOfSpeech: '' };
 
 export function AdminVocabularyPage() {
   const label = useBilingualLabel();
+  const location = useLocation();
+  const managementRoutes = getBackOfficeRoutes(location.pathname);
+  const adminArea = location.pathname === ROUTES.ADMIN || location.pathname.startsWith(`${ROUTES.ADMIN}/`);
   const { user } = useAuth();
   const mayWrite = canWriteVocabulary(user);
   const mayImport = canImportVocabulary(user);
@@ -75,10 +78,10 @@ export function AdminVocabularyPage() {
   }
 
   return <div className="admin-vocabulary-page">
-    <Breadcrumb items={[{ label: label('Quản trị', 'Administration'), to: ROUTES.ADMIN }, { label: label('Từ vựng', 'Vocabulary') }]} />
+    <Breadcrumb items={[{ label: adminArea ? label('Quản trị', 'Administration') : label('Nội dung', 'Content'), to: adminArea ? ROUTES.ADMIN : ROUTES.CONTENT_COURSES }, { label: label('Từ vựng', 'Vocabulary') }]} />
     <PageHeader eyebrow={<BilingualText vi="Từ vựng tiếng Việt" en="Vietnamese Vocabulary" />} title={<BilingualText vi="Quản lý từ vựng" en="Vocabulary Management" />} description={<BilingualText vi="Quản lý mục từ, nghĩa Việt–Anh và ví dụ song ngữ." en="Manage entries, Vietnamese–English definitions, and bilingual examples." />} actions={<>
-      <Link className="button secondary" to={ROUTES.ADMIN_REGIONAL_LANGUAGE}><BilingualText vi="Từ ngữ vùng miền" en="Regional language" /></Link>
-      {mayImport && <Link className="button secondary" to={ROUTES.ADMIN_IMPORT}><BilingualText vi="Nhập dữ liệu" en="Import data" /></Link>}
+      <Link className="button secondary" to={managementRoutes.regionalLanguage}><BilingualText vi="Từ ngữ vùng miền" en="Regional language" /></Link>
+      {mayImport && <Link className="button secondary" to={managementRoutes.importData}><BilingualText vi="Nhập dữ liệu" en="Import data" /></Link>}
       {mayWrite && <button type="button" onClick={() => setModal({ mode: 'create' })}><Plus size={16} aria-hidden="true" /><BilingualText vi="Thêm từ vựng" en="Add vocabulary" /></button>}
     </>} />
     {message && <div className="success state" role="status"><BilingualText>{message}</BilingualText></div>}

@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { generatePath } from 'react-router-dom';
+import { generatePath, useLocation } from 'react-router-dom';
 import { BilingualText, useBilingualLabel, bilingualLabel } from '@/shared/components/common/BilingualText';
 import { ContentImage } from '@/shared/components/common/ContentImage';
 import { Modal } from '@/shared/components/common/Modal';
@@ -8,7 +8,7 @@ import { DestinationForm } from '@/features/explore/components/DestinationForm';
 import { useAsyncResource } from '@/shared/hooks/useAsyncResource';
 import { destinationDate, DESTINATION_REGIONS, DESTINATION_STATUSES } from '@/features/explore/models/Destination';
 import { adminDestinationService } from '@/features/explore/api/destinationService';
-import { ROUTES } from '@/constants/routes';
+import { getBackOfficeRoutes } from '@/constants/routes';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { canReviewExplore, canWriteExplore } from '@/utils/permissions/contentAccess';
 import { toast } from 'sonner';
@@ -19,6 +19,8 @@ const emptyFilters = { keyword: '', status: '', region: '' };
 
 export function AdminDestinationsPage() {
   const label = useBilingualLabel();
+  const location = useLocation();
+  const managementRoutes = getBackOfficeRoutes(location.pathname);
   const { user } = useAuth();
   const mayWrite = canWriteExplore(user);
   const mayReview = canReviewExplore(user);
@@ -297,7 +299,7 @@ export function AdminDestinationsPage() {
                 </thead>
                 <tbody>
                   {pagedItems.map(item => {
-                    const detailPath = generatePath(ROUTES.ADMIN_DESTINATION_DETAIL, { id: String(item.id) });
+                    const detailPath = generatePath(managementRoutes.destinationDetail, { id: String(item.id) });
                     const regionObj = DESTINATION_REGIONS.find(r => r.value === item.region);
 
                     return (

@@ -17,6 +17,10 @@ export const contentImportService = {
     const form = new FormData(); form.append('module', module); form.append('file', file);
     return resultOf(await axiosClient.post('/api/admin/imports/preview', form, options));
   },
+  async updatePreview(id, rows) {
+    if (!Array.isArray(rows) || rows.length === 0) throw new Error('Bản xem trước chưa có dòng dữ liệu để kiểm tra.');
+    return resultOf(await axiosClient.put(`${jobPath(id)}/preview`, { rows }));
+  },
   async confirm(id) { return resultOf(await axiosClient.post(`${jobPath(id)}/confirm`, {})); },
   async history(page = 0, options = {}) { return resultOf(await axiosClient.get('/api/admin/imports', { ...options, params: { page, size: 20 } })); },
   async get(id, options = {}) { return resultOf(await axiosClient.get(jobPath(id), options)); },

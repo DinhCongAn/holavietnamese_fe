@@ -44,6 +44,7 @@ test('Regional reads preserve filters, cancellation and publication decisions fr
   await adminRegionalVocabularyService.list({ vocabularyId: 12, status: 'DRAFT', page: 2, size: 20 });
   assert.equal(calls[2].url, '/api/admin/regional-language');
   assert.deepEqual(calls[2].params, { vocabularyId: 12, status: 'DRAFT', page: 2, size: 20 });
+  await adminRegionalVocabularyService.get(9); assert.equal(calls[3].url, '/api/admin/regional-language/9');
 });
 test('Regional administration uses existing POST and PUT semantics and never deletes records', async () => {
   calls.length = 0; const payload = regionalPayload({ ...regionalDraft(), vocabularyId: 12, region: 'NORTH', word: 'Dứa', meaning: 'Pineapple' });
@@ -73,14 +74,26 @@ test('Confirmation sends only stored job identity, and failures are not rewritte
   finally { rejectEnvelope = false; }
   await assert.rejects(() => contentImportService.confirm('../users'));
 });
+test('Edited import rows are sent to the server for revalidation before confirmation', async () => {
+  calls.length = 0;
+  const rows = [{ rowNumber: 2, values: { word: 'Từ đã sửa', part_of_speech: 'noun' } }];
+  result = { id: jobId, status: 'READY', canConfirm: true, rows };
+  assert.deepEqual(await contentImportService.updatePreview(jobId, rows), result);
+  assert.equal(calls[0].method, 'put');
+  assert.equal(calls[0].url, `/api/admin/imports/${jobId}/preview`);
+  assert.deepEqual(JSON.parse(calls[0].data), { rows });
+  await assert.rejects(() => contentImportService.updatePreview(jobId, []));
+});
 test('Import history keeps pagination and uses the persisted job detail endpoint', async () => {
   calls.length = 0; result = { content: [], totalPages: 0 };
   await contentImportService.history(3); assert.deepEqual(calls[0].params, { page: 3, size: 20 });
   await contentImportService.get(jobId); assert.equal(calls[1].url, `/api/admin/imports/${jobId}`);
-  assert.equal(ROUTES.REGIONAL_VIETNAMESE, '/regional-vietnamese'); assert.equal(ROUTES.ADMIN_REGIONAL_LANGUAGE, '/content/regional-language');
+  assert.equal(ROUTES.REGIONAL_VIETNAMESE, '/regional-vietnamese');
+  assert.equal(ROUTES.ADMIN_REGIONAL_LANGUAGE, '/admin/regional-language');
+  assert.equal(ROUTES.CONTENT_REGIONAL_LANGUAGE, '/content/regional-language');
   const app = await fs.readFile(new URL('../src/app/router/AppRouter.jsx', import.meta.url), 'utf8');
   const adminRoutes = app.slice(app.indexOf('<Route element={<AdminRoute />}>'));
-  for (const route of ['ADMIN_REGIONAL_LANGUAGE', 'ADMIN_IMPORT', 'ADMIN_IMPORT_HISTORY']) assert.ok(adminRoutes.includes(`path={ROUTES.${route}}`));
+  for (const route of ['ADMIN_REGIONAL_LANGUAGE', 'ADMIN_IMPORT', 'ADMIN_IMPORT_HISTORY', 'CONTENT_REGIONAL_LANGUAGE', 'CONTENT_IMPORT', 'CONTENT_IMPORT_HISTORY']) assert.ok(adminRoutes.includes(`path={ROUTES.${route}}`));
 });
 
 test('Import preview explains regional columns, reconciles duplicates and paginates every result list', async () => {
@@ -105,6 +118,10 @@ test('Import preview explains regional columns, reconciles duplicates and pagina
   assert.ok(resultView.includes('<AdminPagination currentPage={safePage + 1}'));
   assert.ok(regionalAdmin.includes('{ ...query, page, size: 20 }'));
   assert.ok(regionalAdmin.includes('<AdminPagination currentPage={data.number + 1}'));
+  assert.ok(regionalAdmin.includes('tone="detail"'));
+  assert.ok(regionalAdmin.includes('adminRegionalVocabularyService.get'));
+  assert.ok(uploadPage.includes('contentImportService.updatePreview'));
+  for (const status of ['IMPORTED_WITH_SKIPS', 'SKIPPED']) assert.ok(resultView.includes(status));
   assert.ok(actions.includes('AdminActionLink'));
   for (const tone of ['detail', 'edit', 'delete']) assert.ok(actionStyles.includes(`admin-row-action--${tone}`));
   for (const source of standardizedAdminPages) assert.ok(source.includes('AdminActionGroup'));

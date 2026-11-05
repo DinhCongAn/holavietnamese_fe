@@ -41,9 +41,12 @@ export const ROUTES = {
   VOCABULARY_NOTEBOOK_DETAIL: '/vocabulary/notebook/:id',
   VOCABULARY_REVIEW: '/vocabulary/review',
   REGIONAL_VIETNAMESE: '/regional-vietnamese',
-  ADMIN_REGIONAL_LANGUAGE: '/content/regional-language',
-  ADMIN_IMPORT: '/content/import',
-  ADMIN_IMPORT_HISTORY: '/content/imports',
+  ADMIN_REGIONAL_LANGUAGE: '/admin/regional-language',
+  ADMIN_IMPORT: '/admin/import',
+  ADMIN_IMPORT_HISTORY: '/admin/imports',
+  CONTENT_REGIONAL_LANGUAGE: '/content/regional-language',
+  CONTENT_IMPORT: '/content/import',
+  CONTENT_IMPORT_HISTORY: '/content/imports',
 
   EXPLORE: '/explore',
   DESTINATION_DETAIL: '/explore/:id',
@@ -84,9 +87,12 @@ export const ROUTES = {
   CONTENT_QUIZZES: '/content/quizzes',
   CONTENT_QUIZ_BUILDER: '/content/quizzes/:quizId',
   CONTENT_QUIZ_PREVIEW: '/content/quizzes/:quizId/preview',
-  ADMIN_VOCABULARY: '/content/vocabulary',
-  ADMIN_DESTINATIONS: '/content/destinations',
-  ADMIN_DESTINATION_DETAIL: '/content/destinations/:id',
+  ADMIN_VOCABULARY: '/admin/vocabulary',
+  ADMIN_DESTINATIONS: '/admin/destinations',
+  ADMIN_DESTINATION_DETAIL: '/admin/destinations/:id',
+  CONTENT_VOCABULARY: '/content/vocabulary',
+  CONTENT_DESTINATIONS: '/content/destinations',
+  CONTENT_DESTINATION_DETAIL: '/content/destinations/:id',
   ADMIN_JOURNEY: '/admin/journey',
   ADMIN_USERS: '/admin/users',
   ADMIN_USER_DETAIL: '/admin/users/:id',
@@ -109,3 +115,24 @@ export const ROUTES = {
   ADMIN_AI_USAGE: '/admin/ai-usage',
   ADMIN_AI_REVIEWS: '/admin/ai-reviews',
 };
+
+export function getBackOfficeRoutes(pathname = '') {
+  const adminArea = pathname === ROUTES.ADMIN || pathname.startsWith(`${ROUTES.ADMIN}/`);
+  return adminArea
+    ? {
+        vocabulary: ROUTES.ADMIN_VOCABULARY,
+        regionalLanguage: ROUTES.ADMIN_REGIONAL_LANGUAGE,
+        importData: ROUTES.ADMIN_IMPORT,
+        importHistory: ROUTES.ADMIN_IMPORT_HISTORY,
+        destinations: ROUTES.ADMIN_DESTINATIONS,
+        destinationDetail: ROUTES.ADMIN_DESTINATION_DETAIL,
+      }
+    : {
+        vocabulary: ROUTES.CONTENT_VOCABULARY,
+        regionalLanguage: ROUTES.CONTENT_REGIONAL_LANGUAGE,
+        importData: ROUTES.CONTENT_IMPORT,
+        importHistory: ROUTES.CONTENT_IMPORT_HISTORY,
+        destinations: ROUTES.CONTENT_DESTINATIONS,
+        destinationDetail: ROUTES.CONTENT_DESTINATION_DETAIL,
+      };
+}

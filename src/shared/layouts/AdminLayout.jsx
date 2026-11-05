@@ -4,16 +4,16 @@ import { NavLink, Outlet, Link, useLocation } from 'react-router-dom';
 
 import { Menu, X, ArrowLeft, LogOut } from 'lucide-react';
 import { useAuth } from '@/features/auth/context/AuthContext';
-import { ROUTES } from '@/constants/routes';
+import { getBackOfficeRoutes, ROUTES } from '@/constants/routes';
 import { PageTransition } from '@/shared/components/common/PageTransition';
 import { LanguageSwitcher } from '@/shared/components/common/LanguageSwitcher';
 import { Brand } from '@/shared/components/layout/Brand';
 import { canReadExplore, canReadVocabulary } from '@/utils/permissions/contentAccess';
 
-const groups = [
+const groupsFor = (managementRoutes) => [
   { title: 'Tổng quan', links: [[ROUTES.ADMIN, 'Dashboard'], [ROUTES.ADMIN_USERS, 'Người dùng']] },
-  { title: 'Nội dung học tập', links: [[ROUTES.CONTENT_COURSES, 'Khóa học'], [ROUTES.CONTENT_LESSONS, 'Bài học'], [ROUTES.ADMIN_VOCABULARY, 'Từ vựng'], [ROUTES.CONTENT_QUESTIONS, 'Ngân hàng câu hỏi'], [ROUTES.CONTENT_QUIZZES, 'Quiz']] },
-  { title: 'Văn hóa & AI', links: [[ROUTES.ADMIN_DESTINATIONS, 'Điểm đến'], [ROUTES.ADMIN_CULTURE, 'Văn hóa'], [ROUTES.ADMIN_CULTURE_CATEGORIES, 'Danh mục văn hóa'], [ROUTES.ADMIN_AI_SCENARIOS, 'Kịch bản AI'], [ROUTES.ADMIN_AI_SETTINGS, 'Cấu hình AI'], [ROUTES.ADMIN_AI_USAGE, 'Sử dụng AI & chi phí'], [ROUTES.ADMIN_AI_REVIEWS, 'Chất lượng AI']] },
+  { title: 'Nội dung học tập', links: [[ROUTES.CONTENT_COURSES, 'Khóa học'], [ROUTES.CONTENT_LESSONS, 'Bài học'], [managementRoutes.vocabulary, 'Từ vựng'], [ROUTES.CONTENT_QUESTIONS, 'Ngân hàng câu hỏi'], [ROUTES.CONTENT_QUIZZES, 'Quiz']] },
+  { title: 'Văn hóa & AI', links: [[managementRoutes.destinations, 'Điểm đến'], [ROUTES.ADMIN_CULTURE, 'Văn hóa'], [ROUTES.ADMIN_CULTURE_CATEGORIES, 'Danh mục văn hóa'], [ROUTES.ADMIN_AI_SCENARIOS, 'Kịch bản AI'], [ROUTES.ADMIN_AI_SETTINGS, 'Cấu hình AI'], [ROUTES.ADMIN_AI_USAGE, 'Sử dụng AI & chi phí'], [ROUTES.ADMIN_AI_REVIEWS, 'Chất lượng AI']] },
   { title: 'Hệ thống', links: [[ROUTES.ADMIN_ACHIEVEMENTS, 'Thành tích'], [ROUTES.ADMIN_XP_RULES, 'Quy tắc XP'], [ROUTES.ADMIN_SITE_CONTENT, 'Menu & banner'], [ROUTES.ADMIN_SETTINGS, 'Cài đặt']] },
 ];
 
@@ -39,19 +39,21 @@ export function AdminLayout() {
   }, [open]);
   const vocabularyAllowed = canReadVocabulary(user);
   const exploreAllowed = canReadExplore(user);
+  const managementRoutes = getBackOfficeRoutes(isAdmin ? ROUTES.ADMIN : ROUTES.CONTENT_COURSES);
+  const groups = groupsFor(managementRoutes);
   const managerAuthoringPaths = [ROUTES.CONTENT_COURSES, ROUTES.CONTENT_LESSONS, ROUTES.CONTENT_QUESTIONS, ROUTES.CONTENT_QUIZZES];
   const visibleGroups = groups.map(group => ({
     ...group,
     links: group.links.filter(([to]) => {
-      if (to === ROUTES.ADMIN_VOCABULARY) return vocabularyAllowed;
-      if (to === ROUTES.ADMIN_DESTINATIONS) return exploreAllowed;
+      if (to === managementRoutes.vocabulary) return vocabularyAllowed;
+      if (to === managementRoutes.destinations) return exploreAllowed;
       if (managerAuthoringPaths.includes(to)) {
         return to === ROUTES.CONTENT_COURSES ? (isAdmin || isContentManager) : (isContentManager && !isAdmin);
       }
       return isAdmin;
     }).map(([to, label]) => {
       if (to === ROUTES.CONTENT_COURSES) return [to, isAdmin ? 'Duyệt khóa học' : 'Khóa học'];
-      if (to === ROUTES.ADMIN_VOCABULARY && isAdmin) return [to, 'Duyệt từ vựng'];
+      if (to === managementRoutes.vocabulary && isAdmin) return [to, 'Duyệt từ vựng'];
       return [to, label];
     }),
   })).filter(group => group.links.length > 0);

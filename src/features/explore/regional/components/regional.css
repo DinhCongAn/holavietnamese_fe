@@ -33,6 +33,14 @@
 .regional-form label { min-width: 0; margin: 0; }
 .regional-form label:has(textarea) { grid-column: 1 / -1; }
 .regional-form .actions { flex-wrap: wrap; justify-content: flex-end; padding-top: 20px; }
+.admin-regional-page .modal.regional-detail-modal { width: min(900px,calc(100vw - 32px)); max-width: min(900px,calc(100vw - 32px)); }
+.regional-detail { display: grid; gap: 22px; }
+.regional-detail-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin: 0; }
+.regional-detail-field { min-width: 0; padding: 14px 16px; border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-paper); }
+.regional-detail-field--wide { grid-column: 1 / -1; }
+.regional-detail-field dt { margin-bottom: 6px; color: var(--color-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.regional-detail-field dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.55; }
+.regional-detail > .actions { justify-content: flex-end; }
 @media(max-width:1000px) { .regional-comparison-grid { grid-template-columns: minmax(0,1fr); } }
 @media(max-width:767px) {
   .regional-page { padding: 24px 16px; }
@@ -41,4 +49,6 @@
   .regional-comparison { padding: 20px; }
   .regional-filters label { flex-basis: 100%; }
   .regional-form > fieldset { grid-template-columns: minmax(0,1fr); }
+  .regional-detail-grid { grid-template-columns: minmax(0,1fr); }
+  .regional-detail-field--wide { grid-column: auto; }
 }
