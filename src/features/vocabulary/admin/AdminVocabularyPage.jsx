@@ -91,7 +91,8 @@ export function AdminVocabularyPage() {
     </form>
     <ResourceState resource={{ ...resource, reload }}>{(items) => items.length === 0
       ? <div className="state"><BilingualText>{"Không có từ vựng phù hợp."}</BilingualText></div>
-      : <div className="admin-card" style={{ padding: 0, overflowX: 'auto' }}><table className="admin-table">
+      : <div className="admin-card admin-vocabulary-table-card"><table className="admin-table admin-vocabulary-table">
+        <colgroup><col className="admin-vocabulary-col-word" /><col className="admin-vocabulary-col-type" /><col className="admin-vocabulary-col-status" /><col className="admin-vocabulary-col-actions" /></colgroup>
         <thead><tr><th><BilingualText>{"Từ vựng"}</BilingualText></th><th><BilingualText>{"Từ loại"}</BilingualText></th><th><BilingualText>{"Trạng thái"}</BilingualText></th><th><BilingualText>{"Thao tác"}</BilingualText></th></tr></thead>
         <tbody>{items.map((item) => <tr key={item.id}>
           <td><strong>{item.word}</strong>{item.pronunciation && <div className="muted">{item.pronunciation}</div>}</td>
@@ -107,7 +108,7 @@ export function AdminVocabularyPage() {
         </tr>)}</tbody>
       </table></div>}
     </ResourceState>
-    {!resource.loading && !resource.error && pageInfo.totalPages > 0 && <><p className="muted"><BilingualText vi={`${pageInfo.totalElements} mục từ`} en={`${pageInfo.totalElements} entries`} /></p><Pagination page={page} totalPages={pageInfo.totalPages} onChange={setPage} /></>}
+    {!resource.loading && !resource.error && pageInfo.totalPages > 0 && <div className="admin-vocabulary-pagination"><p className="muted"><BilingualText vi={`${pageInfo.totalElements} mục từ`} en={`${pageInfo.totalElements} entries`} /></p><Pagination page={page} totalPages={pageInfo.totalPages} onChange={setPage} /></div>}
     {modal && <AdminVocabularyModal key={`${modal.mode}-${modal.id ?? 'new'}`} {...modal} canEdit={mayWrite} onClose={() => setModal(null)} onSaved={saved} onEdit={() => setModal({ mode: 'edit', id: modal.id })} />}
   </div>;
 }

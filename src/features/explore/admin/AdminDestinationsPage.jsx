@@ -272,25 +272,25 @@ export function AdminDestinationsPage() {
 
           return (
             <div className="admin-card" style={{ padding: 0, overflowX: 'auto' }}>
-              <table className="admin-table" style={{ width: '100%', minWidth: '1060px', borderCollapse: 'collapse' }}>
+              <table className="admin-table" style={{ width: '100%', minWidth: '1180px', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr>
-                    <th style={{ ...thStyle, width: '28%', paddingLeft: '20px' }}>
+                    <th style={{ ...thStyle, width: '26%', paddingLeft: '20px' }}>
                       {label('Điểm đến & Hình ảnh', 'Destination & Image')}
                     </th>
-                    <th style={{ ...thStyle, width: '18%' }}>
+                    <th style={{ ...thStyle, width: '16%' }}>
                       {label('Tên tiếng Anh', 'English Name')}
                     </th>
-                    <th style={{ ...thStyle, width: '14%' }}>
+                    <th style={{ ...thStyle, width: '12%' }}>
                       {label('Vùng miền', 'Region')}
                     </th>
-                    <th style={{ ...thStyle, width: '12%', textAlign: 'center' }}>
+                    <th style={{ ...thStyle, width: '11%', textAlign: 'center' }}>
                       {label('Trạng thái', 'Status')}
                     </th>
-                    <th style={{ ...thStyle, width: '12%' }}>
+                    <th style={{ ...thStyle, width: '11%' }}>
                       {label('Cập nhật', 'Last Updated')}
                     </th>
-                    <th style={{ ...thStyle, width: '16%', minWidth: '220px', textAlign: 'right', paddingRight: '20px' }}>
+                    <th style={{ ...thStyle, width: '24%', minWidth: '285px', textAlign: 'right', paddingRight: '20px' }}>
                       {label('Thao tác', 'Actions')}
                     </th>
                   </tr>
@@ -353,7 +353,7 @@ export function AdminDestinationsPage() {
                           {destinationDate(item.updatedAt)}
                         </td>
 
-                        <td style={{ ...tdStyle, textAlign: 'right', paddingRight: '20px', whiteSpace: 'nowrap' }}>
+                        <td className="admin-destination-actions" style={{ ...tdStyle, textAlign: 'right', paddingRight: '20px', whiteSpace: 'nowrap' }}>
                           <AdminActionGroup>
                             <AdminActionLink to={detailPath} tone="detail" title={label('Xem chi tiết điểm đến', 'View destination detail')}>
                               {label('Chi tiết', 'Detail')}

@@ -543,6 +543,62 @@
   border-color: var(--primary-orange, #F97316);
 }
 
+/* Row actions must keep their semantic colors instead of inheriting the generic
+   orange Admin button theme declared above. */
+.admin-content .admin-row-action {
+  min-width: auto;
+  min-height: 34px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 9px;
+}
+.admin-content table .admin-row-action.admin-row-action--icon {
+  width: 34px;
+  min-width: 34px;
+  padding: 0;
+}
+.admin-content .admin-row-action.admin-row-action--detail,
+.admin-content .admin-row-action.admin-row-action--detail:hover {
+  color: #0f766e;
+  background: #f0fdfa;
+  border-color: #5eead4;
+}
+.admin-content .admin-row-action.admin-row-action--edit,
+.admin-content .admin-row-action.admin-row-action--edit:hover {
+  color: #c2410c;
+  background: #fff7ed;
+  border-color: #fdba74;
+}
+.admin-content .admin-row-action.admin-row-action--delete,
+.admin-content .admin-row-action.admin-row-action--delete:hover {
+  color: #dc2626;
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+.admin-content .admin-row-action.admin-row-action--approve,
+.admin-content .admin-row-action.admin-row-action--approve:hover {
+  color: #15803d;
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+.admin-content .admin-row-action.admin-row-action--submit,
+.admin-content .admin-row-action.admin-row-action--submit:hover {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+.admin-content .admin-row-action.admin-row-action--restore,
+.admin-content .admin-row-action.admin-row-action--restore:hover {
+  color: #047857;
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+}
+.admin-content .admin-row-action:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgb(15 23 42 / 10%);
+}
+.admin-destination-actions .admin-row-actions { flex-wrap: nowrap; }
+
 .admin-content input,
 .admin-content select,
 .admin-content textarea {
