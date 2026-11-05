@@ -4,12 +4,15 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { adminCultureAiService } from '@/features/ai/api/adminCultureAiService';
 import { useConfirmDialog } from '@/shared/components/common/ConfirmDialog';
+import { useAuth } from '@/features/auth/context/AuthContext';
 import { ChevronDown, ChevronUp, Loader2, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AdminPagination } from '@/shared/components/common/AdminPagination';
 
 export function AdminCultureCategoriesPage() {
   const { confirm, confirmationDialog } = useConfirmDialog();
+  const { isAdmin } = useAuth();
+  const cultureBasePath = isAdmin ? '/admin/culture' : '/content/culture';
   const label = useBilingualLabel();
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -174,7 +177,7 @@ export function AdminCultureCategoriesPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <nav style={{ fontSize: '13px', color: 'var(--text-secondary, #64748B)', marginBottom: '6px' }}>
-            <Link to="/admin/culture" style={{ color: 'var(--color-red-hover)', textDecoration: 'none', fontWeight: 600 }}>
+            <Link to={cultureBasePath} style={{ color: 'var(--color-red-hover)', textDecoration: 'none', fontWeight: 600 }}>
               ← {label('Quản lý bài viết văn hóa', 'Manage culture articles')}
             </Link>
           </nav>
@@ -195,7 +198,7 @@ export function AdminCultureCategoriesPage() {
         <button
           type="button"
           className="button"
-          onClick={() => setEditingCategory({ id: '', name: '', slug: '', icon: '🏮', description: '', order: categories.length + 1 })}
+          onClick={() => setEditingCategory({ id: '', name: '', slug: '', icon: '', description: '', order: categories.length + 1 })}
           style={{ fontSize: '13px', minHeight: '40px', height: '40px', padding: '0 16px', cursor: 'pointer' }}
         >
           <span>{label('+ Thêm danh mục mới', '+ Add new category')}</span>
@@ -207,16 +210,13 @@ export function AdminCultureCategoriesPage() {
         <table className="admin-table" style={{ width: '100%', minWidth: '960px', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
-              <th style={{ ...thStyle, width: '105px', textAlign: 'center', paddingLeft: '20px' }}>
+              <th style={{ ...thStyle, width: '110px', textAlign: 'center', paddingLeft: '20px' }}>
                 {label('Thứ tự', 'Order')}
               </th>
-              <th style={{ ...thStyle, width: '70px', textAlign: 'center' }}>
-                {label('Biểu tượng', 'Icon')}
-              </th>
-              <th style={{ ...thStyle, width: '28%' }}>
+              <th style={{ ...thStyle, width: '32%' }}>
                 {label('Tên danh mục & Slug', 'Category & Slug')}
               </th>
-              <th style={{ ...thStyle, width: '33%' }}>
+              <th style={{ ...thStyle, width: '38%' }}>
                 {label('Mô tả chuyên mục', 'Description')}
               </th>
               <th style={{ ...thStyle, width: '12%', textAlign: 'center' }}>
@@ -230,7 +230,7 @@ export function AdminCultureCategoriesPage() {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: 'var(--color-muted)' }}>
+                <td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: 'var(--color-muted)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--color-red-hover)' }}>
                     <Loader2 className="animate-spin" size={20} />
                     <span>{label('Đang tải danh mục...', 'Loading categories...')}</span>
@@ -239,7 +239,7 @@ export function AdminCultureCategoriesPage() {
               </tr>
             ) : categories.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: 'var(--color-muted)' }}>
+                <td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: 'var(--color-muted)' }}>
                   {label('Chưa có danh mục nào.', 'No categories found.')}
                 </td>
               </tr>
@@ -346,119 +346,100 @@ export function AdminCultureCategoriesPage() {
                         </div>
                       </td>
 
-                  <td style={{ ...tdStyle, textAlign: 'center' }}>
-                    <span
-                      style={{
-                        fontSize: '20px',
-                        width: '38px',
-                        height: '38px',
-                        borderRadius: '9px',
-                        background: '#fff7ed',
-                        border: '1px solid #ffedd5',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        margin: '0 auto',
-                      }}
-                    >
-                      {cat.icon || '🏮'}
-                    </span>
-                  </td>
+                      <td style={tdStyle}>
+                        <strong style={{ fontSize: '14px', color: 'var(--color-ink)', display: 'block', marginBottom: '2px', lineHeight: 1.35 }}>
+                          {cat.name}
+                        </strong>
+                        <code style={{ fontSize: '11px', color: '#ea580c', background: '#fff7ed', padding: '2px 7px', borderRadius: '5px', fontWeight: 600, border: '1px solid #fed7aa' }}>
+                          /{cat.slug}
+                        </code>
+                      </td>
 
-                  <td style={tdStyle}>
-                    <strong style={{ fontSize: '14px', color: 'var(--color-ink)', display: 'block', marginBottom: '2px', lineHeight: 1.35 }}>
-                      {cat.name}
-                    </strong>
-                    <code style={{ fontSize: '11px', color: '#ea580c', background: '#fff7ed', padding: '2px 7px', borderRadius: '5px', fontWeight: 600, border: '1px solid #fed7aa' }}>
-                      /{cat.slug}
-                    </code>
-                  </td>
+                      <td style={tdStyle}>
+                        <span style={{ fontSize: '13px', color: 'var(--color-forest)', lineHeight: 1.4, display: 'block' }}>
+                          <BilingualText vi={cat.descriptionVi || cat.description} en={cat.description} />
+                        </span>
+                      </td>
 
-                  <td style={tdStyle}>
-                    <span style={{ fontSize: '13px', color: 'var(--color-forest)', lineHeight: 1.4, display: 'block' }}>
-                      <BilingualText vi={cat.descriptionVi || cat.description} en={cat.description} />
-                    </span>
-                  </td>
-
-                  <td style={{ ...tdStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '4px',
-                        height: '28px',
-                        padding: '0 11px',
-                        borderRadius: '999px',
-                        background: (cat.articleCount || 0) > 0 ? '#eff6ff' : '#f1f5f9',
-                        color: (cat.articleCount || 0) > 0 ? '#1d4ed8' : '#475569',
-                        border: (cat.articleCount || 0) > 0 ? '1px solid #bfdbfe' : '1px solid #e2e8f0',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        lineHeight: 1,
-                      }}
-                    >
-                      <span>{cat.articleCount || 0}</span>
-                      <span>{label('bài', 'articles')}</span>
-                    </span>
-                  </td>
-
-                  <td style={{ ...tdStyle, textAlign: 'right', paddingRight: '20px', whiteSpace: 'nowrap' }}>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px', flexWrap: 'nowrap' }}>
-                      <button
-                        type="button"
-                        className="button secondary"
-                        style={{
-                          ...actionBtnBase,
-                          color: '#334155',
-                          background: '#ffffff',
-                          border: '1px solid #cbd5e1',
-                        }}
-                        title={label('Chỉnh sửa danh mục', 'Edit category')}
-                        onClick={() => setEditingCategory(cat)}
-                      >
-                        <Pencil size={13} strokeWidth={2.1} />
-                        <span>{label('Sửa', 'Edit')}</span>
-                      </button>
-
-                      {categories.length > 1 && (
-                        <button
-                          type="button"
-                          className="button secondary"
+                      <td style={{ ...tdStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>
+                        <span
                           style={{
-                            ...actionBtnBase,
-                            width: '32px',
-                            minWidth: '32px',
-                            padding: 0,
-                            color: '#dc2626',
-                            background: '#fef2f2',
-                            border: '1px solid #fecaca',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
+                            height: '28px',
+                            padding: '0 11px',
+                            borderRadius: '999px',
+                            background: (cat.articleCount || 0) > 0 ? '#eff6ff' : '#f1f5f9',
+                            color: (cat.articleCount || 0) > 0 ? '#1d4ed8' : '#475569',
+                            border: (cat.articleCount || 0) > 0 ? '1px solid #bfdbfe' : '1px solid #e2e8f0',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            lineHeight: 1,
                           }}
-                          title={label('Xóa danh mục', 'Delete category')}
-                          onClick={() => handleDelete(cat.id, cat.name)}
                         >
-                          <Trash2 size={14} strokeWidth={2.1} aria-hidden="true" />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            });
-          })()
-        )}
-      </tbody>
-    </table>
+                          <span>{cat.articleCount || 0}</span>
+                          <span>{label('bài', 'articles')}</span>
+                        </span>
+                      </td>
 
-    {!isLoading && categories.length > 0 && (
-      <AdminPagination
-        currentPage={Math.min(currentPage, Math.max(1, Math.ceil(categories.length / pageSize)))}
-        pageSize={pageSize}
-        totalItems={categories.length}
-        onPageChange={setCurrentPage}
-      />
-    )}
-  </div>
+                      <td style={{ ...tdStyle, textAlign: 'right', paddingRight: '20px', whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px', flexWrap: 'nowrap' }}>
+                          <button
+                            type="button"
+                            className="button secondary"
+                            style={{
+                              ...actionBtnBase,
+                              color: '#334155',
+                              background: '#ffffff',
+                              border: '1px solid #cbd5e1',
+                            }}
+                            title={label('Chỉnh sửa danh mục', 'Edit category')}
+                            onClick={() => setEditingCategory(cat)}
+                          >
+                            <Pencil size={13} strokeWidth={2.1} />
+                            <span>{label('Sửa', 'Edit')}</span>
+                          </button>
+
+                          {categories.length > 1 && (
+                            <button
+                              type="button"
+                              className="button secondary"
+                              style={{
+                                ...actionBtnBase,
+                                width: '32px',
+                                minWidth: '32px',
+                                padding: 0,
+                                color: '#dc2626',
+                                background: '#fef2f2',
+                                border: '1px solid #fecaca',
+                              }}
+                              title={label('Xóa danh mục', 'Delete category')}
+                              onClick={() => handleDelete(cat.id, cat.name)}
+                            >
+                              <Trash2 size={14} strokeWidth={2.1} aria-hidden="true" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                });
+              })()
+            )}
+          </tbody>
+        </table>
+
+        {!isLoading && categories.length > 0 && (
+          <AdminPagination
+            currentPage={Math.min(currentPage, Math.max(1, Math.ceil(categories.length / pageSize)))}
+            pageSize={pageSize}
+            totalItems={categories.length}
+            onPageChange={setCurrentPage}
+          />
+        )}
+      </div>
 
       {/* Edit / Create Modal */}
       {editingCategory && (
@@ -467,29 +448,16 @@ export function AdminCultureCategoriesPage() {
           onClose={() => setEditingCategory(null)}
         >
           <form onSubmit={handleSave}>
-            <div style={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: '12px' }}>
-              <label>
-                <BilingualText vi="Biểu tượng:" en="Icon:" />
-                <input
-                  type="text"
-                  value={editingCategory.icon || '🏮'}
-                  onChange={e => setEditingCategory({ ...editingCategory, icon: e.target.value })}
-                  style={{ textAlign: 'center', fontSize: '18px' }}
-                  required
-                />
-              </label>
-
-              <label>
-                <BilingualText vi="Tên danh mục:" en="Category Name:" />
-                <input
-                  type="text"
-                  value={editingCategory.name}
-                  onChange={e => setEditingCategory({ ...editingCategory, name: e.target.value })}
-                  placeholder={label('Ẩm thực & Quán xá...', 'Food & Cuisine...')}
-                  required
-                />
-              </label>
-            </div>
+            <label style={{ display: 'block' }}>
+              <BilingualText vi="Tên danh mục:" en="Category Name:" />
+              <input
+                type="text"
+                value={editingCategory.name}
+                onChange={e => setEditingCategory({ ...editingCategory, name: e.target.value })}
+                placeholder={label('Ẩm thực & Quán xá...', 'Food & Cuisine...')}
+                required
+              />
+            </label>
 
             <label style={{ marginTop: '14px', display: 'block' }}>
               <BilingualText vi="Slug (Đường dẫn):" en="Slug (URL path):" />

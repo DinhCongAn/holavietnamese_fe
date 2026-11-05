@@ -59,3 +59,8 @@ export const canReviewExplore = (user) => isAdministrator(user) || hasAny(user, 
   CONTENT_PERMISSIONS.EXPLORE_PUBLISH,
 ]);
 export const canPublishExplore = canReviewExplore;
+
+export const canReadCulture = (user) => isContentManager(user) || isAdministrator(user);
+export const canWriteCulture = (user) => isContentManager(user) || isAdministrator(user);
+export const canReviewCulture = (user) => isAdministrator(user);
+export const canPublishCulture = (user) => isAdministrator(user);

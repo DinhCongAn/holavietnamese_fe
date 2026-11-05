@@ -273,9 +273,13 @@ export function AppRouter() {
                 <Route path={ROUTES.ADMIN_SITE_CONTENT} element={<AdminSiteContentPage />} />
 
                 {/* Admin Văn hóa & AI (Người 4) */}
+                <Route path={ROUTES.CONTENT_CULTURE} element={<AdminCultureListPage />} />
                 <Route path={ROUTES.ADMIN_CULTURE} element={<AdminCultureListPage />} />
+                <Route path={ROUTES.CONTENT_CULTURE_NEW} element={<AdminCultureEditPage />} />
                 <Route path={ROUTES.ADMIN_CULTURE_NEW} element={<AdminCultureEditPage />} />
+                <Route path={ROUTES.CONTENT_CULTURE_EDIT} element={<AdminCultureEditPage />} />
                 <Route path={ROUTES.ADMIN_CULTURE_EDIT} element={<AdminCultureEditPage />} />
+                <Route path={ROUTES.CONTENT_CULTURE_CATEGORIES} element={<AdminCultureCategoriesPage />} />
                 <Route path={ROUTES.ADMIN_CULTURE_CATEGORIES} element={<AdminCultureCategoriesPage />} />
                 <Route path={ROUTES.ADMIN_AI_SCENARIOS} element={<AdminAiScenariosPage />} />
                 <Route path={ROUTES.ADMIN_AI_SCENARIO_NEW} element={<AdminScenarioBuilderPage />} />
