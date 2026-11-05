@@ -23,8 +23,6 @@ export function AdminRoute() {
   const role = String(user?.role || '').replace(/^ROLE_/, '');
   const isAdmin = role === 'ADMIN';
   const isContentManager = role === 'CONTENT';
-  const contentPath = ['/content/courses', '/content/lessons', '/content/questions', '/content/quizzes', '/admin/courses', '/admin/lessons', '/admin/questions', '/admin/quizzes']
-    .some(path => location.pathname === path || location.pathname.startsWith(`${path}/`));
   const vocabularyPath = ['/content/vocabulary', '/content/regional-language', '/admin/vocabulary', '/admin/regional-language']
     .some(path => location.pathname === path || location.pathname.startsWith(`${path}/`));
   const importPath = ['/content/import', '/content/imports', '/admin/import', '/admin/imports']
@@ -36,8 +34,7 @@ export function AdminRoute() {
       : explorePath ? canReadExplore(user)
         : null;
 
-  if ((moduleAllowed === false)
-    || (moduleAllowed === null && !isAdmin && !(isContentManager && contentPath))) {
+  if (!isAdmin && !isContentManager && moduleAllowed !== true) {
     return (
       <Navigate
         to="/forbidden"
@@ -48,3 +45,5 @@ export function AdminRoute() {
 
   return <Outlet />;
 }
+
+export default AdminRoute;
