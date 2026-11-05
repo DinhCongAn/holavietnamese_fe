@@ -1,4 +1,4 @@
-import { createContext, useContext, useCallback } from 'react';
+import { createContext, useContext, useCallback, useEffect, useState } from 'react';
 import { UI_TRANSLATIONS } from '@/shared/components/common/uiTranslations';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n';
@@ -7,9 +7,34 @@ const TextLanguageContext = createContext('bilingual');
 
 export function BilingualTextProvider({ language, children }) {
   const { i18n: activeI18n } = useTranslation();
-  const currentLang = (activeI18n?.resolvedLanguage || activeI18n?.language || 'en').startsWith('vi') ? 'vi' : 'en';
-  const effectiveLanguage = language || currentLang;
+  const [lang, setLang] = useState(() =>
+    (activeI18n?.resolvedLanguage || activeI18n?.language || i18n.language || 'en').startsWith('vi') ? 'vi' : 'en'
+  );
+
+  useEffect(() => {
+    const syncLang = (nextLang) => {
+      const raw = nextLang || activeI18n?.resolvedLanguage || activeI18n?.language || i18n.language || 'en';
+      setLang(String(raw).startsWith('vi') ? 'vi' : 'en');
+    };
+    syncLang();
+    i18n.on('languageChanged', syncLang);
+    return () => {
+      i18n.off('languageChanged', syncLang);
+    };
+  }, [activeI18n]);
+
+  const currentLang = (activeI18n?.resolvedLanguage || activeI18n?.language || lang || 'en').startsWith('vi') ? 'vi' : 'en';
+  const effectiveLanguage = language || lang || currentLang;
   return <TextLanguageContext.Provider value={effectiveLanguage}>{children}</TextLanguageContext.Provider>;
+}
+
+export function useTextLanguage() {
+  const { i18n: activeI18n } = useTranslation();
+  const contextLanguage = useContext(TextLanguageContext);
+  if (contextLanguage === 'vi' || contextLanguage === 'en') {
+    return contextLanguage;
+  }
+  return (activeI18n?.resolvedLanguage || activeI18n?.language || i18n.language || 'en').startsWith('vi') ? 'vi' : 'en';
 }
 
 const patterns = [
@@ -18,6 +43,21 @@ const patterns = [
   [/^Đã xóa “(.+)” khỏi sổ tay\.$/, match => `Removed “${match[1]}” from your notebook.`],
   [/^Nghĩa (\d+):$/, match => `Meaning ${match[1]}:`],
   [/^(\d+) phút$/, match => `${match[1]} minutes`],
+  [/^(\d+) phút đọc$/, match => `${match[1]} min read`],
+  [/^(\d+) lượt xem$/, match => `${match[1]} views`],
+  [/^(\d+) từ vựng$/, match => `${match[1]} words`],
+  [/^(\d+) từ$/, match => `${match[1]} words`],
+  [/^(\d+) chủ đề$/, match => `${match[1]} topics`],
+  [/^(\d+) kịch bản$/, match => `${match[1]} scenarios`],
+  [/^(\d+) khóa học$/, match => `${match[1]} courses`],
+  [/^(\d+) danh mục$/, match => `${match[1]} categories`],
+  [/^(\d+) điểm đến$/, match => `${match[1]} destinations`],
+  [/^(\d+) bài viết$/, match => `${match[1]} articles`],
+  [/^Cấp (\d+)$/i, match => `Level ${match[1]}`],
+  [/^Chặng (\d+)$/i, match => `Stage ${match[1]}`],
+  [/^Bước (\d+)$/i, match => `Step ${match[1]}`],
+  [/^Phần (\d+)$/i, match => `Part ${match[1]}`],
+  [/^Lần thử (\d+)$/i, match => `Attempt ${match[1]}`],
   [/^Cấp độ (.+)$/, match => `Level ${match[1]}`],
   [/^Lựa chọn (\d+)$/, match => `Option ${match[1]}`],
   [/^Mục (\d+)$/, match => `Item ${match[1]}`],
@@ -52,6 +92,18 @@ const patterns = [
   [/^Xem trước (.*)$/, match => `Preview ${match[1]}`],
   [/^Lưu trữ “(.*)”\? Nội dung sẽ ngừng hiển thị với học viên\.$/, match => `Archive “${match[1]}”? Content will no longer appear for learners.`],
   [/^Tạo (.+)$/, match => `Create ${UI_TRANSLATIONS[match[1]]?.[1] || match[1]}`],
+  [/^Tìm (.+)$/, match => `Search ${UI_TRANSLATIONS[match[1]]?.[1] || match[1]}`],
+  [/^(\d+) mục còn thiếu$/, match => `${match[1]} items remaining`],
+  [/^Xóa nghĩa (\d+)$/, match => `Delete meaning ${match[1]}`],
+  [/^Xóa ví dụ (\d+)$/, match => `Delete example ${match[1]}`],
+  [/^Xóa dòng (\d+)$/, match => `Delete row ${match[1]}`],
+  [/^Xóa lựa chọn (\d+)$/, match => `Delete option ${match[1]}`],
+  [/^Đáp án đúng (\d+)$/, match => `Correct option ${match[1]}`],
+  [/^Cột lựa chọn (\d+)$/, match => `Column for option ${match[1]}`],
+  [/^Đưa từ (\d+) lên$/, match => `Move word ${match[1]} up`],
+  [/^Đưa từ (\d+) xuống$/, match => `Move word ${match[1]} down`],
+  [/^Mục tiêu (\d+)\.\.\.$/, match => `Objective ${match[1]}...`],
+  [/^Bỏ liên kết (.+)$/, match => `Unlink ${match[1]}`],
 ];
 
 const REVERSE_TRANSLATIONS = {};
@@ -89,9 +141,8 @@ export function bilingualLabel(value, enFallback) {
   return currentLang === 'vi' ? pair[0] : pair[1];
 }
 
-export function vietnameseLabel(value) {
-  if (value && typeof value === 'object' && value.vi) return value.vi;
-  return bilingualPair(value)?.[0] ?? value;
+export function vietnameseLabel(value, enFallback) {
+  return bilingualLabel(value, enFallback);
 }
 
 export function englishLabel(value) {
@@ -112,7 +163,7 @@ export function useBilingualLabel() {
     if (enFallback !== undefined) {
       return currentLang === 'vi' ? value : enFallback;
     }
-    if (currentLang === 'vi') return vietnameseLabel(value);
+    if (currentLang === 'vi') return bilingualPair(value)?.[0] ?? value;
     const pair = bilingualPair(value);
     if (!pair) return value;
     return pair[1];

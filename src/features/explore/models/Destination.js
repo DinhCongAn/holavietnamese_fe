@@ -1,3 +1,5 @@
+import { bilingualLabel } from '@/shared/components/common/BilingualText';
+
 export const DESTINATION_STATUSES = ['DRAFT', 'PENDING_REVIEW', 'PUBLISHED', 'ARCHIVED'];
 export const DESTINATION_REGIONS = [
   { value: 'NORTH', vi: 'Miền Bắc', en: 'North' },
@@ -23,12 +25,12 @@ export function destinationDraft(entry) {
 export function destinationPayload(draft) {
   const text = (value, label, max, required = false) => {
     const trimmed = (value ?? '').trim();
-    if (required && !trimmed) throw new Error(`${label} không được để trống.`);
-    if (max && trimmed.length > max) throw new Error(`${label} tối đa ${max} ký tự.`);
+    if (required && !trimmed) throw new Error(bilingualLabel(`${label} không được để trống.`, `${bilingualLabel(label)} cannot be empty.`));
+    if (max && trimmed.length > max) throw new Error(bilingualLabel(`${label} tối đa ${max} ký tự.`, `${bilingualLabel(label)} max ${max} characters.`));
     return trimmed || null;
   };
-  if (!DESTINATION_REGIONS.some(item => item.value === draft.region)) throw new Error('Vui lòng chọn vùng miền.');
-  if (!DESTINATION_STATUSES.includes(draft.status)) throw new Error('Trạng thái không hợp lệ.');
+  if (!DESTINATION_REGIONS.some(item => item.value === draft.region)) throw new Error(bilingualLabel('Vui lòng chọn vùng miền.', 'Please select a region.'));
+  if (!DESTINATION_STATUSES.includes(draft.status)) throw new Error(bilingualLabel('Trạng thái không hợp lệ.', 'Invalid status.'));
   // Only DestinationRequest fields; timestamps and slug normalization belong to the backend.
   return {
     nameVi: text(draft.nameVi, 'Tên tiếng Việt', 150, true),
@@ -44,6 +46,4 @@ export function destinationPayload(draft) {
   };
 }
 
-export const destinationDate = (value, language = 'vi') => value
-  ? new Date(value).toLocaleString(String(language).startsWith('vi') ? 'vi-VN' : 'en-US')
-  : '—';
+export const destinationDate = value => value ? new Date(value).toLocaleString(bilingualLabel('vi', 'en') === 'en' ? 'en-US' : 'vi-VN') : '—';

@@ -73,16 +73,20 @@ export function AdminAiScenariosPage() {
   const handleStatusChange = async (id, newStatus) => {
     try {
       await adminCultureAiService.updateScenarioRecordStatus(id, newStatus);
-    } catch {
       adminCultureAiService.updateScenarioStatus(id, newStatus);
+      setScenarios(prev => prev.map(sc => (sc.id === id ? { ...sc, status: newStatus } : sc)));
+      toast.success(
+        bilingualLabel(
+          `Đã đổi trạng thái kịch bản sang: ${newStatus}`,
+          `Scenario status changed to: ${newStatus}`,
+        ),
+      );
+    } catch (error) {
+      toast.error(
+        error?.message ||
+          bilingualLabel('Không thể cập nhật trạng thái kịch bản.', 'Failed to update scenario status.'),
+      );
     }
-    setScenarios(prev => prev.map(sc => (sc.id === id ? { ...sc, status: newStatus } : sc)));
-    toast.success(
-      bilingualLabel(
-        `Đã đổi trạng thái kịch bản sang: ${newStatus}`,
-        `Scenario status changed to: ${newStatus}`,
-      ),
-    );
   };
 
   const handleDelete = async (id, title) => {
@@ -97,11 +101,15 @@ export function AdminAiScenariosPage() {
     if (!accepted) return;
     try {
       await adminCultureAiService.deleteScenarioRecord(id);
-    } catch {
       adminCultureAiService.deleteScenario(id);
+      setScenarios(prev => prev.filter(sc => sc.id !== id));
+      toast.success(bilingualLabel('Đã xóa kịch bản.', 'Scenario deleted.'));
+    } catch (error) {
+      toast.error(
+        error?.message ||
+          bilingualLabel('Không thể xóa kịch bản. Vui lòng thử lại.', 'Failed to delete scenario. Please try again.'),
+      );
     }
-    setScenarios(prev => prev.filter(sc => sc.id !== id));
-    toast.success(bilingualLabel('Đã xóa kịch bản.', 'Scenario deleted.'));
   };
 
   const getStatusBadge = status => {
@@ -262,7 +270,7 @@ export function AdminAiScenariosPage() {
 
       {/* Filter Toolbar */}
       <div className="admin-card" style={{ marginBottom: '24px', padding: '18px 22px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr 1fr 1fr auto', gap: '12px', alignItems: 'center' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: '12px', alignItems: 'center' }}>
           <input
             type="text"
             placeholder={label('Tìm theo tên kịch bản, địa điểm...', 'Search by scenario title, location...')}

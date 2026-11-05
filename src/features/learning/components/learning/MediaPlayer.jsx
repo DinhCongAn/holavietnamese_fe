@@ -1,4 +1,4 @@
-﻿import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { useState } from 'react';
 import { mediaSource } from '@/shared/components/common/mediaSource';
 import { Volume2, Video, AlertCircle } from 'lucide-react';
@@ -13,6 +13,7 @@ export function MediaPlayer({ videoUrl, audioUrl }) {
 }
 
 function MediaAttempt({ value, type }) {
+  useTextLanguage();
   const src = mediaSource(value, type);
   const [failed, setFailed] = useState(false);
   const label = type === 'video' ? 'video' : 'âm thanh';
@@ -21,11 +22,10 @@ function MediaAttempt({ value, type }) {
     return (
       <p className="media-error flex items-center gap-1.5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-700 m-0" role="status">
         <AlertCircle size={14} className="shrink-0" />
-        <BilingualText>
-          {failed
-            ? `Không tải được ${label}. Vui lòng thử lại sau.`
-            : `Đường dẫn ${label} không hợp lệ.`}
-        </BilingualText>
+        <BilingualText
+          vi={failed ? `Không tải được ${label}. Vui lòng thử lại sau.` : `Đường dẫn ${label} không hợp lệ.`}
+          en={failed ? `Could not load ${type}. Please try again later.` : `Invalid ${type} URL.`}
+        />
       </p>
     );
   }

@@ -64,7 +64,7 @@ export function AdminDestinationsPage() {
       toast.success(msg);
       resource.reload();
     } catch (err) {
-      toast.error(err.message || 'Lỗi khi cập nhật trạng thái điểm đến.');
+      toast.error(bilingualLabel(err.message || 'Lỗi khi cập nhật trạng thái điểm đến.'));
     }
   }
 
@@ -227,7 +227,7 @@ export function AdminDestinationsPage() {
 
       {/* Filter Toolbar */}
       <div className="admin-card" style={{ marginBottom: '24px', padding: '18px 22px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr 1.2fr auto', gap: '12px', alignItems: 'center' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '12px', alignItems: 'center' }}>
           <input
             type="text"
             placeholder={label('Tìm theo tên tiếng Việt hoặc tiếng Anh...', 'Search by Vietnamese or English name...')}

@@ -1,5 +1,5 @@
-﻿import { useState, useRef, useEffect, useMemo } from 'react';
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { Link } from 'react-router-dom';
 import { LessonStatus } from '@/features/learning/components/learning/LessonStatus';
 import {
@@ -22,6 +22,7 @@ export function LessonSidebar({
   courseTitle = '',
   isDrawer = false,
 }) {
+  useTextLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const activeItemRef = useRef(null);
   const listContainerRef = useRef(null);
@@ -156,7 +157,7 @@ export function LessonSidebar({
       >
         {filteredLessons.length === 0 ? (
           <div className="text-center py-8 text-xs text-stone-400 font-medium">
-            Không tìm thấy bài học nào phù hợp.
+            <BilingualText vi="Không tìm thấy bài học nào phù hợp." en="No matching lessons found." />
           </div>
         ) : (
           filteredLessons.map((lesson, idx) => {
@@ -278,11 +279,11 @@ export function LessonSidebar({
       <div className="shrink-0 p-3 bg-stone-50 border-t border-[#E8E5DF]/40 text-center text-[11px] font-semibold text-stone-500">
         {completedCount === totalCount && totalCount > 0 ? (
           <span className="text-emerald-700 font-bold">
-            Bạn đã hoàn thành toàn bộ khóa học!
+            <BilingualText vi="Bạn đã hoàn thành toàn bộ khóa học!" en="You have completed the entire course!" />
           </span>
         ) : (
           <span>
-            Còn <strong className="text-[#FF7A00]">{totalCount - completedCount}</strong> bài học chưa hoàn thành
+            <BilingualText vi={<>Còn <strong className="text-[#FF7A00]">{totalCount - completedCount}</strong> bài học chưa hoàn thành</>} en={<><strong className="text-[#FF7A00]">{totalCount - completedCount}</strong> lessons remaining</>} />
           </span>
         )}
       </div>

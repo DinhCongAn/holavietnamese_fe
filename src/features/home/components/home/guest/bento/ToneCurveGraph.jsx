@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BilingualText, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { motion } from 'motion/react';
 import { Volume2, Play } from 'lucide-react';
 import { TONE_COLOR_MAP } from '@/features/home/components/home/data/vietnameseTones';
@@ -12,6 +13,7 @@ export const ToneCurveGraph = ({
   className = '',
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const isVi = useTextLanguage() === 'vi';
   const colorToken = TONE_COLOR_MAP[tone.id] || TONE_COLOR_MAP.NGANG;
 
   // SVG dimensions
@@ -65,10 +67,10 @@ export const ToneCurveGraph = ({
           </span>
           <div>
             <h4 className="text-xs font-bold text-slate-800 leading-tight">
-              {tone.nameVi}
+              {isVi ? tone.nameVi : tone.nameEn}
             </h4>
             <span className="text-[11px] text-slate-500 font-medium">
-              {tone.nameEn}
+              {isVi ? tone.nameEn : tone.nameVi}
             </span>
           </div>
         </div>
@@ -77,7 +79,7 @@ export const ToneCurveGraph = ({
           <button
             type="button"
             onClick={handlePlayTone}
-            aria-label={`Nghe cao độ thanh ${tone.nameVi}`}
+            aria-label={isVi ? `Nghe cao độ thanh ${tone.nameVi}` : `Listen to ${tone.nameEn} pitch`}
             className={`!min-h-0 !min-w-0 !p-0 !border-0 w-8 h-8 rounded-full flex items-center justify-center transition-transform active:scale-90 cursor-pointer audio-btn ${
               isPlaying
                 ? 'bg-emerald-500 text-white shadow-md'
@@ -190,7 +192,7 @@ export const ToneCurveGraph = ({
       {/* Mnemonic tip for foreign learners */}
       {!compact && tone.mnemonicTip && (
         <p className="mt-2 text-[11px] text-slate-500 italic bg-amber-50/60 text-amber-900/90 rounded-lg p-2 border border-amber-200/50">
-          <strong>Gợi ý:</strong> {tone.mnemonicTip}
+          <strong><BilingualText vi="Gợi ý:" en="Tip:" /></strong> {tone.mnemonicTip}
         </p>
       )}
     </div>

@@ -1,4 +1,4 @@
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { useEffect, useRef, useState } from 'react';
 import { learnerService } from '@/features/learning/api/learnerService';
 import { useAuth } from '@/features/auth/context/AuthContext';
@@ -23,6 +23,7 @@ const AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
 
 export function ProfilePage() {
+  useTextLanguage();
   const { fetchProfile, updateCurrentUser } = useAuth();
   const avatarInputRef = useRef(null);
   const [profile, setProfile] = useState(null);
@@ -207,12 +208,17 @@ export function ProfilePage() {
           {/* KPIs Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {[
-              { labelVi: 'Cấp độ', labelEn: 'Level', value: `Lv.${progress.currentLevel ?? 1}`, icon: Award },
-              { labelVi: 'Chuỗi học', labelEn: 'Streak', value: `${progress.streakCount ?? 1} ngày`, icon: Flame },
-              { labelVi: 'Tổng XP', labelEn: 'Total XP', value: `${progress.totalXp ?? 0} XP`, icon: Zap },
-              { labelVi: 'Bài đã học', labelEn: 'Lessons', value: `${progress.completedLessonsCount ?? 0} bài`, icon: BookOpen },
-              { labelVi: 'Từ đã thuộc', labelEn: 'Vocab', value: `${progress.learnedVocabulariesCount ?? 0} từ`, icon: Languages },
-              { labelVi: 'Thời gian', labelEn: 'Time', value: `${progress.totalTimeMinutes ?? 45} phút`, icon: Clock },
+
+
+
+
+
+              { labelVi: 'Cấp độ', labelEn: 'Level', valueVi: `Lv.${progress.currentLevel ?? 1}`, valueEn: `Lv.${progress.currentLevel ?? 1}`, icon: Award },
+              { labelVi: 'Chuỗi học', labelEn: 'Streak', valueVi: `${progress.streakCount ?? 1} ngày`, valueEn: `${progress.streakCount ?? 1} days`, icon: Flame },
+              { labelVi: 'Tổng XP', labelEn: 'Total XP', valueVi: `${progress.totalXp ?? 0} XP`, valueEn: `${progress.totalXp ?? 0} XP`, icon: Zap },
+              { labelVi: 'Bài đã học', labelEn: 'Lessons', valueVi: `${progress.completedLessonsCount ?? 0} bài`, valueEn: `${progress.completedLessonsCount ?? 0} lessons`, icon: BookOpen },
+              { labelVi: 'Từ đã thuộc', labelEn: 'Vocab', valueVi: `${progress.learnedVocabulariesCount ?? 0} từ`, valueEn: `${progress.learnedVocabulariesCount ?? 0} words`, icon: Languages },
+              { labelVi: 'Thời gian', labelEn: 'Time', valueVi: `${progress.totalTimeMinutes ?? 45} phút`, valueEn: `${progress.totalTimeMinutes ?? 45} mins`, icon: Clock },
             ].map((kpi, idx) => {
               const Icon = kpi.icon;
               return (
@@ -222,7 +228,7 @@ export function ProfilePage() {
                     <BilingualText vi={kpi.labelVi} en={kpi.labelEn} />
                   </div>
                   <strong className="text-base font-black text-[#253044] block">
-                    {kpi.value}
+                    <BilingualText vi={kpi.valueVi ?? kpi.value} en={kpi.valueEn ?? kpi.value} />
                   </strong>
                 </div>
               );
@@ -271,7 +277,7 @@ export function ProfilePage() {
               type="tel"
               value={form.phoneNumber || ''}
               onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
-              placeholder="VD: 0912345678"
+              placeholder={bilingualLabel("VD: 0912345678", "e.g., 0912345678")}
             />
           </label>
 
@@ -281,7 +287,7 @@ export function ProfilePage() {
               type="text"
               value={form.country || ''}
               onChange={(e) => setForm({ ...form, country: e.target.value })}
-              placeholder="VD: United States"
+              placeholder={bilingualLabel("VD: United States", "e.g., United States")}
             />
           </label>
 

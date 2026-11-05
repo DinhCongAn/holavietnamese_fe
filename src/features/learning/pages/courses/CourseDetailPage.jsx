@@ -1,4 +1,4 @@
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useCourse } from '@/features/learning/hooks/useCourses';
@@ -162,6 +162,7 @@ const getLessonKey = (l, mIdx, lIdx) => (l?.id !== undefined && l?.id !== null ?
  * Giao diện chi tiết khóa học
  */
 function CourseDetailView({ course, courseId, enrollment, onReload }) {
+  useTextLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated } = useAuth();
@@ -210,6 +211,7 @@ function CourseDetailView({ course, courseId, enrollment, onReload }) {
             title: 'Bài học bổ sung',
             titleVi: 'Bài học bổ sung',
             descriptionVi: 'Các bài học tổng hợp và mở rộng trong khóa học',
+            descriptionEn: 'Comprehensive and extended lessons in the course',
             lessons: ungrouped,
           },
         ];
@@ -225,6 +227,7 @@ function CourseDetailView({ course, courseId, enrollment, onReload }) {
           title: 'Bài học',
           titleVi: 'Nội dung bài học',
           descriptionVi: 'Toàn bộ danh sách bài học của khóa học',
+          descriptionEn: 'Complete list of lessons in this course',
           lessons: allCourseLessons,
         },
       ];

@@ -595,7 +595,7 @@ if (typeof window !== 'undefined') {
   axiosClient.get('/api/ai/scenarios')
     .then(res => {
       const list = res?.result ?? res;
-      if (Array.isArray(list) && list.length > 0) {
+      if (Array.isArray(list)) {
         const map = new Map();
         list.forEach(item => {
           const existing = SCENARIOS.find(s => s.id === item.id) || {};
@@ -680,7 +680,7 @@ export const aiRoleplayService = {
     try {
       const res = await axiosClient.get('/api/ai/scenarios');
       const list = res?.result ?? res;
-      if (Array.isArray(list) && list.length > 0) {
+      if (Array.isArray(list)) {
         const map = new Map();
         list.forEach(item => {
           const existing = SCENARIOS.find(s => s.id === item.id) || {};

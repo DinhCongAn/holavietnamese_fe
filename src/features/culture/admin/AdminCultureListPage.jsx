@@ -66,7 +66,7 @@ export function AdminCultureListPage() {
       );
       loadArticles();
     } catch (err) {
-      toast.error(err.message || 'Lỗi cập nhật trạng thái.');
+      toast.error(bilingualLabel(err.message || 'Lỗi cập nhật trạng thái.'));
     }
   };
 
@@ -86,7 +86,7 @@ export function AdminCultureListPage() {
       toast.success(bilingualLabel('Đã xóa bài viết thành công.', 'Article deleted successfully.'));
       loadArticles();
     } catch (err) {
-      toast.error(err.message || 'Lỗi khi xóa bài viết.');
+      toast.error(bilingualLabel(err.message || 'Lỗi khi xóa bài viết.'));
     }
   };
 
@@ -257,7 +257,7 @@ export function AdminCultureListPage() {
 
       {/* Filter Toolbar */}
       <div className="admin-card" style={{ marginBottom: '24px', padding: '18px 22px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr 1fr auto', gap: '12px', alignItems: 'center' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '12px', alignItems: 'center' }}>
           <input
             type="text"
             placeholder={label('Tìm theo tiêu đề bài viết hoặc tác giả...', 'Search by title or author...')}

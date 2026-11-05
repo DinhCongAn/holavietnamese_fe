@@ -297,14 +297,17 @@ export function RoleplayResultPage() {
                       color: star <= reviewRating ? '#f59e0b' : '#cbd5e1',
                       padding: '2px',
                     }}
-                    title={`${star} sao`}
+                    title={isVi ? `${star} sao` : `${star} stars`}
                   >
                     ★
                   </button>
                 ))}
               </div>
               <span style={{ fontSize: '12px', color: 'var(--color-forest)', fontWeight: 600, marginLeft: '6px' }}>
-                {reviewRating === 5 ? '⭐⭐⭐⭐⭐ Rất tự nhiên' : reviewRating === 4 ? '⭐⭐⭐⭐ Tốt' : reviewRating === 3 ? '⭐⭐⭐ Bình thường' : reviewRating === 2 ? '⭐⭐ Cần cải thiện' : '⭐ Chưa đạt'}
+                <BilingualText
+                  vi={reviewRating === 5 ? '⭐⭐⭐⭐⭐ Rất tự nhiên' : reviewRating === 4 ? '⭐⭐⭐⭐ Tốt' : reviewRating === 3 ? '⭐⭐⭐ Bình thường' : reviewRating === 2 ? '⭐⭐ Cần cải thiện' : '⭐ Chưa đạt'}
+                  en={reviewRating === 5 ? '⭐⭐⭐⭐⭐ Very natural' : reviewRating === 4 ? '⭐⭐⭐⭐ Good' : reviewRating === 3 ? '⭐⭐⭐ Fair' : reviewRating === 2 ? '⭐⭐ Needs improvement' : '⭐ Poor'}
+                />
               </span>
             </div>
 
@@ -345,7 +348,7 @@ export function RoleplayResultPage() {
                         transition: 'all 0.15s ease',
                       }}
                     >
-                      {isSelected ? '✓ ' : '+ '}{tag}
+                      {isSelected ? '✓ ' : '+ '}<BilingualText>{tag}</BilingualText>
                     </button>
                   );
                 })}
@@ -356,7 +359,7 @@ export function RoleplayResultPage() {
             <div>
               <textarea
                 rows={2}
-                placeholder="Ý kiến hoặc góp ý thêm của bạn về lời thoại và phản hồi của nhân vật AI..."
+                placeholder={isVi ? "Ý kiến hoặc góp ý thêm của bạn về lời thoại và phản hồi của nhân vật AI..." : "Additional feedback or suggestions about the AI character's dialogue and responses..."}
                 value={feedbackComment}
                 onChange={(e) => setFeedbackComment(e.target.value)}
                 style={{
@@ -382,7 +385,7 @@ export function RoleplayResultPage() {
                   borderColor: 'var(--color-red-hover)',
                 }}
               >
-                {isSubmittingReview ? 'Đang gửi...' : 'Gửi đánh giá cho Admin'}
+                <BilingualText vi={isSubmittingReview ? 'Đang gửi...' : 'Gửi đánh giá cho Admin'} en={isSubmittingReview ? 'Submitting...' : 'Submit review to Admin'} />
               </button>
             </div>
           </form>

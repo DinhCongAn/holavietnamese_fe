@@ -1,4 +1,4 @@
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { useCallback, useState, useMemo, useRef, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '@/constants/routes';
@@ -17,7 +17,6 @@ import { mediaSource } from '@/shared/components/common/mediaSource';
 import { MediaPlayer } from '@/features/learning/components/learning/MediaPlayer';
 import alphabetData from '@/features/alphabet/alphabet.json';
 import { MessageCircle, BookOpen, FileText, CheckSquare, Award, Layers, LayoutGrid, Languages, Bookmark, CheckCircle2, ArrowLeft, ArrowRight, RotateCcw, Headphones, Check, Pause, Play, Lightbulb, AlertCircle, ZoomIn, X } from 'lucide-react';
-import { getStoredAudioSpeed, isAutoTranslateEnabled, isPronunciationHintsEnabled } from '@/features/account/services/userSettingsService';
 
 const alphabetAudioBySymbol = new Map(
   alphabetData.letters.map(({ symbol, id }) => [symbol, `/media/alphabet/${id}.wav`])
@@ -127,6 +126,7 @@ function ActivityWorkspace({
   onNextLesson,
 }) {
   const [params, setParams] = useSearchParams();
+  useTextLanguage();
   const workspaceRef = useRef(null);
   const activities = lesson.activities || [];
   const requested = activities.findIndex(
@@ -271,7 +271,7 @@ function ActivityWorkspace({
       <div className="bg-white rounded-2xl border border-[#E8E5DF] p-4 shadow-xs space-y-3">
         <div className="flex items-center justify-between text-xs font-bold text-[#64748B]">
           <span className="flex items-center gap-1.5 text-[#253044]">
-            <span>Hoạt động {index + 1} / {activities.length}</span>
+            <span><BilingualText vi={`Hoạt động ${index + 1} / ${activities.length}`} en={`Activity ${index + 1} / ${activities.length}`} /></span>
           </span>
           <span className="text-[#FF7A00] font-extrabold">{progress?.progressPercent ?? 0}%</span>
         </div>
@@ -327,12 +327,12 @@ function ActivityWorkspace({
         <div className="border-b border-[#E8E5DF]/40 pb-5 space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <span className="px-3 py-1 rounded-full bg-[#FFF2D6] text-[#EA580C] font-black text-xs uppercase tracking-wider border border-[#FFCD00]/50">
-              Hoạt động {index + 1} · {activity.activityType.replaceAll('_', ' ')}
+              <BilingualText vi={`Hoạt động ${index + 1} · ${activity.activityType.replaceAll('_', ' ')}`} en={`Activity ${index + 1} · ${activity.activityType.replaceAll('_', ' ')}`} />
             </span>
             {completed && (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">
                 <CheckCircle2 size={12} />
-                Đã hoàn thành
+                <BilingualText vi="Đã hoàn thành" en="Completed" />
               </span>
             )}
           </div>
@@ -485,6 +485,7 @@ function ActivityWorkspace({
  * Thân hoạt động xử lý Dialogue, Vocabulary, Grammar và các bài tập
  */
 function ActivityBody({ activity, lessonId, answer, setAnswer, busy, preview, lesson }) {
+  useTextLanguage();
   const content =
     typeof activity.contentJson === 'string'
       ? JSON.parse(activity.contentJson)
@@ -617,11 +618,11 @@ function ActivityBody({ activity, lessonId, answer, setAnswer, busy, preview, le
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-800 border border-purple-200 text-xs font-bold">
                 <Headphones size={13} />
-                <span>{content.accent || 'Bản ghi âm giọng chuẩn'}</span>
+                <span><BilingualText>{content.accent || 'Bản ghi âm giọng chuẩn'}</BilingualText></span>
               </span>
               {content.sourceLesson && (
                 <span className="text-xs text-[#64748B]">
-                  Nguồn: {content.sourceLesson}
+                  <BilingualText vi={`Nguồn: ${content.sourceLesson}`} en={`Source: ${content.sourceLesson}`} />
                 </span>
               )}
             </div>
@@ -669,7 +670,7 @@ function ActivityBody({ activity, lessonId, answer, setAnswer, busy, preview, le
                 <ContentImage
                   className="activity-content-image max-h-[500px] w-auto max-w-full object-contain rounded-xl group-hover:scale-[1.01] transition-transform"
                   src={content.imageUrl}
-                  alt={content.captionVi || content.caption || content.captionEn || activity.titleVi || activity.title || 'Nội dung bài học'}
+                  alt={content.captionVi || content.caption || content.captionEn || activity.titleVi || activity.title || bilingualLabel('Nội dung bài học', 'Lesson content')}
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center pointer-events-none">
                   <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 text-[#253044] text-xs font-bold px-3 py-1.5 rounded-xl shadow-md flex items-center gap-1.5">
@@ -688,7 +689,7 @@ function ActivityBody({ activity, lessonId, answer, setAnswer, busy, preview, le
                   </span>
                   {content.sourcePage && (
                     <span className="font-semibold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md text-[11px]">
-                      Trang giáo trình: {content.sourcePage}
+                      <BilingualText vi={`Trang giáo trình: ${content.sourcePage}`} en={`Textbook page: ${content.sourcePage}`} />
                     </span>
                   )}
                 </div>
@@ -720,7 +721,7 @@ function ActivityBody({ activity, lessonId, answer, setAnswer, busy, preview, le
                   </div>
                 </div>
                 <span className="px-2.5 py-1 rounded-full bg-stone-100 text-stone-600 text-[11px] font-bold">
-                  {content.illustrations.length} hình
+                  <BilingualText vi={`${content.illustrations.length} hình`} en={`${content.illustrations.length} images`} />
                 </span>
               </div>
 
@@ -735,7 +736,7 @@ function ActivityBody({ activity, lessonId, answer, setAnswer, busy, preview, le
                       <ContentImage
                         className="w-full h-full max-h-[360px] object-contain rounded-xl group-hover:scale-[1.02] transition-transform"
                         src={illustration.imageUrl}
-                        alt={illustration.captionVi || illustration.captionEn || `Hình minh họa ${index + 1}`}
+                        alt={illustration.captionVi || illustration.captionEn || bilingualLabel(`Hình minh họa ${index + 1}`, `Illustration ${index + 1}`)}
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center pointer-events-none">
                         <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 text-[#253044] text-xs font-bold px-3 py-1.5 rounded-xl shadow-md flex items-center gap-1.5">
@@ -750,7 +751,7 @@ function ActivityBody({ activity, lessonId, answer, setAnswer, busy, preview, le
                       </span>
                       {illustration.sourcePage && (
                         <span className="font-bold text-[#EA580C] bg-[#FFF2D6] px-2 py-0.5 rounded-md text-[10px] shrink-0">
-                          Trang {illustration.sourcePage}
+                          <BilingualText vi={`Trang ${illustration.sourcePage}`} en={`Page ${illustration.sourcePage}`} />
                         </span>
                       )}
                     </figcaption>
@@ -821,7 +822,7 @@ function ActivityBody({ activity, lessonId, answer, setAnswer, busy, preview, le
             </div>
 
             <div className="pt-2 text-center text-[11px] text-stone-400 shrink-0">
-              Bấm phím ESC hoặc bấm ra ngoài để đóng
+              <BilingualText vi="Bấm phím ESC hoặc bấm ra ngoài để đóng" en="Press ESC or click outside to close" />
             </div>
           </div>
         </div>
@@ -836,7 +837,8 @@ function ActivityBody({ activity, lessonId, answer, setAnswer, busy, preview, le
  * =========================================================================
  */
 function DialogueRenderer({ content = {}, activity = {} }) {
-  const [translations, setTranslations] = useState(() => isAutoTranslateEnabled());
+  useTextLanguage();
+  const [translations, setTranslations] = useState(true);
   const [activeLineIndex, setActiveLineIndex] = useState(null);
   const [isPlayingAll, setIsPlayingAll] = useState(false);
   const playAllRef = useRef(null);
@@ -894,7 +896,6 @@ function DialogueRenderer({ content = {}, activity = {} }) {
           const src = mediaSource(audioUrl, 'audio');
           if (src) {
             const player = new Audio(src);
-            player.playbackRate = getStoredAudioSpeed();
             playAllRef.current = player;
             player.onended = resolve;
             player.onerror = () => speakWithSpeechSynthesis(text, resolve);
@@ -918,7 +919,6 @@ function DialogueRenderer({ content = {}, activity = {} }) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'vi-VN';
-      utterance.rate = getStoredAudioSpeed();
       utterance.onend = callback;
       utterance.onerror = callback;
       window.speechSynthesis.speak(utterance);
@@ -936,7 +936,7 @@ function DialogueRenderer({ content = {}, activity = {} }) {
             <MessageCircle size={15} />
           </span>
           <span className="font-bold text-[#253044]">
-            Hội thoại thực tế ({lines.length} lượt thoại)
+            <BilingualText vi={`Hội thoại thực tế (${lines.length} lượt thoại)`} en={`Real-life dialogue (${lines.length} lines)`} />
           </span>
         </div>
 
@@ -952,7 +952,7 @@ function DialogueRenderer({ content = {}, activity = {} }) {
             }`}
           >
             {isPlayingAll ? <Pause size={13} /> : <Play size={13} fill="currentColor" />}
-            <span>{isPlayingAll ? 'Dừng đọc' : 'Nghe toàn bộ'}</span>
+            <span><BilingualText vi={isPlayingAll ? 'Dừng đọc' : 'Nghe toàn bộ'} en={isPlayingAll ? 'Stop' : 'Play all'} /></span>
           </button>
 
           {/* Nút bật/tắt bản dịch */}
@@ -962,7 +962,7 @@ function DialogueRenderer({ content = {}, activity = {} }) {
             className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl font-bold bg-white hover:bg-stone-50 text-stone-700 border border-[#E8E5DF] transition-all cursor-pointer"
           >
             <Languages size={13} />
-            <span>{translations ? 'Ẩn bản dịch' : 'Hiện bản dịch'}</span>
+            <span><BilingualText vi={translations ? 'Ẩn bản dịch' : 'Hiện bản dịch'} en={translations ? 'Hide translations' : 'Show translations'} /></span>
           </button>
         </div>
       </div>
@@ -970,7 +970,7 @@ function DialogueRenderer({ content = {}, activity = {} }) {
       {/* Luồng hội thoại bong bóng (Chat-style feed) */}
       <div className="dialogue-lines space-y-4 py-2">
         {lines.map((line, index) => {
-          const speakerName = line.speaker || (index % 2 === 0 ? 'Người nói A' : 'Người nói B');
+          const speakerName = line.speaker || (index % 2 === 0 ? bilingualLabel('Người nói A', 'Speaker A') : bilingualLabel('Người nói B', 'Speaker B'));
           const isSecondSpeaker = speakers.indexOf(speakerName) % 2 === 1 || index % 2 === 1;
           const isActive = activeLineIndex === index;
 
@@ -1034,15 +1034,13 @@ function DialogueRenderer({ content = {}, activity = {} }) {
         })}
       </div>
 
-      {/* Mẹo Shadowing & phát âm */}
-      {isPronunciationHintsEnabled() && (
-        <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-900">
-          <Lightbulb size={16} className="text-amber-600 shrink-0 mt-0.5" />
-          <span>
-            <strong><BilingualText vi="Mẹo phát âm & Shadowing:" en="Pronunciation & Shadowing Tip:" /></strong> <BilingualText vi="Hãy bấm nghe từng câu thoại và lặp lại ngay theo giọng người bản xứ để luyện nhịp điệu và ngữ điệu tự nhiên." en="Listen to each dialogue line and repeat immediately after the native speaker to practice natural rhythm and intonation." />
-          </span>
-        </div>
-      )}
+      {/* Mẹo Shadowing */}
+      <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-900">
+        <Lightbulb size={16} className="text-amber-600 shrink-0 mt-0.5" />
+        <span>
+          <strong><BilingualText vi="Mẹo học Shadowing:" en="Shadowing Tip:" /></strong> <BilingualText vi="Hãy bấm nghe từng câu thoại và lặp lại ngay theo giọng người bản xứ để luyện nhịp điệu và ngữ điệu tự nhiên." en="Listen to each dialogue line and repeat immediately after the native speaker to practice natural rhythm and intonation." />
+        </span>
+      </div>
     </div>
   );
 }
@@ -1053,6 +1051,7 @@ function DialogueRenderer({ content = {}, activity = {} }) {
  * =========================================================================
  */
 function VocabularyRenderer({ items = [], lessonId, preview, saved, saveError, onSaveWord }) {
+  useTextLanguage();
   const [viewMode, setViewMode] = useState('flashcard'); // 'flashcard' | 'grid'
   const [cardIndex, setCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -1098,7 +1097,7 @@ function VocabularyRenderer({ items = [], lessonId, preview, saved, saveError, o
         <div className="flex items-center gap-2">
           <BookOpen size={16} className="text-[#FF7A00]" />
           <span className="text-xs font-bold text-[#253044]">
-            Học {items.length} từ vựng trọng tâm
+            <BilingualText vi={`Học ${items.length} từ vựng trọng tâm`} en={`Learn ${items.length} key vocabulary words`} />
           </span>
         </div>
 
@@ -1157,11 +1156,11 @@ function VocabularyRenderer({ items = [], lessonId, preview, saved, saveError, o
             {/* Header Thẻ: Loại từ & Thanh điệu */}
             <div className="flex items-center justify-between">
               <span className="px-3 py-1 rounded-full bg-[#FFF2D6] text-[#EA580C] font-bold text-xs border border-[#FFCD00]/50">
-                {wordType}
+                <BilingualText>{wordType}</BilingualText>
               </span>
 
               <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${currentTone.badgeClass}`}>
-                {currentTone.nameVi} ({currentTone.symbol})
+                <BilingualText vi={`${currentTone.nameVi} (${currentTone.symbol})`} en={`${currentTone.nameEn} (${currentTone.symbol})`} />
               </span>
             </div>
 
@@ -1174,7 +1173,7 @@ function VocabularyRenderer({ items = [], lessonId, preview, saved, saveError, o
                     <ContentImage
                       className="w-full h-full object-contain rounded-xl"
                       src={imageUrl}
-                      alt={wordVi || 'Hình minh họa từ vựng'}
+                      alt={wordVi || bilingualLabel('Hình minh họa từ vựng', 'Vocabulary illustration')}
                     />
                   </div>
                 ) : (
@@ -1183,7 +1182,7 @@ function VocabularyRenderer({ items = [], lessonId, preview, saved, saveError, o
                       {wordVi?.charAt(0)?.toUpperCase() || 'A'}
                     </span>
                     <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider mt-0.5">
-                      {currentTone.nameVi}
+                      <BilingualText vi={currentTone.nameVi} en={currentTone.nameEn} />
                     </span>
                   </div>
                 )}
@@ -1213,7 +1212,7 @@ function VocabularyRenderer({ items = [], lessonId, preview, saved, saveError, o
               // MẶT SAU: Nghĩa tiếng Anh, Câu ví dụ
               <div className="text-center py-6 space-y-4">
                 <span className="text-[11px] font-bold text-[#EA580C] uppercase tracking-wider block">
-                  Ý nghĩa & Ví dụ
+                  <BilingualText vi="Ý nghĩa & Ví dụ" en="Meaning & Example" />
                 </span>
 
                 <h3 className="text-2xl sm:text-3xl font-black text-[#253044]">
@@ -1282,7 +1281,7 @@ function VocabularyRenderer({ items = [], lessonId, preview, saved, saveError, o
             </button>
 
             <span className="text-xs font-extrabold text-[#64748B]">
-              Thẻ {cardIndex + 1} / {items.length}
+              <BilingualText vi={`Thẻ ${cardIndex + 1} / ${items.length}`} en={`Card ${cardIndex + 1} / ${items.length}`} />
             </span>
 
             <button
@@ -1319,10 +1318,10 @@ function VocabularyRenderer({ items = [], lessonId, preview, saved, saveError, o
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="badge px-2.5 py-0.5 rounded-md bg-[#FFF2D6] text-[#EA580C] font-bold text-[10px] border border-[#FFCD00]/50">
-                      {itemWordType}
+                      <BilingualText>{itemWordType}</BilingualText>
                     </span>
                     <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${itemTone.badgeClass}`}>
-                      {itemTone.nameVi}
+                      <BilingualText vi={itemTone.nameVi} en={itemTone.nameEn} />
                     </span>
                   </div>
 
@@ -1331,7 +1330,7 @@ function VocabularyRenderer({ items = [], lessonId, preview, saved, saveError, o
                       <ContentImage
                         className="activity-word-image w-full h-full object-contain rounded-lg"
                         src={itemImageUrl}
-                        alt={itemWord || 'Hình minh họa từ vựng'}
+                        alt={itemWord || bilingualLabel('Hình minh họa từ vựng', 'Vocabulary illustration')}
                       />
                     </div>
                   ) : (
@@ -1340,8 +1339,8 @@ function VocabularyRenderer({ items = [], lessonId, preview, saved, saveError, o
                         {itemWord?.charAt(0)?.toUpperCase() || 'A'}
                       </div>
                       <div className="text-left">
-                        <span className="text-xs font-bold text-[#253044] block">{itemTone.nameVi}</span>
-                        <span className="text-[10px] text-[#64748B] block">{itemTone.symbol ? `Dấu ${itemTone.symbol}` : 'Thanh ngang (không dấu)'}</span>
+                        <span className="text-xs font-bold text-[#253044] block"><BilingualText vi={itemTone.nameVi} en={itemTone.nameEn} /></span>
+                        <span className="text-[10px] text-[#64748B] block"><BilingualText vi={itemTone.symbol ? `Dấu ${itemTone.symbol}` : 'Thanh ngang (không dấu)'} en={itemTone.symbol ? `Mark ${itemTone.symbol}` : 'Level tone (unmarked)'} /></span>
                       </div>
                     </div>
                   )}
@@ -1404,6 +1403,7 @@ function VocabularyRenderer({ items = [], lessonId, preview, saved, saveError, o
  * =========================================================================
  */
 function GrammarRenderer({ activity = {}, content = {} }) {
+  useTextLanguage();
   const grammarTopics = useMemo(() => {
     if (activity.grammarTopics?.length) return activity.grammarTopics;
     if (Array.isArray(content.grammarTopics) && content.grammarTopics.length) return content.grammarTopics;
@@ -1450,7 +1450,7 @@ function GrammarRenderer({ activity = {}, content = {} }) {
                   <FileText size={15} />
                 </span>
                 <span className="text-xs font-bold text-[#EA580C] uppercase tracking-wider">
-                  Điểm ngữ pháp trọng tâm {grammarTopics.length > 1 ? `#${topicIdx + 1}` : ''}
+                  <BilingualText vi={`Điểm ngữ pháp trọng tâm ${grammarTopics.length > 1 ? `#${topicIdx + 1}` : ''}`.trim()} en={`Key Grammar Point ${grammarTopics.length > 1 ? `#${topicIdx + 1}` : ''}`.trim()} />
                 </span>
               </div>
 
@@ -1463,7 +1463,7 @@ function GrammarRenderer({ activity = {}, content = {} }) {
             {pattern && (
               <div className="space-y-2">
                 <span className="text-[11px] font-bold text-[#64748B] uppercase tracking-wide block">
-                  Công thức cấu trúc:
+                  <BilingualText vi="Công thức cấu trúc:" en="Structure pattern:" />
                 </span>
                 <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#FFF7E8] to-[#FFF2D6] border-2 border-[#FFCD00]/70 shadow-xs flex items-center gap-3">
                   <span className="text-base sm:text-lg font-black text-[#253044] font-mono leading-snug">
@@ -1477,7 +1477,7 @@ function GrammarRenderer({ activity = {}, content = {} }) {
             {(explanation || explanationEn) && (
               <div className="space-y-2">
                 <span className="text-[11px] font-bold text-[#64748B] uppercase tracking-wide block">
-                  Giải thích và cách dùng:
+                  <BilingualText vi="Giải thích và cách dùng:" en="Explanation & usage:" />
                 </span>
                 <div className="text-sm sm:text-base text-[#253044] leading-relaxed bg-[#FFFDF9] p-4 rounded-2xl border border-[#E8E5DF]/40 space-y-1">
                   <RichText text={explanation} />
@@ -1516,7 +1516,7 @@ function GrammarRenderer({ activity = {}, content = {} }) {
             {examples.length > 0 && (
               <div className="space-y-3 pt-2">
                 <span className="text-[11px] font-bold text-[#64748B] uppercase tracking-wide block">
-                  Ví dụ thực tế trong hội thoại:
+                  <BilingualText vi="Ví dụ thực tế trong hội thoại:" en="Real-life dialogue examples:" />
                 </span>
 
                 <div className="space-y-2.5">

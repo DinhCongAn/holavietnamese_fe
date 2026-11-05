@@ -1,8 +1,9 @@
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { Link, useLocation } from 'react-router-dom';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 
 export function ResourceState({ resource, children, skeletonRows = 3 }) {
+  useTextLanguage();
   const location = useLocation();
 
   if (resource.loading && !resource.data) {

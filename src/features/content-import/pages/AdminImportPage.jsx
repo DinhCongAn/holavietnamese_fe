@@ -78,7 +78,7 @@ function ImportUpload({ types }) {
       {file && <p className="muted"><BilingualText>{"File đã chọn:"}</BilingualText> {file.name}</p>}
       <div className="actions"><button disabled={!file || pending}><BilingualText>{pending ? 'Đang xử lý…' : 'Kiểm tra và xem trước'}</BilingualText></button></div>
     </fieldset></form>
-    {error && <Notice kind="error">{error.message}</Notice>}
+    {error && <Notice kind="error"><BilingualText>{error.message}</BilingualText></Notice>}
     {job && <div className="admin-card"><ImportJobResult key={`${job.id}-${job.status}`} job={job} />{job.canConfirm && <button className="import-confirm" disabled={pending} onClick={importData}><BilingualText>{pending ? 'Đang nhập…' : 'Xác nhận nhập Excel'}</BilingualText></button>}<p><Link className="text-link" to={`${ROUTES.ADMIN_IMPORT_HISTORY}?id=${encodeURIComponent(job.id)}`}><BilingualText>{"Xem lại trong lịch sử →"}</BilingualText></Link></p></div>}
     {confirmationDialog}
   </>;

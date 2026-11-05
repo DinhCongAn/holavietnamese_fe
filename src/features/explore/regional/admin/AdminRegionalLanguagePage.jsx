@@ -57,7 +57,7 @@ export function AdminRegionalLanguagePage() {
         {mayWrite && <button disabled={busy} onClick={() => setEditing({})}><BilingualText vi="+ Thêm biến thể" en="+ Add variant" /></button>}
       </>}
     />
-    {message && <Notice kind="success">{message}</Notice>}{error && <Notice kind="error">{error.message}</Notice>}
+    {message && <Notice kind="success"><BilingualText>{message}</BilingualText></Notice>}{error && <Notice kind="error"><BilingualText>{error.message}</BilingualText></Notice>}
     <form className="admin-card regional-filters" onSubmit={event => { event.preventDefault(); filter('keyword', search.trim()); }}>
       <label><BilingualText>{"Tìm kiếm"}</BilingualText><input type="search" value={search} onChange={event => setSearch(event.target.value)} /></label>
       <label><BilingualText vi="Vùng miền" en="Region" /><select value={query.region} onChange={event => filter('region', event.target.value)}><option value="">{label("Tất cả vùng miền")}</option>{REGIONAL_REGIONS.map(item => <option value={item.value} key={item.value}>{label(item)}</option>)}</select></label>
@@ -111,7 +111,7 @@ function RegionalEditor({ entry, masters, onClose, onSaved }) {
       <label><BilingualText vi="Ghi chú cách dùng tiếng Anh" en="English usage note" /><textarea maxLength={2000} value={draft.usageNoteEn} onChange={event => change('usageNoteEn', event.target.value)} /></label>
       <label><BilingualText>{"Audio URL"}</BilingualText><input maxLength={2048} value={draft.audioUrl} onChange={event => change('audioUrl', event.target.value)} /></label>
       <p><strong><BilingualText>{"Trạng thái:"}</BilingualText></strong> <BilingualText>{"DRAFT"}</BilingualText></p>
-    </fieldset>{error && <Notice kind="error">{error.message}</Notice>}
+    </fieldset>{error && <Notice kind="error"><BilingualText>{error.message}</BilingualText></Notice>}
     <div className="actions"><button type="button" className="secondary" disabled={pending} onClick={onClose}><BilingualText>{"Hủy"}</BilingualText></button><button disabled={pending || masters.loading || !!masters.error}><BilingualText>{pending ? 'Đang lưu…' : 'Lưu biến thể'}</BilingualText></button></div></form>
   </Modal>;
 }

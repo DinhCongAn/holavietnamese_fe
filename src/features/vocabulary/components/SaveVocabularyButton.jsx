@@ -1,4 +1,4 @@
-import { BilingualText } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/features/auth/context/AuthContext';
@@ -8,6 +8,7 @@ import { vocabularyService } from '@/features/vocabulary/api/vocabularyService';
 import { Bookmark, BookmarkCheck } from 'lucide-react';
 
 export function SaveVocabularyButton({ entry, compact = false, initialSavedEntry = null, checking = false, checkError, onSaved, onDeleted }) {
+  useTextLanguage();
   const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -54,9 +55,9 @@ export function SaveVocabularyButton({ entry, compact = false, initialSavedEntry
   return <>
     <div className={compact ? 'vocabulary-card-save' : 'actions vocabulary-detail-save'}>
       <button type="button" className={compact ? `vocabulary-save-icon${savedEntry ? ' is-saved' : ''}` : undefined}
-        aria-label={compact ? (pending ? (savedEntry ? 'Đang xóa…' : 'Đang lưu…') : savedEntry ? `Xóa “${entry.word}” khỏi sổ tay` : `Lưu “${entry.word}” vào sổ tay`) : undefined}
+        aria-label={compact ? (pending ? (savedEntry ? bilingualLabel('Đang xóa…', 'Removing…') : bilingualLabel('Đang lưu…', 'Saving…')) : savedEntry ? bilingualLabel(`Xóa “${entry.word}” khỏi sổ tay`, `Remove “${entry.word}” from notebook`) : bilingualLabel(`Lưu “${entry.word}” vào sổ tay`, `Save “${entry.word}” to notebook`)) : undefined}
         aria-pressed={!!savedEntry} aria-busy={pending}
-        title={savedEntry ? 'Xóa khỏi sổ tay' : 'Lưu vào sổ tay'}
+        title={savedEntry ? bilingualLabel('Xóa khỏi sổ tay', 'Remove from notebook') : bilingualLabel('Lưu vào sổ tay', 'Save to notebook')}
         disabled={loading || pending || checking || Boolean(checkError)} onClick={save}>
         {savedEntry ? <BookmarkCheck size={18} aria-hidden="true" /> : <Bookmark size={18} aria-hidden="true" />}
         <span className={compact ? 'sr-only' : undefined}><BilingualText>{pending ? (savedEntry ? 'Đang xóa…' : 'Đang lưu…') : savedEntry ? 'Đã lưu vào sổ tay' : 'Lưu vào sổ tay'}</BilingualText></span>

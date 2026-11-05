@@ -1,4 +1,4 @@
-import { BilingualText, vietnameseLabel, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, vietnameseLabel, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { ContentImage } from '@/shared/components/common/ContentImage';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
@@ -6,6 +6,7 @@ import { adminCultureAiService } from '@/features/ai/api/adminCultureAiService';
 import { toast } from 'sonner';
 
 export function AdminCultureEditPage() {
+  useTextLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
   const isNew = !id || id === 'new';
@@ -118,7 +119,7 @@ export function AdminCultureEditPage() {
         navigate('/admin/culture');
       }, 700);
     } catch (err) {
-      toast.error(err.message || 'Lỗi khi lưu bài viết.');
+      toast.error(bilingualLabel(err.message || 'Lỗi khi lưu bài viết.'));
       setIsSubmitting(false);
     }
   };

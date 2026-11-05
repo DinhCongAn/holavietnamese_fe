@@ -1,4 +1,4 @@
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { useState, useMemo } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
@@ -183,6 +183,7 @@ function CourseOverviewView({ course, enrollment, lastAccessedLessonId }) {
             title: 'Bài học bổ sung',
             titleVi: 'Bài học bổ sung',
             descriptionVi: 'Các bài học tổng hợp và mở rộng trong khóa học',
+            descriptionEn: 'Comprehensive and extended lessons in the course',
             lessons: ungrouped,
           },
         ];
@@ -198,6 +199,7 @@ function CourseOverviewView({ course, enrollment, lastAccessedLessonId }) {
           title: 'Nội dung khóa học',
           titleVi: 'Nội dung khóa học',
           descriptionVi: 'Toàn bộ danh sách bài học của khóa học',
+          descriptionEn: 'Complete list of lessons in this course',
           lessons: allCourseLessons,
         },
       ];
@@ -296,7 +298,7 @@ function CourseOverviewView({ course, enrollment, lastAccessedLessonId }) {
   // Toast khi bấm vào bài học bị khóa
   const [lockedToast, setLockedToast] = useState(null);
   const handleLockedClick = (lessonTitle) => {
-    setLockedToast(`Bài "${lessonTitle}" đang khóa. Hãy hoàn thành các bài học trước để mở khóa nhé!`);
+    setLockedToast(bilingualLabel(`Bài "${lessonTitle}" đang khóa. Hãy hoàn thành các bài học trước để mở khóa nhé!`, `Lesson "${lessonTitle}" is locked. Complete previous lessons to unlock!`));
     setTimeout(() => setLockedToast(null), 4000);
   };
 

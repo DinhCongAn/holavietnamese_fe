@@ -1,10 +1,11 @@
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/constants/routes';
 import { Brand } from '@/shared/components/layout/Brand';
 import { BookOpen, Mail, MessageCircle, Heart } from 'lucide-react';
 
 export function AppFooter() {
+  useTextLanguage();
   const currentYear = new Date().getFullYear();
 
   return (

@@ -47,12 +47,12 @@ export function DestinationForm({ entry, onSaved, onCancel, onBusyChange }) {
   return <form className="destination-form" onSubmit={submit}>
     <fieldset disabled={pending} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
       {fields.map(field => <label key={field.key} htmlFor={`${formId}-${field.key}`}>
-        <BilingualText vi={`${field.vi}${field.required ? ' *' : ''}`} en={field.en} />
+        <BilingualText vi={`${field.vi}${field.required ? ' *' : ''}`} en={`${field.en}${field.required ? ' *' : ''}`} />
         {field.rows
           ? <textarea id={`${formId}-${field.key}`} value={draft[field.key]} onChange={event => change(field.key, event.target.value)} rows={field.rows} maxLength={field.max} lang={field.lang} />
           : <input id={`${formId}-${field.key}`} value={draft[field.key]} onChange={event => change(field.key, event.target.value)} required={field.required} maxLength={field.max} lang={field.lang} />}
       </label>)}
-      <label htmlFor={`${formId}-region`}><BilingualText vi="Vùng miền *" en="Region" />
+      <label htmlFor={`${formId}-region`}><BilingualText vi="Vùng miền *" en="Region *" />
         <select id={`${formId}-region`} value={draft.region} onChange={event => change('region', event.target.value)} required>
           <option value="">{label("Chọn vùng miền", "Select region")}</option>
           {DESTINATION_REGIONS.map(region => <option key={region.value} value={region.value}>{label(region)}</option>)}

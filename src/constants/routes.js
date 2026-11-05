@@ -106,6 +106,6 @@ export const ROUTES = {
   ADMIN_AI_SCENARIO_BUILDER: '/admin/ai-scenarios/:id',
   ADMIN_AI_SCENARIO_NEW: '/admin/ai-scenarios/new',
   ADMIN_AI_SETTINGS: '/admin/ai-settings',
-  ADMIN_AI_USAGE: '/admin/ai-usage',
-  ADMIN_AI_REVIEWS: '/admin/ai-reviews',
+
+
 };

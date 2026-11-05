@@ -1,10 +1,11 @@
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { useCallback, useEffect, useState } from 'react';
 import { adminService } from '@/features/admin/api/adminService';
 import { useConfirmDialog } from '@/shared/components/common/ConfirmDialog';
 
 const empty = { name: '', description: '', permissions: '' };
 export function AdminRolesPage() {
+  useTextLanguage();
   const { confirm, confirmationDialog } = useConfirmDialog();
   const [items, setItems] = useState([]); const [draft, setDraft] = useState(empty); const [editing, setEditing] = useState(null);
   const [state, setState] = useState({ loading: true, error: '', message: '' });

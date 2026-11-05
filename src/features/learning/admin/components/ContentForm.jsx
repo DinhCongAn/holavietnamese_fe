@@ -1,4 +1,4 @@
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { useEffect, useState } from 'react';
 import { Notice } from '@/shared/components/common/Ui';
 import { contentService } from '@/features/learning/api/contentService';
@@ -25,6 +25,7 @@ function slugFromTitle(title) {
 }
 
 export function ContentForm({ kind, initial = {}, fixedFields = [], onSave, onCancel, onBusyChange }) {
+  useTextLanguage();
   const [form,setForm] = useState({ ...defaults[kind], ...initial, estimatedMinutes:initial.estimatedMinutes ?? initial.estimatedDuration ?? defaults[kind]?.estimatedMinutes });
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(Boolean(initial.slug));
   const [busy,setBusy] = useState(false), [error,setError] = useState('');

@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { ContentImage } from '@/shared/components/common/ContentImage';
 import { ResourceState } from '@/shared/components/common/ResourceState';
 import { Breadcrumb, EmptyState, Notice, PageHeader } from '@/shared/components/common/Ui';
@@ -15,6 +15,7 @@ import { useAuth } from '@/features/auth/context/AuthContext';
 import { canManageExploreLinks, canReviewExplore, canWriteExplore } from '@/utils/permissions/contentAccess';
 
 export function AdminDestinationDetailPage() {
+  useTextLanguage();
   const { user } = useAuth();
   const mayWrite = canWriteExplore(user);
   const mayReview = canReviewExplore(user);
@@ -45,12 +46,12 @@ export function AdminDestinationDetailPage() {
   return <div className="admin-destinations-page admin-destination-detail-page">
     <Breadcrumb items={[{ label: bilingualLabel('Điểm đến', 'Destinations'), to: ROUTES.ADMIN_DESTINATIONS }, { label: editing ? bilingualLabel('Chỉnh sửa', 'Edit') : bilingualLabel('Chi tiết', 'Details') }]} />
     <ResourceState resource={resource}>{entry => <>
-      <PageHeader eyebrow="Quản lý điểm đến" title={<BilingualText vi={entry.nameVi} en={entry.nameEn} />} actions={!editing && <div className="actions">
+      <PageHeader eyebrow={<BilingualText vi="Quản lý điểm đến" en="Destination Management" />} title={<BilingualText vi={entry.nameVi} en={entry.nameEn} />} actions={!editing && <div className="actions">
         {mayWrite && entry.status === 'DRAFT' && <><button type="button" className="secondary" onClick={() => { setMessage(''); setParams({ edit: '1' }); }}><BilingualText vi="Chỉnh sửa điểm đến" en="Edit destination" /></button><button type="button" onClick={() => transition('SUBMIT')}><BilingualText vi="Gửi duyệt" en="Submit for review" /></button></>}
         {mayWrite && entry.status === 'PUBLISHED' && <button type="button" onClick={async () => { await transition('REVISE'); setParams({ edit: '1' }); }}><BilingualText vi="Chỉnh sửa lại" en="Revise" /></button>}
         {mayReview && entry.status === 'PENDING_REVIEW' && <><button type="button" onClick={() => transition('APPROVE')}><BilingualText vi="Phê duyệt & công khai" en="Approve & publish" /></button><button type="button" className="secondary" onClick={() => transition('REJECT')}><BilingualText vi="Trả về bản nháp" en="Return to draft" /></button></>}
       </div>} />
-      {message && <Notice kind="success"><BilingualText vi={message} en="Destination saved." /></Notice>}
+      {message && <Notice kind="success"><BilingualText>{message}</BilingualText></Notice>}
       <section className="admin-card">
         {editing && mayWrite && entry.status === 'DRAFT' ? <DestinationForm key={entry.id} entry={entry} onSaved={saved} onCancel={() => setParams({})} /> : <>
           <ContentImage src={entry.imageUrl} alt={entry.nameVi} className="figma-art" style={{ maxHeight: 280, objectFit: 'cover', borderRadius: 8 }} loading="eager" />

@@ -1,4 +1,4 @@
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { useEffect, useState } from 'react';
 import { contentService } from '@/features/learning/api/contentService';
 import { Notice } from '@/shared/components/common/Ui';
@@ -7,6 +7,7 @@ const types = ['TEXT','IMAGE','AUDIO','VIDEO','VOCABULARY','FLASHCARD','DIALOGUE
 const exercises = ['MULTIPLE_CHOICE','FILL_BLANK','MATCHING','REORDER_SENTENCE','LISTEN_AND_CHOOSE','LISTEN_AND_TYPE','LISTENING','TRANSLATION','PRACTICE'];
 
 export function ActivityEditor({ initial, lessonId, onSaved }) {
+  useTextLanguage();
   const [form,setForm] = useState({activityType:'TEXT',title:'',instruction:'',isRequired:true,maxScore:0,status:'DRAFT',quizId:null,...initial,grammarTopicIds:initial.grammarTopicIds || initial.grammarTopics?.map(topic=>topic.id) || []});
   const [raw,setRaw] = useState(typeof initial.contentJson==='string' ? initial.contentJson : JSON.stringify(initial.contentJson || {body:''},null,2));
   const [busy,setBusy] = useState(false), [error,setError] = useState('');

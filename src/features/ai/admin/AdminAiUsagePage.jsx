@@ -1,9 +1,10 @@
-import { BilingualText } from '@/shared/components/common/BilingualText';
+import { BilingualText, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { useEffect, useState } from 'react';
 import { adminCultureAiService } from '@/features/ai/api/adminCultureAiService';
 import { AdminPagination } from '@/shared/components/common/AdminPagination';
 
 export function AdminAiUsagePage() {
+  useTextLanguage();
   const [usageData, setUsageData] = useState(null);
   const [logsPage, setLogsPage] = useState(1);
   const pageSize = 10;
@@ -14,7 +15,7 @@ export function AdminAiUsagePage() {
       .catch(() => setUsageData({ summary: {}, modeBreakdown: [], recentLogs: [] }));
   }, []);
 
-  if (!usageData) return <div className="admin-content">Đang tải dữ liệu sử dụng AI...</div>;
+  if (!usageData) return <div className="admin-content"><BilingualText vi="Đang tải dữ liệu sử dụng AI..." en="Loading AI usage data..." /></div>;
 
   const summary = {
     totalSessions: 0,

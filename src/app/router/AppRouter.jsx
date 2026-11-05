@@ -1,4 +1,4 @@
-import { BilingualText } from '@/shared/components/common/BilingualText';
+import { BilingualText, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { lazy, Suspense } from 'react';
 import { generatePath, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { RequireAuth } from '@/shared/components/common/RequireAuth';
@@ -84,8 +84,8 @@ const AdminCultureCategoriesPage = lazy(() => import('@/features/culture/admin/A
 const AdminAiScenariosPage = lazy(() => import('@/features/ai/admin/AdminAiScenariosPage').then(module => ({ default: module.AdminAiScenariosPage })));
 const AdminScenarioBuilderPage = lazy(() => import('@/features/ai/admin/AdminScenarioBuilderPage').then(module => ({ default: module.AdminScenarioBuilderPage })));
 const AdminAiSettingsPage = lazy(() => import('@/features/ai/admin/AdminAiSettingsPage').then(module => ({ default: module.AdminAiSettingsPage })));
-const AdminAiUsagePage = lazy(() => import('@/features/ai/admin/AdminAiUsagePage').then(module => ({ default: module.AdminAiUsagePage })));
-const AdminAiReviewsPage = lazy(() => import('@/features/ai/admin/AdminAiReviewsPage').then(module => ({ default: module.AdminAiReviewsPage })));
+
+
 const VocabularyReviewPage = lazy(() => import('@/features/vocabulary/pages/VocabularyReviewPage').then(module => ({ default: module.VocabularyReviewPage })));
 const ExploreVietnamPage = lazy(() => import('@/features/explore/pages/ExplorePages').then(module => ({ default: module.ExploreVietnamPage })));
 const DestinationDetailPage = lazy(() => import('@/features/explore/pages/ExplorePages').then(module => ({ default: module.DestinationDetailPage })));
@@ -111,6 +111,7 @@ function LegacyRouteRedirect({ to }) {
 }
 
 export function AppRouter() {
+  useTextLanguage();
   return (
     <>
           <Suspense fallback={<div className="state loading-state" role="status"><span className="loading-spinner" aria-hidden="true"/><BilingualText>{"Đang tải trang…"}</BilingualText></div>}><Routes>
@@ -271,8 +272,8 @@ export function AppRouter() {
                 <Route path={ROUTES.ADMIN_AI_SCENARIO_NEW} element={<AdminScenarioBuilderPage />} />
                 <Route path={ROUTES.ADMIN_AI_SCENARIO_BUILDER} element={<AdminScenarioBuilderPage />} />
                 <Route path={ROUTES.ADMIN_AI_SETTINGS} element={<AdminAiSettingsPage />} />
-                <Route path={ROUTES.ADMIN_AI_USAGE} element={<AdminAiUsagePage />} />
-                <Route path={ROUTES.ADMIN_AI_REVIEWS} element={<AdminAiReviewsPage />} />
+
+
               </Route>
             </Route>
           </Routes></Suspense>

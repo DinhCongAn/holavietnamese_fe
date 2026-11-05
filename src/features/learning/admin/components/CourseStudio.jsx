@@ -131,7 +131,7 @@ export function CourseStudio({ course, reload = () => {} }) {
       <div>
         <p className="studio-eyebrow"><BilingualText>{"KHÔNG GIAN BIÊN SOẠN"}</BilingualText></p>
         <h1>{!course ? <BilingualText>{"Thêm khóa học bằng Excel"}</BilingualText> : isAdmin ? <BilingualText>{"Kiểm duyệt khóa học"}</BilingualText> : <BilingualText>{"Chỉnh sửa khóa học"}</BilingualText>}</h1>
-        <p>{course ? (course.titleVi || course.title) : <BilingualText vi="Tải file mẫu, điền nội dung rồi import để tạo khóa học nháp." en="Download the template, fill in content, then import to create a draft course." />}</p>
+        <p>{course ? <BilingualText vi={course.titleVi || course.title} en={course.title} /> : <BilingualText vi="Tải file mẫu, điền nội dung rồi import để tạo khóa học nháp." en="Download the template, fill in content, then import to create a draft course." />}</p>
       </div>
       <div className="studio-save-state">
         {course ? <>
@@ -153,7 +153,7 @@ export function CourseStudio({ course, reload = () => {} }) {
         </span>
       </button>)}
     </nav>}
-    {error && <Notice kind="error">{error}</Notice>}{message && <Notice kind="success">{message}</Notice>}
+    {error && <Notice kind="error"><BilingualText>{error}</BilingualText></Notice>}{message && <Notice kind="success"><BilingualText>{message}</BilingualText></Notice>}
     {course?.status === 'REJECTED' && <Notice kind="error"><strong><BilingualText vi="Yêu cầu chỉnh sửa: " en="Revision requested: " /></strong>{course.reviewNote || label('Vui lòng kiểm tra lại nội dung.')}</Notice>}
     {course && !canEdit && <Notice>{canReview ? <BilingualText vi="Xem nội dung và bản xem trước trước khi quyết định phê duyệt." en="Review content and preview before deciding on approval." /> : <BilingualText vi="Khóa học đang ở chế độ chỉ đọc. Bạn vẫn có thể xem cấu trúc và trải nghiệm học." en="Course is in read-only mode. You can still inspect structure and learning flow." />}</Notice>}
     {course && <section className="studio-step-intro">
@@ -388,7 +388,7 @@ function CourseWorkbookPanel({ canImport, importedCourseId, busy, onBusyChange, 
       </div>}
       <p className="studio-workbook-hint"><BilingualText vi="Sau khi import, khóa học được giữ ở trạng thái nháp để bạn kiểm tra. Nội dung mẫu đã đủ cấu trúc bắt buộc và có thể gửi Admin duyệt sau khi chỉnh sửa thông tin cần thiết." en="After import, the course remains a draft for inspection. The sample already includes the required structure and can be submitted for Admin review after any needed edits." /></p>
     </>}
-    {error && <Notice kind="error">{error}</Notice>}
+    {error && <Notice kind="error"><BilingualText>{error}</BilingualText></Notice>}
   </section>;
 }
 
@@ -583,7 +583,7 @@ function CourseDetailsForm({ course, canEdit, onSave, onDirty, onBusyChange, wiz
         </details>
       </section>}
     </fieldset>
-    {error && <Notice kind="error">{error}</Notice>}
+    {error && <Notice kind="error"><BilingualText>{error}</BilingualText></Notice>}
     {wizard ? <div className="studio-wizard-actions">
       <button type="button" className="secondary" disabled={busy} onClick={phase === 0 ? onCancel : () => { setError(''); setPhase(current => current - 1); }}><ArrowLeft size={16} /> <BilingualText>{phase === 0 ? 'Đóng' : 'Quay lại'}</BilingualText></button>
       <span><BilingualText vi="Bước" en="Step" /> {phase + 1} / {phaseLabels.length}</span>

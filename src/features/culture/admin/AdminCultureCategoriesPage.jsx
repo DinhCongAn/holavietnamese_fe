@@ -90,7 +90,7 @@ export function AdminCultureCategoriesPage() {
       await adminCultureAiService.reorderCategories(reordered);
       toast.success(bilingualLabel('Đã cập nhật thứ tự danh mục!', 'Category order updated!'));
     } catch (err) {
-      toast.error(err.message || 'Lỗi sắp xếp danh mục.');
+      toast.error(bilingualLabel(err.message || 'Lỗi sắp xếp danh mục.'));
     }
   };
 
@@ -104,7 +104,7 @@ export function AdminCultureCategoriesPage() {
       toast.success(bilingualLabel('Đã lưu thông tin danh mục thành công!', 'Category saved successfully!'));
       loadCategories();
     } catch (err) {
-      toast.error(err.message || 'Lỗi lưu danh mục.');
+      toast.error(bilingualLabel(err.message || 'Lỗi lưu danh mục.'));
     }
   };
 
@@ -124,7 +124,7 @@ export function AdminCultureCategoriesPage() {
       toast.success(bilingualLabel('Đã xóa danh mục.', 'Category deleted.'));
       loadCategories();
     } catch (err) {
-      toast.error(err.message || 'Lỗi khi xóa danh mục.');
+      toast.error(bilingualLabel(err.message || 'Lỗi khi xóa danh mục.'));
     }
   };
 

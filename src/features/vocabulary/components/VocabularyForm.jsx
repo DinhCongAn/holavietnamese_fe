@@ -1,8 +1,9 @@
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { useRef, useState } from 'react'
 import { vocabularyService } from '@/features/vocabulary/api/vocabularyService'
 import { Modal } from '@/shared/components/common/Modal'
 export function VocabularyForm({ entry, initialValues, lessonId = null, lessons = [], lessonOptions, onSaved, onClose }) {
+  useTextLanguage();
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
   const submitting = useRef(false)

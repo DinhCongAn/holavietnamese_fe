@@ -1,5 +1,4 @@
 import { BilingualText } from '@/shared/components/common/BilingualText';
-import { useTranslation } from 'react-i18next';
 import { Link, generatePath, useLocation } from 'react-router-dom';
 import { BookOpen, ExternalLink } from 'lucide-react';
 import { SpeakButton } from '@/shared/components/common/Ui';
@@ -17,11 +16,9 @@ export function DictionaryAttribution({ source, compact = false }) {
   return <aside className={`dictionary-attribution${compact ? ' is-compact' : ''}`}>
     <div className="dictionary-source-heading"><BookOpen size={17} aria-hidden="true" /><strong>{source.name}</strong></div>
     <p><a href={source.sourceUrl} target="_blank" rel="noreferrer"><BilingualText vi="Mục từ gốc" en="Original entry" /> <ExternalLink size={12} /></a><span aria-hidden="true"> · </span><a href={source.licenseUrl} target="_blank" rel="noreferrer">{source.license}</a></p>
-    {!compact && <><p>{source.attribution}</p><p><BilingualText vi="Bản dữ liệu" en="Snapshot" />: {source.dumpDate} · <BilingualText vi="Trích xuất" en="Extracted" />: {source.extractedAt}</p>
+    {!compact && <><p>{source.attribution}</p><p>Snapshot: {source.dumpDate} · <BilingualText vi="Trích xuất:" en="Extracted:" /> {source.extractedAt}</p>
       <p><a href={source.historyUrl} target="_blank" rel="noreferrer"><BilingualText vi="Lịch sử và người đóng góp" en="History and contributors" /></a> · <a href={source.downloadUrl} target="_blank" rel="noreferrer"><BilingualText vi="Dữ liệu trích xuất" en="Extracted data" /></a></p>
-      <details><summary><BilingualText vi="Chuẩn hóa và thay đổi" en="Normalization and changes" /></summary><p>{source.modifications}</p><p>{source.edited
-        ? <BilingualText vi="Mục từ đã được biên tập trong HolaVietnamese; nội dung nguồn được giữ để đối chiếu." en="This entry was edited in HolaVietnamese; the source content is retained for comparison." />
-        : <BilingualText vi="Nội dung nguồn đã được xử lý theo các bước ghi trên." en="The source content was processed using the steps above." />}</p></details></>}
+      <details><summary><BilingualText vi="Chuẩn hóa và thay đổi" en="Normalization and changes" /></summary><p>{source.modifications}</p><p><BilingualText vi={source.edited ? 'Mục từ đã được biên tập trong HolaVietnamese; nội dung nguồn được giữ để đối chiếu.' : 'Nội dung nguồn đã được xử lý theo các bước ghi trên.'} en={source.edited ? 'This entry was edited in HolaVietnamese; source content is retained for reference.' : 'Source content was processed according to the steps above.'} /></p></details></>}
   </aside>;
 }
 export function DictionaryExample({ example, word }) {
@@ -32,8 +29,6 @@ export function DictionaryExample({ example, word }) {
 }
 export function DictionaryWordLink({ item }) {
   const location = useLocation();
-  const { i18n } = useTranslation();
-  const language = (i18n.resolvedLanguage || i18n.language || 'en').startsWith('vi') ? 'vi' : 'en';
-  return item.id ? <Link className="dictionary-related-chip" state={location.state} to={generatePath(ROUTES.VOCABULARY_CATALOG_DETAIL, { id: String(item.id) })}>{item.word}{item.partOfSpeech && <small>{partOfSpeechLabel(item.partOfSpeech, language)}</small>}</Link>
+  return item.id ? <Link className="dictionary-related-chip" state={location.state} to={generatePath(ROUTES.VOCABULARY_CATALOG_DETAIL, { id: String(item.id) })}>{item.word}{item.partOfSpeech && <small>{partOfSpeechLabel(item.partOfSpeech)}</small>}</Link>
     : <span className="dictionary-related-chip is-text">{item.word}</span>;
 }

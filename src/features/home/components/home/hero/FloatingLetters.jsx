@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTextLanguage } from '@/shared/components/common/BilingualText';
 import { motion } from 'motion/react';
 import { audioFeedback } from '@/utils/audioFeedback';
 
@@ -23,6 +24,7 @@ const speakVietnamese = (text, rate = 0.9) => {
  * - Safe layout positions orbiting the hero card
  */
 export function FloatingLetters({ className = '' }) {
+  const isVi = useTextLanguage() === 'vi';
   const letters = [
     {
       char: 'Ă',
@@ -136,8 +138,9 @@ export function FloatingLetters({ className = '' }) {
           }}
           whileTap={{ scale: 0.92 }}
           className={`pointer-events-auto absolute ${item.pos} ${item.hideOnMobile ? 'hidden sm:block' : 'block'} group/letter cursor-pointer`}
-          title={`Bấm để nghe phát âm chữ: ${item.char} (${item.name})`}
-          aria-label={`Phát âm chữ cái tiếng Việt ${item.char}`}
+          title={isVi ? `Bấm để nghe phát âm chữ: ${item.char} (${item.name})` : `Click to hear letter: ${item.char} (${item.name})`}
+          aria-label={isVi ? `Phát âm chữ cái tiếng Việt ${item.char}` : `Pronounce Vietnamese letter ${item.char}`}
+
         >
           {/* 3D Clay Pill Body */}
           <div

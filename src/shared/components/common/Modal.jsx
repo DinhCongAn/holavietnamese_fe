@@ -1,7 +1,8 @@
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { useEffect, useRef, useId } from 'react'
 import { X } from 'lucide-react'
 export function Modal({ title, children, onClose, busy = false, className = '' }) {
+  useTextLanguage();
   const dialog = useRef(null)
   const titleId = useId()
   useEffect(() => {

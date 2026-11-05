@@ -34,14 +34,14 @@ export function ContinueLessonConsole({ currentLesson }) {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-md bg-[#24382B] text-[#FFF7E8] text-[10px] font-black uppercase tracking-wider">
-              {courseTitle}
+              <BilingualText vi={currentLesson?.courseTitle || 'Tiếng Việt Sơ Cấp A1'} en={currentLesson?.courseTitleEn || currentLesson?.courseTitle || 'Elementary Vietnamese A1'} />
             </span>
             <span className="text-[11px] font-bold text-[#EA580C]">
               <BilingualText vi="Chương 1 • Bài 3" en="Chapter 1 • Lesson 3" />
             </span>
           </div>
           <h2 className="text-xl sm:text-2xl font-black text-[#253044] leading-snug">
-            {lessonTitle}
+            <BilingualText vi={currentLesson?.titleVi || currentLesson?.title || 'Gọi Cà Phê & Nhận Diện Dấu Thanh'} en={currentLesson?.titleEn || currentLesson?.title || 'Ordering Coffee & Recognizing Tones'} />
           </h2>
         </div>
 

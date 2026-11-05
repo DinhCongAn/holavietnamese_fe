@@ -1,10 +1,11 @@
-import { BilingualText, vietnameseLabel, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, vietnameseLabel, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { adminCultureAiService } from '@/features/ai/api/adminCultureAiService';
 import { toast } from 'sonner';
 
 export function AdminScenarioBuilderPage() {
+  const lang = useTextLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
   const isNew = !id || id === 'new';
@@ -154,7 +155,7 @@ export function AdminScenarioBuilderPage() {
     setSimMessages(prev => [
       ...prev,
       { sender: 'user', text: userText },
-      { sender: 'ai', text: `(Mô phỏng AI "${formData.aiRole.name}"): Cảm ơn bạn đã phản hồi! Tôi đang đóng vai với phong cách: "${formData.aiRole.tone}". Câu nói của bạn rất phù hợp với ngữ cảnh!` },
+      { sender: 'ai', text: lang === 'en' ? `(Simulated AI "${formData.aiRole.name}"): Thank you for responding! I am roleplaying with tone: "${formData.aiRole.tone}". Your line fits the context well!` : `(Mô phỏng AI "${formData.aiRole.name}"): Cảm ơn bạn đã phản hồi! Tôi đang đóng vai với phong cách: "${formData.aiRole.tone}". Câu nói của bạn rất phù hợp với ngữ cảnh!` },
     ]);
   };
 

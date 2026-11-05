@@ -1,4 +1,4 @@
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { useState, useEffect, useRef } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { learningService } from '@/features/learning/api/learningService';
@@ -34,6 +34,7 @@ function LessonContextSyncer({ lesson, course, contentLesson, courseId }) {
 }
 
 export function LessonLearningPage() {
+  useTextLanguage();
   const { courseId, lessonId } = useParams();
   return <LessonScreen key={courseId} courseId={courseId} lessonId={lessonId} />;
 }
@@ -222,7 +223,7 @@ function LessonScreen({ courseId, lessonId }) {
                     />
                   </span>
                   <h1 className="text-sm sm:text-base font-extrabold text-stone-900 truncate tracking-tight m-0">
-                    {lesson.titleVi || lesson.title}
+                    <BilingualText vi={lesson.titleVi || lesson.title} en={lesson.title} />
                   </h1>
                 </div>
               </div>
@@ -232,7 +233,7 @@ function LessonScreen({ courseId, lessonId }) {
                 {/* Chỉ số tiến độ hoàn thành khóa học */}
                 <div
                   className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-stone-50 border border-stone-200/60 text-xs font-medium text-stone-600"
-                  title={`${progress?.completedLessons || 0}/${progress?.totalLessons || 0} bài đã xong`}
+                  title={bilingualLabel(`${progress?.completedLessons || 0}/${progress?.totalLessons || 0} bài đã xong`, `${progress?.completedLessons || 0}/${progress?.totalLessons || 0} lessons completed`)}
                 >
                   <CheckCircle2 size={14} className="text-emerald-600" />
                   <span>
