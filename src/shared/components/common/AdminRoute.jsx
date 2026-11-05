@@ -1,7 +1,7 @@
 import { BilingualText } from '@/shared/components/common/BilingualText';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/features/auth/context/AuthContext';
-import { canImportVocabulary, canReadExplore, canReadVocabulary } from '@/utils/permissions/contentAccess';
+import { canImportVocabulary, canReadExplore, canReadVocabulary, canReadCulture } from '@/utils/permissions/contentAccess';
 
 export function AdminRoute() {
   const { isAuthenticated, user, loading } = useAuth();
@@ -29,10 +29,13 @@ export function AdminRoute() {
     .some(path => location.pathname === path || location.pathname.startsWith(`${path}/`));
   const explorePath = ['/content/destinations', '/admin/destinations', '/admin/journey']
     .some(path => location.pathname === path || location.pathname.startsWith(`${path}/`));
+  const culturePath = ['/admin/culture', '/admin/culture-categories', '/content/culture', '/content/culture-categories']
+    .some(path => location.pathname === path || location.pathname.startsWith(`${path}/`));
   const moduleAllowed = vocabularyPath ? canReadVocabulary(user)
     : importPath ? canImportVocabulary(user)
       : explorePath ? canReadExplore(user)
-        : null;
+        : culturePath ? canReadCulture(user)
+          : null;
 
   if (!isAdmin && !isContentManager && moduleAllowed !== true) {
     return (
@@ -41,6 +44,15 @@ export function AdminRoute() {
         replace
       />
     );
+  }
+
+  // Phân rõ đường dẫn theo vai trò cho văn hóa:
+  // Admin luôn dùng /admin/culture*, Content Manager luôn dùng /content/culture*
+  if (isAdmin && location.pathname.startsWith('/content/culture')) {
+    return <Navigate to={location.pathname.replace('/content/culture', '/admin/culture')} replace />;
+  }
+  if (isContentManager && !isAdmin && location.pathname.startsWith('/admin/culture')) {
+    return <Navigate to={location.pathname.replace('/admin/culture', '/content/culture')} replace />;
   }
 
   return <Outlet />;

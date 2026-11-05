@@ -255,12 +255,12 @@ export function AppRouter() {
                 <Route path={ROUTES.ADMIN_IMPORT_HISTORY} element={<AdminImportHistoryPage />} />
                 <Route path={ROUTES.ADMIN_DESTINATIONS} element={<AdminDestinationsPage />} />
                 <Route path={ROUTES.ADMIN_DESTINATION_DETAIL} element={<AdminDestinationDetailPage />} />
-                <Route path="/admin/vocabulary" element={<LegacyRouteRedirect to={ROUTES.ADMIN_VOCABULARY} />} />
-                <Route path="/admin/regional-language" element={<LegacyRouteRedirect to={ROUTES.ADMIN_REGIONAL_LANGUAGE} />} />
-                <Route path="/admin/import" element={<LegacyRouteRedirect to={ROUTES.ADMIN_IMPORT} />} />
-                <Route path="/admin/imports" element={<LegacyRouteRedirect to={ROUTES.ADMIN_IMPORT_HISTORY} />} />
-                <Route path="/admin/destinations" element={<LegacyRouteRedirect to={ROUTES.ADMIN_DESTINATIONS} />} />
-                <Route path="/admin/destinations/:id" element={<LegacyRouteRedirect to={ROUTES.ADMIN_DESTINATION_DETAIL} />} />
+                <Route path={ROUTES.CONTENT_VOCABULARY} element={<AdminVocabularyPage />} />
+                <Route path={ROUTES.CONTENT_REGIONAL_LANGUAGE} element={<AdminRegionalLanguagePage />} />
+                <Route path={ROUTES.CONTENT_IMPORT} element={<AdminImportPage />} />
+                <Route path={ROUTES.CONTENT_IMPORT_HISTORY} element={<AdminImportHistoryPage />} />
+                <Route path={ROUTES.CONTENT_DESTINATIONS} element={<AdminDestinationsPage />} />
+                <Route path={ROUTES.CONTENT_DESTINATION_DETAIL} element={<AdminDestinationDetailPage />} />
                 <Route path={ROUTES.ADMIN_JOURNEY} element={<Navigate to={ROUTES.ADMIN_DESTINATIONS} replace />} />
                 <Route path={ROUTES.ADMIN} element={<AdminDashboardPage />} />
                 <Route path={ROUTES.ADMIN_USERS} element={<AdminUsersPage />} />
@@ -273,9 +273,13 @@ export function AppRouter() {
                 <Route path={ROUTES.ADMIN_SITE_CONTENT} element={<AdminSiteContentPage />} />
 
                 {/* Admin Văn hóa & AI (Người 4) */}
+                <Route path={ROUTES.CONTENT_CULTURE} element={<AdminCultureListPage />} />
                 <Route path={ROUTES.ADMIN_CULTURE} element={<AdminCultureListPage />} />
+                <Route path={ROUTES.CONTENT_CULTURE_NEW} element={<AdminCultureEditPage />} />
                 <Route path={ROUTES.ADMIN_CULTURE_NEW} element={<AdminCultureEditPage />} />
+                <Route path={ROUTES.CONTENT_CULTURE_EDIT} element={<AdminCultureEditPage />} />
                 <Route path={ROUTES.ADMIN_CULTURE_EDIT} element={<AdminCultureEditPage />} />
+                <Route path={ROUTES.CONTENT_CULTURE_CATEGORIES} element={<AdminCultureCategoriesPage />} />
                 <Route path={ROUTES.ADMIN_CULTURE_CATEGORIES} element={<AdminCultureCategoriesPage />} />
                 <Route path={ROUTES.ADMIN_AI_SCENARIOS} element={<AdminAiScenariosPage />} />
                 <Route path={ROUTES.ADMIN_AI_SCENARIO_NEW} element={<AdminScenarioBuilderPage />} />

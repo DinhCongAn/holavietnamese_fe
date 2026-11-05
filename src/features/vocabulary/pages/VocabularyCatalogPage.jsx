@@ -93,6 +93,12 @@ export function VocabularyCatalogPage() {
             value={keyword}
             onChange={event => setKeyword(event.target.value)}
             placeholder={isVi ? 'Nhập từ tiếng Việt hoặc nghĩa tiếng Anh…' : 'Enter a Vietnamese word or English meaning…'}
+            style={{
+              border: 'none',
+              outline: 'none',
+              boxShadow: 'none',
+              background: 'transparent',
+            }}
           />
           <button>
             <BilingualText vi="Tìm từ" en="Look up" /> <ArrowUpRight size={17} />

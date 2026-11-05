@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { ContentImage } from '@/shared/components/common/ContentImage';
 import { ResourceState } from '@/shared/components/common/ResourceState';
@@ -9,13 +9,15 @@ import { DestinationContentEditor } from '@/features/explore/components/Destinat
 import { DestinationMetadata, DestinationRegion, DestinationStatusBadge } from '@/features/explore/components/DestinationMetadata';
 import { useAsyncResource } from '@/shared/hooks/useAsyncResource';
 import { adminDestinationService } from '@/features/explore/api/destinationService';
-import { ROUTES } from '@/constants/routes';
+import { getBackOfficeRoutes } from '@/constants/routes';
 import '@/features/explore/components/destinations.css';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { canManageExploreLinks, canReviewExplore, canWriteExplore } from '@/utils/permissions/contentAccess';
 
 export function AdminDestinationDetailPage() {
   useTextLanguage();
+  const location = useLocation();
+  const managementRoutes = getBackOfficeRoutes(location.pathname);
   const { user } = useAuth();
   const mayWrite = canWriteExplore(user);
   const mayReview = canReviewExplore(user);
@@ -41,10 +43,10 @@ export function AdminDestinationDetailPage() {
     resource.reload();
   }
 
-  if (resource.error?.status === 404) return <EmptyState title={bilingualLabel("Không tìm thấy điểm đến", "Destination not found")}><Link className="button secondary" to={ROUTES.ADMIN_DESTINATIONS}><BilingualText vi="Về danh sách điểm đến" en="Back to destinations" /></Link></EmptyState>;
+  if (resource.error?.status === 404) return <EmptyState title={bilingualLabel("Không tìm thấy điểm đến", "Destination not found")}><Link className="button secondary" to={managementRoutes.destinations}><BilingualText vi="Về danh sách điểm đến" en="Back to destinations" /></Link></EmptyState>;
 
   return <div className="admin-destinations-page admin-destination-detail-page">
-    <Breadcrumb items={[{ label: bilingualLabel('Điểm đến', 'Destinations'), to: ROUTES.ADMIN_DESTINATIONS }, { label: editing ? bilingualLabel('Chỉnh sửa', 'Edit') : bilingualLabel('Chi tiết', 'Details') }]} />
+    <Breadcrumb items={[{ label: bilingualLabel('Điểm đến', 'Destinations'), to: managementRoutes.destinations }, { label: editing ? bilingualLabel('Chỉnh sửa', 'Edit') : bilingualLabel('Chi tiết', 'Details') }]} />
     <ResourceState resource={resource}>{entry => <>
       <PageHeader eyebrow={<BilingualText vi="Quản lý điểm đến" en="Destination Management" />} title={<BilingualText vi={entry.nameVi} en={entry.nameEn} />} actions={!editing && <div className="actions">
         {mayWrite && entry.status === 'DRAFT' && <><button type="button" className="secondary" onClick={() => { setMessage(''); setParams({ edit: '1' }); }}><BilingualText vi="Chỉnh sửa điểm đến" en="Edit destination" /></button><button type="button" onClick={() => transition('SUBMIT')}><BilingualText vi="Gửi duyệt" en="Submit for review" /></button></>}
@@ -61,7 +63,7 @@ export function AdminDestinationDetailPage() {
       </section>
       <section className="admin-card" style={{ marginTop: 20 }}><DestinationMetadata entry={entry} /></section>
       {!editing && <DestinationContentEditor key={entry.id} destinationId={entry.id} editable={mayManageLinks && entry.status === 'DRAFT'} />}
-      <div className="actions" style={{ marginTop: 20 }}><Link className="button secondary" to={ROUTES.ADMIN_DESTINATIONS}><BilingualText vi="Về danh sách điểm đến" en="Back to destinations" /></Link></div>
+      <div className="actions" style={{ marginTop: 20 }}><Link className="button secondary" to={managementRoutes.destinations}><BilingualText vi="Về danh sách điểm đến" en="Back to destinations" /></Link></div>
     </>}</ResourceState>
   </div>;
 }

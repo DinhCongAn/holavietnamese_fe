@@ -46,7 +46,13 @@ export function useResumeCourse(courseId) {
   return useAsyncResource(useCallback(async () => {
     const [courses, lessons] = await Promise.all([courseService.myCourses(), learningService.lessons(courseId)])
     const course = courses.find(c => String(c.courseId) === String(courseId))
-    const target = lessons.find(l => l.id === course?.lastAccessedLessonId) || lessons.find(l => !l.isCompleted) || lessons[0]
+    let target = lessons.find(l => String(l.id) === String(course?.lastAccessedLessonId))
+    if (target && isLessonCompleted(target)) {
+      const idx = lessons.findIndex(l => String(l.id) === String(target.id))
+      target = lessons.slice(idx + 1).find(l => !isLessonCompleted(l)) || lessons.find(l => !isLessonCompleted(l)) || target
+    } else if (!target) {
+      target = lessons.find(l => !isLessonCompleted(l)) || lessons[0]
+    }
     return target?.id || null
   }, [courseId]))
 }

@@ -228,6 +228,14 @@ function CourseOverviewView({ course, enrollment, lastAccessedLessonId }) {
     if (lastAccessedLessonId) {
       target = list.find((l) => String(l.id) === String(lastAccessedLessonId));
     }
+    if (target && target.learningStatus === 'COMPLETED') {
+      const targetIdx = list.findIndex((l) => String(l.id) === String(target.id));
+      const nextIncomplete = list.slice(targetIdx + 1).find((l) => l.learningStatus !== 'COMPLETED')
+        || list.find((l) => l.learningStatus !== 'COMPLETED');
+      if (nextIncomplete) {
+        target = nextIncomplete;
+      }
+    }
     if (!target) {
       target = list.find((l) => l.learningStatus !== 'COMPLETED') || list[list.length - 1];
     }

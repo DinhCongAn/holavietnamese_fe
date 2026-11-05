@@ -3,12 +3,16 @@ import { ContentImage } from '@/shared/components/common/ContentImage';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { adminCultureAiService } from '@/features/ai/api/adminCultureAiService';
+import { useAuth } from '@/features/auth/context/AuthContext';
+import { Check, Send } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function AdminCultureEditPage() {
   useTextLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isAdmin, isContentManager } = useAuth();
+  const cultureBasePath = isAdmin ? '/admin/culture' : '/content/culture';
   const isNew = !id || id === 'new';
 
   const [categories, setCategories] = useState([]);
@@ -24,7 +28,7 @@ export function AdminCultureEditPage() {
     author: 'Biên tập viên Hola',
     authorRole: 'Chuyên gia văn hóa ẩm thực',
     readTime: '5 phút đọc',
-    status: 'PUBLISHED',
+    status: isAdmin ? 'PUBLISHED' : 'DRAFT',
     coverImage: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1200&q=80',
     summary: '',
     content: '',
@@ -97,15 +101,18 @@ export function AdminCultureEditPage() {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, overrideStatus) => {
     if (e && e.preventDefault) e.preventDefault();
     if (!formData.title?.trim()) {
       toast.error(bilingualLabel('Vui lòng nhập tiêu đề bài viết.', 'Please enter an article title.'));
       return;
     }
 
+    const targetStatus = overrideStatus || formData.status || (isAdmin ? 'PUBLISHED' : 'DRAFT');
+
     const payload = {
       ...formData,
+      status: targetStatus,
       id: isNew ? undefined : formData.id,
       usefulPhrases: formData.usefulPhrases.filter(p => p.word?.trim()),
     };
@@ -113,10 +120,16 @@ export function AdminCultureEditPage() {
     setIsSubmitting(true);
     try {
       await adminCultureAiService.saveArticle(payload);
-      showToast(bilingualLabel('Đã lưu bài viết văn hóa thành công!', 'Cultural article saved successfully!'));
-      toast.success(bilingualLabel('Lưu bài viết thành công!', 'Article saved successfully!'));
+      let successMsg = 'Đã lưu bài viết văn hóa thành công!';
+      if (targetStatus === 'IN_REVIEW') {
+        successMsg = 'Đã gửi bài viết cho Admin phê duyệt!';
+      } else if (targetStatus === 'PUBLISHED') {
+        successMsg = 'Đã phê duyệt và xuất bản bài viết thành công!';
+      }
+      showToast(bilingualLabel(successMsg));
+      toast.success(bilingualLabel(successMsg));
       setTimeout(() => {
-        navigate('/admin/culture');
+        navigate(cultureBasePath);
       }, 700);
     } catch (err) {
       toast.error(bilingualLabel(err.message || 'Lỗi khi lưu bài viết.'));
@@ -136,14 +149,14 @@ export function AdminCultureEditPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '14px' }}>
         <div>
           <nav style={{ fontSize: '13px', color: 'var(--text-secondary, #64748B)', marginBottom: '6px' }}>
-            <Link to="/admin/culture" style={{ color: 'var(--primary-orange, #F97316)', textDecoration: 'none', fontWeight: 600 }}><BilingualText>{"← Quay lại danh sách bài viết"}</BilingualText></Link>
+            <Link to={cultureBasePath} style={{ color: 'var(--primary-orange, #F97316)', textDecoration: 'none', fontWeight: 600 }}><BilingualText>{"← Quay lại danh sách bài viết"}</BilingualText></Link>
           </nav>
           <h1 style={{ margin: 0, fontSize: '30px' }}>
             <BilingualText>{isNew ? 'Soạn thảo bài viết văn hóa mới' : `Biên tập: ${formData.title}`}</BilingualText>
           </h1>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="culture-editor-actions" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button
             type="button"
             className={`button ${activeTab === 'editor' ? '' : 'secondary'}`}
@@ -156,15 +169,71 @@ export function AdminCultureEditPage() {
             onClick={() => setActiveTab('preview')}
             style={{ fontSize: '13px' }}
           ><BilingualText>{"Xem trước"}</BilingualText></button>
-          <button
-            type="button"
-            className="button"
-            disabled={isSubmitting}
-            onClick={handleSubmit}
-            style={{ background: 'var(--color-ink)', borderColor: 'var(--color-ink)', fontSize: '13px', cursor: 'pointer' }}
-          >
-            <BilingualText>{isSubmitting ? 'Đang lưu...' : 'Lưu bài viết'}</BilingualText>
-          </button>
+
+          {isAdmin ? (
+            <>
+              <button
+                type="button"
+                className="button secondary"
+                disabled={isSubmitting}
+                onClick={(e) => handleSubmit(e, formData.status || 'PUBLISHED')}
+                style={{ fontSize: '13px', cursor: 'pointer' }}
+              >
+                <BilingualText>{isSubmitting ? 'Đang lưu...' : 'Lưu bài viết'}</BilingualText>
+              </button>
+              {formData.status !== 'PUBLISHED' && (
+                <button
+                  type="button"
+                  className="button"
+                  disabled={isSubmitting}
+                  onClick={(e) => handleSubmit(e, 'PUBLISHED')}
+                  style={{
+                    background: '#15803d',
+                    borderColor: '#15803d',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <Check size={15} strokeWidth={2.4} />
+                  <BilingualText vi="Duyệt & Xuất bản" en="Approve & Publish" />
+                </button>
+              )}
+            </>
+          ) : (
+            // Content Manager actions
+            <>
+              <button
+                type="button"
+                className="button secondary"
+                disabled={isSubmitting}
+                onClick={(e) => handleSubmit(e, 'DRAFT')}
+                style={{ fontSize: '13px', cursor: 'pointer' }}
+              >
+                <BilingualText>{isSubmitting ? 'Đang lưu...' : 'Lưu bản nháp'}</BilingualText>
+              </button>
+              <button
+                type="button"
+                className="button"
+                disabled={isSubmitting}
+                onClick={(e) => handleSubmit(e, 'IN_REVIEW')}
+                style={{
+                  background: 'var(--primary-orange, #F97316)',
+                  borderColor: 'var(--primary-orange, #F97316)',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <Send size={14} strokeWidth={2.2} />
+                <BilingualText vi="Gửi kiểm duyệt" en="Submit for Review" />
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -179,53 +248,60 @@ export function AdminCultureEditPage() {
                     required
                     value={formData.title ?? ''}
                     onChange={e => setFormData({ ...formData, title: e.target.value })}
-                    placeholder={vietnameseLabel("Ví dụ: Văn hóa cà phê Việt Nam: Từ Cà phê phin đến Cà phê trứng...")}
+                    placeholder={vietnameseLabel("Ví dụ: Văn hóa Cà phê Phin - Nét sống chậm của người Việt")}
                   />
                 </label>
 
-                <label style={{ marginTop: '14px' }}><BilingualText>{"Tiêu đề phụ / Mô tả ngắn:"}</BilingualText><input
+                <label style={{ marginTop: '14px' }}><BilingualText>{"Phụ đề / Tiêu đề phụ:"}</BilingualText><input
                     type="text"
                     value={formData.subtitle ?? ''}
                     onChange={e => setFormData({ ...formData, subtitle: e.target.value })}
-                    placeholder={vietnameseLabel("Mô tả tóm lược nét hấp dẫn của bài viết...")}
+                    placeholder={vietnameseLabel("Mô tả ngắn gọn, thu hút người học")}
                   />
                 </label>
 
-                <label style={{ marginTop: '14px' }}><BilingualText>{"Tóm tắt mở đầu:"}</BilingualText><textarea
+                <label style={{ marginTop: '14px' }}><BilingualText>{"Tóm tắt bài viết:"}</BilingualText><textarea
                     rows={3}
                     value={formData.summary ?? ''}
                     onChange={e => setFormData({ ...formData, summary: e.target.value })}
-                    placeholder={vietnameseLabel("Đoạn văn ngắn làm nổi bật ý nghĩa văn hóa...")}
+                    placeholder={vietnameseLabel("Tóm tắt sơ lược 2-3 câu về nội dung bài viết...")}
                   />
                 </label>
               </div>
 
-              {/* Markdown Content */}
               <div className="admin-card">
-                <label><BilingualText>{"Nội dung chi tiết bài viết (Hỗ trợ Markdown):"}</BilingualText><textarea
-                    rows={16}
-                    required
-                    value={formData.content ?? ''}
-                    onChange={e => setFormData({ ...formData, content: e.target.value })}
-                    placeholder={vietnameseLabel("Soạn nội dung bài viết với các đề mục ###, đoạn văn, và hình ảnh...")}
-                    style={{ fontFamily: 'monospace', fontSize: '13.5px', lineHeight: 1.6 }}
-                  />
-                </label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ margin: 0, fontWeight: 700 }}><BilingualText>{"Nội dung chi tiết bài viết:"}</BilingualText></label>
+                  <span style={{ fontSize: '12px', color: 'var(--color-muted)' }}><BilingualText>{"(Hỗ trợ xuống dòng và các đoạn văn)"}</BilingualText></span>
+                </div>
+                <textarea
+                  rows={14}
+                  required
+                  value={formData.content ?? ''}
+                  onChange={e => setFormData({ ...formData, content: e.target.value })}
+                  placeholder={vietnameseLabel("Soạn thảo nội dung bài viết tại đây...")}
+                  style={{ lineHeight: 1.6, fontSize: '15px' }}
+                />
               </div>
 
-              {/* Useful phrases builder */}
+              {/* Useful Phrases Box */}
               <div className="admin-card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                   <div>
-                    <h3 style={{ margin: 0, fontSize: '16px', color: 'var(--color-ink)' }}><BilingualText>{"Từ vựng & Cụm từ liên quan"}</BilingualText></h3>
-                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary, #64748B)' }}><BilingualText>{"Học viên có thể nghe phát âm và lưu trực tiếp vào Sổ từ vựng khi đọc bài viết này."}</BilingualText></p>
+                    <h3 style={{ margin: 0, fontSize: '16px', color: 'var(--color-ink)' }}><BilingualText>{"Từ vựng & Cụm từ hữu ích kèm bài viết"}</BilingualText></h3>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '12.5px', color: 'var(--color-muted)' }}><BilingualText>{"Giúp học viên học từ ngữ xuất hiện trong bài viết văn hóa này"}</BilingualText></p>
                   </div>
-                  <button type="button" className="button secondary" onClick={handleAddPhrase} style={{ fontSize: '12px', padding: '6px 12px' }}><BilingualText>{"+ Thêm từ"}</BilingualText></button>
+                  <button
+                    type="button"
+                    onClick={handleAddPhrase}
+                    className="button secondary"
+                    style={{ fontSize: '12px', padding: '6px 12px' }}
+                  ><BilingualText>{"+ Thêm từ vựng"}</BilingualText></button>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {formData.usefulPhrases.map((phrase, idx) => (
-                    <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1.5fr auto', gap: '10px', alignItems: 'center', background: 'var(--color-cream)', padding: '10px', borderRadius: '10px' }}>
+                    <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1.5fr auto', gap: '10px', alignItems: 'center' }}>
                       <input
                         type="text"
                         placeholder={vietnameseLabel("Từ tiếng Việt (vd: Cà phê phin)")}
@@ -266,16 +342,80 @@ export function AdminCultureEditPage() {
               <div className="admin-card">
                 <h3 style={{ margin: '0 0 14px 0', fontSize: '16px', color: 'var(--color-ink)' }}><BilingualText>{"Phân loại & Trạng thái"}</BilingualText></h3>
 
-                <label><BilingualText>{"Trạng thái xuất bản:"}</BilingualText><select
-                    value={formData.status ?? ''}
-                    onChange={e => setFormData({ ...formData, status: e.target.value })}
-                  >
-                    <option value="PUBLISHED">{vietnameseLabel("Đã xuất bản")}</option>
-                    <option value="IN_REVIEW">{vietnameseLabel("Chờ duyệt")}</option>
-                    <option value="DRAFT">{vietnameseLabel("Bản nháp")}</option>
-                    <option value="ARCHIVED">{vietnameseLabel("Lưu trữ")}</option>
-                  </select>
-                </label>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--color-ink)', marginBottom: '8px' }}>
+                    <BilingualText vi="Trạng thái hiện tại:" en="Current status:" />
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        fontSize: '12.5px',
+                        fontWeight: 700,
+                        background:
+                          isNew || (!formData.status || formData.status === 'DRAFT')
+                            ? '#f1f5f9'
+                            : formData.status === 'IN_REVIEW'
+                            ? '#eff6ff'
+                            : formData.status === 'PUBLISHED'
+                            ? '#f0fdf4'
+                            : '#f8fafc',
+                        color:
+                          isNew || (!formData.status || formData.status === 'DRAFT')
+                            ? '#475569'
+                            : formData.status === 'IN_REVIEW'
+                            ? '#1d4ed8'
+                            : formData.status === 'PUBLISHED'
+                            ? '#15803d'
+                            : '#64748b',
+                        border:
+                          isNew || (!formData.status || formData.status === 'DRAFT')
+                            ? '1px solid #cbd5e1'
+                            : formData.status === 'IN_REVIEW'
+                            ? '1px solid #bfdbfe'
+                            : formData.status === 'PUBLISHED'
+                            ? '1px solid #bbf7d0'
+                            : '1px solid #e2e8f0',
+                      }}
+                    >
+                      <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'currentColor' }} />
+                      <BilingualText
+                        vi={
+                          isNew
+                            ? 'Bản nháp mới'
+                            : formData.status === 'IN_REVIEW'
+                            ? 'Chờ Admin duyệt'
+                            : formData.status === 'PUBLISHED'
+                            ? 'Đã xuất bản'
+                            : formData.status === 'ARCHIVED'
+                            ? 'Đã lưu trữ'
+                            : 'Bản nháp'
+                        }
+                        en={
+                          isNew
+                            ? 'New Draft'
+                            : formData.status === 'IN_REVIEW'
+                            ? 'In Review'
+                            : formData.status === 'PUBLISHED'
+                            ? 'Published'
+                            : formData.status === 'ARCHIVED'
+                            ? 'Archived'
+                            : 'Draft'
+                        }
+                      />
+                    </span>
+                  </div>
+                  <p style={{ margin: '8px 0 0 0', fontSize: '11.5px', color: 'var(--color-muted)', lineHeight: 1.4 }}>
+                    <BilingualText
+                      vi={isAdmin ? 'Dùng nút “Duyệt & Xuất bản” hoặc “Lưu bài viết” ở thanh trên để cập nhật.' : 'Dùng nút “Lưu bản nháp” hoặc “Gửi kiểm duyệt” ở thanh trên để lưu.'}
+                      en={isAdmin ? 'Use “Approve & Publish” or “Save” button above to update.' : 'Use “Save Draft” or “Submit for Review” button above to save.'}
+                    />
+                  </p>
+                </div>
 
                 <label style={{ marginTop: '12px' }}><BilingualText>{"Danh mục văn hóa:"}</BilingualText><select
                     value={formData.category ?? ''}
@@ -283,7 +423,7 @@ export function AdminCultureEditPage() {
                   >
                     {categories.map(c => (
                       <option key={c.id} value={c.slug || c.id}>
-                        {c.icon || '🏮'} {c.name}
+                        {c.name}
                       </option>
                     ))}
                   </select>

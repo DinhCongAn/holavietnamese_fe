@@ -10,9 +10,9 @@ import { canImportVocabulary, canReadExplore, canReadVocabulary } from '@/utils/
 import { learnerService } from '@/features/learning/api/learnerService';
 
 export function UserMenu({ user, isAdmin, isContentManager, onLogout }) {
-  const contentAdminPath = canReadVocabulary(user) ? ROUTES.ADMIN_VOCABULARY
-    : canReadExplore(user) ? ROUTES.ADMIN_DESTINATIONS
-      : canImportVocabulary(user) ? ROUTES.ADMIN_IMPORT
+  const contentAdminPath = canReadVocabulary(user) ? ROUTES.CONTENT_VOCABULARY
+    : canReadExplore(user) ? ROUTES.CONTENT_DESTINATIONS
+      : canImportVocabulary(user) ? ROUTES.CONTENT_IMPORT
         : null;
   const label = useBilingualLabel();
   const [open, setOpen] = useState(false);

@@ -118,12 +118,12 @@ test('Active routes keep their paths except for canonical learning and content-m
     ADMIN_QUIZ_PREVIEW: ['CONTENT_QUIZ_PREVIEW', '/content/quizzes/:quizId/preview'],
   };
   const canonicalManagementRoutes = {
-    ADMIN_VOCABULARY: '/content/vocabulary',
-    ADMIN_REGIONAL_LANGUAGE: '/content/regional-language',
-    ADMIN_IMPORT: '/content/import',
-    ADMIN_IMPORT_HISTORY: '/content/imports',
-    ADMIN_DESTINATIONS: '/content/destinations',
-    ADMIN_DESTINATION_DETAIL: '/content/destinations/:id',
+    ADMIN_VOCABULARY: '/admin/vocabulary',
+    ADMIN_REGIONAL_LANGUAGE: '/admin/regional-language',
+    ADMIN_IMPORT: '/admin/import',
+    ADMIN_IMPORT_HISTORY: '/admin/imports',
+    ADMIN_DESTINATIONS: '/admin/destinations',
+    ADMIN_DESTINATION_DETAIL: '/admin/destinations/:id',
   };
   for(const [key,path] of Object.entries(before)) {
     if (key === 'ADMIN_VOCABULARY_TOPICS') assert.equal(after[key],undefined);

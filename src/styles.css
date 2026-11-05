@@ -435,6 +435,27 @@ textarea:focus-visible {
   color: #1E293B !important;
 }
 
+/* Reset for dictionary search box input to prevent double border */
+.dictionary-search-box input,
+.dictionary-search-box input:focus,
+.dictionary-search-box input:focus-visible,
+#dictionary-search,
+#dictionary-search:focus,
+#dictionary-search:focus-visible {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  outline: none !important;
+  outline-width: 0 !important;
+  outline-color: transparent !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
 input[type="checkbox"]:checked,
 input[type="radio"]:checked {
   background-color: #FFFFFF !important;

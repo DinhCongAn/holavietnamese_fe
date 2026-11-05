@@ -156,10 +156,15 @@ export function AdminAiSettingsPage() {
           </p>
         </div>
 
-        <button className="button" onClick={handleSave} disabled={saving} style={{ fontSize: '13px' }}>
+        <button
+          className="button"
+          onClick={handleSave}
+          disabled={saving}
+          style={{ fontSize: '13px', minHeight: '40px', height: '40px', padding: '0 16px' }}
+        >
           <BilingualText
-            vi={saving ? 'Đang lưu cấu hình...' : '💾 Lưu tất cả cấu hình'}
-            en={saving ? 'Saving configuration...' : '💾 Save all settings'}
+            vi={saving ? 'Đang lưu cấu hình...' : 'Lưu tất cả cấu hình'}
+            en={saving ? 'Saving configuration...' : 'Save all settings'}
           />
         </button>
       </div>

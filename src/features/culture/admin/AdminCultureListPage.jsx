@@ -4,12 +4,16 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { adminCultureAiService } from '@/features/ai/api/adminCultureAiService';
 import { useConfirmDialog } from '@/shared/components/common/ConfirmDialog';
-import { Check, Eye, Loader2, Pencil, Power, Trash2 } from 'lucide-react';
+import { useAuth } from '@/features/auth/context/AuthContext';
+import { Check, Eye, Loader2, Pencil, Power, RotateCcw, Send, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AdminPagination } from '@/shared/components/common/AdminPagination';
 
 export function AdminCultureListPage() {
   const { confirm, confirmationDialog } = useConfirmDialog();
+  const { isAdmin, isContentManager } = useAuth();
+  const cultureBasePath = isAdmin ? '/admin/culture' : '/content/culture';
+  const categoriesBasePath = isAdmin ? '/admin/culture-categories' : '/content/culture-categories';
   const label = useBilingualLabel();
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -58,12 +62,17 @@ export function AdminCultureListPage() {
   const handleStatusChange = async (id, newStatus) => {
     try {
       await adminCultureAiService.updateArticleStatus(id, newStatus);
-      toast.success(
-        bilingualLabel(
-          `Đã cập nhật trạng thái bài viết sang: ${newStatus}`,
-          `Article status updated to: ${newStatus}`
-        )
-      );
+      let successMsg = `Đã cập nhật trạng thái bài viết sang: ${newStatus}`;
+      if (newStatus === 'PUBLISHED') {
+        successMsg = 'Đã phê duyệt và xuất bản bài viết thành công!';
+      } else if (newStatus === 'IN_REVIEW') {
+        successMsg = 'Đã gửi bài viết cho Admin phê duyệt!';
+      } else if (newStatus === 'DRAFT') {
+        successMsg = isAdmin
+          ? 'Đã chuyển bài viết về bản nháp / từ chối duyệt.'
+          : 'Đã rút lại yêu cầu, chuyển bài viết về bản nháp.';
+      }
+      toast.success(bilingualLabel(successMsg));
       loadArticles();
     } catch (err) {
       toast.error(bilingualLabel(err.message || 'Lỗi cập nhật trạng thái.'));
@@ -224,29 +233,39 @@ export function AdminCultureListPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-red-hover)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-            <BilingualText vi="VĂN HÓA & NỘI DUNG • QUẢN TRỊ" en="CULTURE & CONTENT • MANAGEMENT" />
+            <BilingualText
+              vi={isAdmin ? "VĂN HÓA & NỘI DUNG • KIỂM DUYỆT" : "VĂN HÓA & NỘI DUNG • BIÊN TẬP"}
+              en={isAdmin ? "CULTURE & CONTENT • ADMIN APPROVAL" : "CULTURE & CONTENT • AUTHORING"}
+            />
           </span>
           <h1 style={{ margin: '4px 0 6px 0', fontSize: '32px' }}>
-            <BilingualText vi="Quản lý bài viết văn hóa" en="Manage culture articles" />
+            <BilingualText
+              vi={isAdmin ? "Kiểm duyệt & Quản lý bài viết văn hóa" : "Quản lý bài viết văn hóa"}
+              en={isAdmin ? "Review & manage culture articles" : "Manage culture articles"}
+            />
           </h1>
           <p style={{ margin: 0, color: 'var(--color-forest)', fontSize: '14px' }}>
             <BilingualText
-              vi="Tìm kiếm, kiểm duyệt, xuất bản và biên tập các bài viết khám phá văn hóa, ẩm thực và đời sống Việt Nam."
-              en="Search, review, publish, and edit articles discovering Vietnamese culture, cuisine, and daily life."
+              vi={isAdmin
+                ? "Kiểm duyệt các bài viết văn hóa từ Content Manager, phê duyệt xuất bản hoặc yêu cầu chỉnh sửa."
+                : "Soạn thảo bài viết, biên tập nội dung văn hóa và gửi Admin kiểm duyệt để xuất bản cho học viên."}
+              en={isAdmin
+                ? "Review culture articles from Content Managers, approve publication, or request revisions."
+                : "Author articles, edit culture content, and submit for Admin approval to publish."}
             />
           </p>
         </div>
 
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <Link
-            to="/admin/culture-categories"
+            to={categoriesBasePath}
             className="button secondary"
             style={{ fontSize: '13px', minHeight: '40px', height: '40px', padding: '0 16px' }}
           >
             <span>{label('Quản lý danh mục', 'Manage categories')}</span>
           </Link>
           <Link
-            to="/admin/culture/new"
+            to={`${cultureBasePath}/new`}
             className="button"
             style={{ fontSize: '13px', minHeight: '40px', height: '40px', padding: '0 16px' }}
           >
@@ -269,7 +288,7 @@ export function AdminCultureListPage() {
             <option value="all">{label('Tất cả danh mục', 'All categories')}</option>
             {categories.map(c => (
               <option key={c.id} value={c.slug || c.id}>
-                {c.icon || '🏮'} {c.name}
+                {c.name}
               </option>
             ))}
           </select>
@@ -417,42 +436,98 @@ export function AdminCultureListPage() {
 
                     <td style={{ ...tdStyle, textAlign: 'right', paddingRight: '20px', whiteSpace: 'nowrap' }}>
                       <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px', flexWrap: 'nowrap' }}>
-                        {article.status !== 'PUBLISHED' ? (
-                          <button
-                            type="button"
-                            className="button secondary"
-                            style={{
-                              ...actionBtnBase,
-                              color: '#15803d',
-                              background: '#f0fdf4',
-                              border: '1px solid #bbf7d0',
-                            }}
-                            title={label('Duyệt & Xuất bản bài viết', 'Approve & publish article')}
-                            onClick={() => handleStatusChange(article.id, 'PUBLISHED')}
-                          >
-                            <Check size={13} strokeWidth={2.4} />
-                            <span>{label('Duyệt', 'Publish')}</span>
-                          </button>
+                        {isAdmin ? (
+                          article.status !== 'PUBLISHED' ? (
+                            <>
+                              <button
+                                type="button"
+                                className="button secondary"
+                                style={{
+                                  ...actionBtnBase,
+                                  color: '#15803d',
+                                  background: '#f0fdf4',
+                                  border: '1px solid #bbf7d0',
+                                }}
+                                title={label('Duyệt & Xuất bản bài viết', 'Approve & publish article')}
+                                onClick={() => handleStatusChange(article.id, 'PUBLISHED')}
+                              >
+                                <Check size={13} strokeWidth={2.4} />
+                                <span>{label('Duyệt', 'Approve')}</span>
+                              </button>
+                              {article.status === 'IN_REVIEW' && (
+                                <button
+                                  type="button"
+                                  className="button secondary"
+                                  style={{
+                                    ...actionBtnBase,
+                                    color: '#b45309',
+                                    background: '#fffbeb',
+                                    border: '1px solid #fde68a',
+                                  }}
+                                  title={label('Từ chối duyệt, trả về bản nháp', 'Reject to draft')}
+                                  onClick={() => handleStatusChange(article.id, 'DRAFT')}
+                                >
+                                  <RotateCcw size={13} strokeWidth={2.2} />
+                                  <span>{label('Từ chối', 'Reject')}</span>
+                                </button>
+                              )}
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              className="button secondary"
+                              style={{
+                                ...actionBtnBase,
+                                color: '#c2410c',
+                                background: '#fff7ed',
+                                border: '1px solid #fed7aa',
+                              }}
+                              title={label('Gỡ bài về bản nháp', 'Revert to draft')}
+                              onClick={() => handleStatusChange(article.id, 'DRAFT')}
+                            >
+                              <Power size={13} strokeWidth={2.2} />
+                              <span>{label('Gỡ bài', 'Revert')}</span>
+                            </button>
+                          )
                         ) : (
-                          <button
-                            type="button"
-                            className="button secondary"
-                            style={{
-                              ...actionBtnBase,
-                              color: '#c2410c',
-                              background: '#fff7ed',
-                              border: '1px solid #fed7aa',
-                            }}
-                            title={label('Gỡ bài về bản nháp', 'Revert to draft')}
-                            onClick={() => handleStatusChange(article.id, 'DRAFT')}
-                          >
-                            <Power size={13} strokeWidth={2.2} />
-                            <span>{label('Gỡ bài', 'Revert')}</span>
-                          </button>
+                          // Content Manager actions
+                          article.status === 'DRAFT' ? (
+                            <button
+                              type="button"
+                              className="button secondary"
+                              style={{
+                                ...actionBtnBase,
+                                color: '#1d4ed8',
+                                background: '#eff6ff',
+                                border: '1px solid #bfdbfe',
+                              }}
+                              title={label('Gửi bài viết cho Admin duyệt', 'Submit for admin review')}
+                              onClick={() => handleStatusChange(article.id, 'IN_REVIEW')}
+                            >
+                              <Send size={13} strokeWidth={2.2} />
+                              <span>{label('Gửi duyệt', 'Submit')}</span>
+                            </button>
+                          ) : article.status === 'IN_REVIEW' ? (
+                            <button
+                              type="button"
+                              className="button secondary"
+                              style={{
+                                ...actionBtnBase,
+                                color: '#64748b',
+                                background: '#f8fafc',
+                                border: '1px solid #cbd5e1',
+                              }}
+                              title={label('Rút lại yêu cầu duyệt', 'Withdraw review request')}
+                              onClick={() => handleStatusChange(article.id, 'DRAFT')}
+                            >
+                              <RotateCcw size={13} strokeWidth={2.2} />
+                              <span>{label('Rút lại', 'Withdraw')}</span>
+                            </button>
+                          ) : null
                         )}
 
                         <Link
-                          to={`/admin/culture/${article.id}`}
+                          to={`${cultureBasePath}/${article.id}`}
                           className="button secondary"
                           style={{
                             ...actionBtnBase,

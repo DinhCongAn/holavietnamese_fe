@@ -770,6 +770,22 @@ function Result({ result, courseId, lessonId }) {
 
   const cId = courseId || result.courseId;
   const lId = lessonId || result.lessonId;
+  const [nextLessonId, setNextLessonId] = useState(result.nextLessonId || null);
+
+  useEffect(() => {
+    if (result.nextLessonId) {
+      setNextLessonId(result.nextLessonId);
+      return;
+    }
+    const targetLessonId = lId || result.lessonId;
+    if (targetLessonId) {
+      contentService.lesson(targetLessonId).then((data) => {
+        if (data?.nextLessonId) {
+          setNextLessonId(data.nextLessonId);
+        }
+      }).catch(() => {});
+    }
+  }, [result.nextLessonId, lId, result.lessonId]);
 
   async function retry() {
     setBusy(true);
@@ -799,6 +815,21 @@ function Result({ result, courseId, lessonId }) {
 
   const percentage = Math.round(Number(result.percentage || 0));
   const passed = Boolean(result.passed);
+  const currentLessonUrl =
+    lId && cId
+      ? `/courses/${cId}/lessons/${lId}`
+      : cId
+      ? `/courses/${cId}`
+      : '/my-learning';
+
+  const nextLessonUrl =
+    nextLessonId && cId
+      ? `/courses/${cId}/lessons/${nextLessonId}`
+      : cId
+      ? `/courses/${cId}`
+      : currentLessonUrl;
+
+  const continueUrl = passed ? nextLessonUrl : currentLessonUrl;
 
   return (
     <section className="quiz-result-screen w-full max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-8">
@@ -899,11 +930,23 @@ function Result({ result, courseId, lessonId }) {
         {/* Action Buttons */}
         <div className="quiz-result-actions flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-[#E8E5DF]/40">
           <Link
-            to={back}
+            to={continueUrl}
             className="button inline-flex items-center gap-2 py-3 px-6 rounded-2xl bg-[#F97316] hover:bg-[#C2410C] text-white font-black text-xs sm:text-sm shadow-md hover:shadow-lg transition-all no-underline cursor-pointer"
           >
-            <BilingualText vi="Tiếp tục học ngay →" en="Continue learning →" />
+            <BilingualText
+              vi={passed ? (nextLessonId ? 'Tiếp tục học ngay →' : 'Hoàn thành khóa học →') : 'Ôn tập lại bài học →'}
+              en={passed ? (nextLessonId ? 'Continue learning →' : 'Complete course →') : 'Review lesson →'}
+            />
           </Link>
+
+          {passed && nextLessonId && (
+            <Link
+              to={currentLessonUrl}
+              className="button secondary inline-flex items-center gap-2 py-3 px-5 rounded-2xl bg-white hover:bg-stone-50 text-[#253044] border border-[#E8E5DF] font-bold text-xs sm:text-sm shadow-2xs transition-all no-underline"
+            >
+              <BilingualText vi="Xem lại bài vừa học" en="Review completed lesson" />
+            </Link>
+          )}
 
           <a
             href="#review-answers"

@@ -27,12 +27,18 @@
 .import-table-scroll .admin-table { min-width: 680px; }
 .import-table-scroll .admin-table td { max-width: 320px; min-width: 100px; overflow-wrap: anywhere; vertical-align: top; }
 .import-job-result .import-invalid-row td { background: var(--color-red-soft); }
-.content-import-page .import-confirm { margin-top: 24px; }
-.content-import-detail .modal { width: min(1100px,calc(100vw - 32px)); }
+.import-data-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px 18px; }
+.import-data-heading h2 { margin-bottom: 8px; }
+.import-editable-table :is(input,textarea) { width: 100%; min-width: 150px; margin: 0; padding: 8px 10px; font: inherit; line-height: 1.45; resize: vertical; }
+.import-editable-table td { padding: 8px; }
+.import-preview-actions { align-items: center; justify-content: flex-end; flex-wrap: wrap; margin-top: 20px; }
+.content-import-page .import-confirm { margin: 0; }
+.content-import-detail .modal.import-detail-modal { width: min(1280px,calc(100vw - 32px)); max-width: min(1280px,calc(100vw - 32px)); }
 .content-import-page .import-history-card { margin-top: 24px; }
 
 @media(max-width:767px) {
   .import-statistics { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .import-statistics > div { padding: 16px; }
   .content-import-page .import-upload input[type="file"] { padding: 16px 10px; }
+  .content-import-detail .modal.import-detail-modal { width: calc(100vw - 20px); max-width: calc(100vw - 20px); padding: 20px 16px; }
 }

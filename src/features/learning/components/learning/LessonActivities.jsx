@@ -134,7 +134,17 @@ function ActivityWorkspace({
     (activity) => String(activity.id) === params.get('activity')
   );
 
-  const [index, setIndex] = useState(requested >= 0 ? requested : 0);
+  const defaultIndex = useMemo(() => {
+    if (requested >= 0) return requested;
+    const firstIncomplete = activities.findIndex(
+      (act) => !lesson.progress?.activities?.some(
+        (p) => String(p.activityId) === String(act.id) && p.status === 'COMPLETED'
+      )
+    );
+    return firstIncomplete >= 0 ? firstIncomplete : 0;
+  }, [requested, activities, lesson.progress]);
+
+  const [index, setIndex] = useState(defaultIndex);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [feedback, setFeedback] = useState('');
