@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { BilingualText } from '@/shared/components/common/BilingualText';
+import { BilingualText, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { useSiteContent } from '@/features/admin/context/SiteContentContext';
 import { siteContentService } from '@/features/admin/api/siteContentService';
 
@@ -29,6 +29,7 @@ function Status({ enabled }) {
 }
 
 export function AdminSiteContentPage() {
+  const lang = useTextLanguage();
   const [content, setContent] = useState({ menus: [], banners: [], features: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -98,7 +99,7 @@ export function AdminSiteContentPage() {
         </button>
       </div>
 
-      {error && <div className="ui-notice ui-notice--error" role="alert" style={{ marginBottom: 20 }}>{error}</div>}
+      {error && <div className="ui-notice ui-notice--error" role="alert" style={{ marginBottom: 20 }}><BilingualText>{error}</BilingualText></div>}
       {loading ? <div className="state" role="status"><BilingualText vi="Đang tải cấu hình…" en="Loading configuration…" /></div> : <>
         <section className="admin-card" style={cardStyle} aria-labelledby="feature-flags-heading">
           <div style={headingStyle}>
@@ -147,7 +148,7 @@ export function AdminSiteContentPage() {
             <thead><tr><th><BilingualText vi="Banner" en="Banner" /></th><th><BilingualText vi="Vị trí" en="Placement" /></th><th><BilingualText vi="Lịch hiển thị" en="Schedule" /></th><th><BilingualText vi="Nhóm" en="Feature" /></th><th><BilingualText vi="Trạng thái" en="Status" /></th><th><BilingualText vi="Bật / tắt" en="Toggle" /></th></tr></thead>
             <tbody>{content.banners.map((banner) => {
               const token = `banners:${banner.id}`;
-              const schedule = [banner.startsAt, banner.endsAt].filter(Boolean).map((value) => new Date(value).toLocaleString('vi-VN')).join(' → ') || '—';
+              const schedule = [banner.startsAt, banner.endsAt].filter(Boolean).map((value) => new Date(value).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN')).join(' → ') || '—';
               return <tr key={banner.id ?? banner.code}>
                 <td><strong><BilingualText vi={banner.titleVi || banner.code} en={banner.titleEn || banner.titleVi || banner.code} /></strong><div className="muted">{banner.code}</div></td>
                 <td>{banner.placement}</td><td>{schedule}</td><td>{banner.featureKey || '—'}</td>

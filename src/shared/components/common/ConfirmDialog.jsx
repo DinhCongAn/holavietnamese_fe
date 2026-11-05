@@ -1,10 +1,11 @@
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { AlertTriangle, X } from 'lucide-react';
 
 function ConfirmDialog({ options, onResolve }) {
+  useTextLanguage();
   const panelRef = useRef(null);
   const titleId = useId();
   const descriptionId = useId();

@@ -1,3 +1,5 @@
+import { bilingualLabel } from '@/shared/components/common/BilingualText';
+
 export const VOCABULARY_STATUSES = ['DRAFT', 'PENDING_REVIEW', 'PUBLISHED', 'ARCHIVED'];
 
 export const newExample = () => ({ exampleVi: '', translationEn: '', audioUrl: '', displayOrder: 0 });
@@ -30,19 +32,19 @@ export function vocabularyDraft(entry) {
 export function vocabularyPayload(draft) {
   const required = (value, label, maxLength) => {
     const text = value.trim();
-    if (!text) throw new Error(`${label} không được để trống.`);
-    if (maxLength && text.length > maxLength) throw new Error(`${label} tối đa ${maxLength} ký tự.`);
+    if (!text) throw new Error(bilingualLabel(`${label} không được để trống.`, `${bilingualLabel(label)} cannot be empty.`));
+    if (maxLength && text.length > maxLength) throw new Error(bilingualLabel(`${label} tối đa ${maxLength} ký tự.`, `${bilingualLabel(label)} max ${maxLength} characters.`));
     return text;
   };
   const optional = (value) => value.trim() || null;
   const order = (value) => {
     if (value === '' || value == null) return null;
     const number = Number(value);
-    if (!Number.isInteger(number) || number < 0) throw new Error('Thứ tự phải là số nguyên không âm.');
+    if (!Number.isInteger(number) || number < 0) throw new Error(bilingualLabel('Thứ tự phải là số nguyên không âm.', 'Order index must be a non-negative integer.'));
     return number;
   };
-  if (!draft.meanings.length) throw new Error('Cần ít nhất một nghĩa.');
-  for (const meaning of draft.meanings) if (![meaning.translationEn, meaning.definitionVi, meaning.definitionEn].some(value => value?.trim())) throw new Error('Mỗi nghĩa cần định nghĩa tiếng Việt hoặc nghĩa tiếng Anh.');
+  if (!draft.meanings.length) throw new Error(bilingualLabel('Cần ít nhất một nghĩa.', 'At least one meaning is required.'));
+  for (const meaning of draft.meanings) if (![meaning.translationEn, meaning.definitionVi, meaning.definitionEn].some(value => value?.trim())) throw new Error(bilingualLabel('Mỗi nghĩa cần định nghĩa tiếng Việt hoặc nghĩa tiếng Anh.', 'Each meaning requires either a Vietnamese definition or an English meaning.'));
   return {
     word: required(draft.word, 'Từ vựng', 200),
     pronunciation: optional(draft.pronunciation),

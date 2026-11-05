@@ -1,10 +1,11 @@
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { moveItem } from '@/features/learning/components/learning/answerUtils';
 import { ContentImage } from '@/shared/components/common/ContentImage';
 import { MediaPlayer } from '@/features/learning/components/learning/MediaPlayer';
 import { Check, ArrowUp, ArrowDown, X } from 'lucide-react';
 
 export function QuestionInput({ question, answer = {}, onChange, disabled = false }) {
+  useTextLanguage();
   const type = question.questionType || 'FILL_BLANK';
   const options = question.options || [];
   const choice =
@@ -82,7 +83,7 @@ export function QuestionInput({ question, answer = {}, onChange, disabled = fals
                     <ContentImage
                       className="option-image max-h-36 w-auto object-contain rounded-lg"
                       src={option.imageUrl}
-                      alt={option.textVi || option.text || option.textEn || `Lựa chọn ${index + 1}`}
+                      alt={option.textVi || option.text || option.textEn || bilingualLabel(`Lựa chọn ${index + 1}`, `Option ${index + 1}`)}
                     />
                   </div>
                 )}
@@ -221,7 +222,7 @@ export function QuestionInput({ question, answer = {}, onChange, disabled = fals
                     disabled={disabled || index === 0}
                     onClick={() => onChange({ sequence: moveItem(sequence, index, -1) })}
                     className="p-1 rounded text-stone-600 hover:bg-white disabled:opacity-30 cursor-pointer"
-                    aria-label={`Đưa từ ${index + 1} lên`}
+                    aria-label={bilingualLabel(`Đưa từ ${index + 1} lên`, `Move word ${index + 1} up`)}
                   >
                     <ArrowUp size={12} />
                   </button>
@@ -230,7 +231,7 @@ export function QuestionInput({ question, answer = {}, onChange, disabled = fals
                     disabled={disabled || index === sequence.length - 1}
                     onClick={() => onChange({ sequence: moveItem(sequence, index, 1) })}
                     className="p-1 rounded text-stone-600 hover:bg-white disabled:opacity-30 cursor-pointer"
-                    aria-label={`Đưa từ ${index + 1} xuống`}
+                    aria-label={bilingualLabel(`Đưa từ ${index + 1} xuống`, `Move word ${index + 1} down`)}
                   >
                     <ArrowDown size={12} />
                   </button>
@@ -338,7 +339,7 @@ function OptionMedia({ option, index }) {
           <ContentImage
             className="option-image max-h-32 w-auto object-contain rounded-lg"
             src={option.imageUrl}
-            alt={option.textVi || option.text || option.textEn || `Lựa chọn ${index + 1}`}
+            alt={option.textVi || option.text || option.textEn || bilingualLabel(`Lựa chọn ${index + 1}`, `Option ${index + 1}`)}
           />
         </div>
       )}

@@ -1,5 +1,5 @@
-﻿import { useState, useRef, useEffect, useMemo } from 'react';
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { Link } from 'react-router-dom';
 import { LessonStatus } from '@/features/learning/components/learning/LessonStatus';
 import {
@@ -10,7 +10,8 @@ import {
   Play,
   Search,
   Check,
-  Lock
+  Lock,
+  ChevronLeft
 } from 'lucide-react';
 
 export function LessonSidebar({
@@ -22,6 +23,7 @@ export function LessonSidebar({
   courseTitle = '',
   isDrawer = false,
 }) {
+  useTextLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const activeItemRef = useRef(null);
   const listContainerRef = useRef(null);
@@ -68,17 +70,17 @@ export function LessonSidebar({
       {/* ==================== ROADMAP HEADER ==================== */}
       <div className="shrink-0 bg-[#FFFDF9] border-b border-[#E8E5DF]/60 p-4 sm:p-5 space-y-3">
         {/* Top bar: Title + Count Badge + Close button (Mobile) */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-[#FFF2D6] border border-[#E8E5DF]/80 flex items-center justify-center text-[#FF7A00] shrink-0 shadow-2xs">
-              <BookOpen size={16} />
+        <div className="flex items-center justify-between gap-1.5">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <div className="w-7 h-7 rounded-lg bg-[#FFF2D6] border border-[#E8E5DF]/80 flex items-center justify-center text-[#FF7A00] shrink-0 shadow-2xs">
+              <BookOpen size={15} />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-black text-[#253044] tracking-tight m-0 truncate">
+              <div className="flex items-center gap-1.5">
+                <h2 className="text-sm font-black text-[#253044] tracking-tight m-0 whitespace-nowrap">
                   <BilingualText vi="Lộ trình bài học" en="Course Roadmap" />
                 </h2>
-                <span className="px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 text-[11px] font-bold shrink-0">
+                <span className="px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-600 text-[10px] font-bold shrink-0">
                   <BilingualText vi={`${totalCount} bài`} en={`${totalCount} lessons`} />
                 </span>
               </div>
@@ -89,10 +91,17 @@ export function LessonSidebar({
             <button
               type="button"
               onClick={onClose}
-              aria-label={bilingualLabel("Đóng danh sách bài", "Close lesson list")}
-              className="p-1.5 rounded-xl text-stone-500 hover:bg-stone-100 transition-colors cursor-pointer"
+              aria-label={isDrawer
+                ? bilingualLabel("Đóng danh sách bài", "Close lesson list")
+                : bilingualLabel("Thu gọn lộ trình khóa học", "Collapse course roadmap")}
+              title={isDrawer
+                ? bilingualLabel("Đóng danh sách bài", "Close lesson list")
+                : bilingualLabel("Thu gọn lộ trình khóa học", "Collapse course roadmap")}
+              className="inline-flex h-7 w-7 min-h-0 shrink-0 items-center justify-center rounded-full border border-[#E8E5DF] !bg-white !p-0 text-[#24382B] shadow-xs transition-all hover:!border-[#24382B] hover:!bg-[#24382B] hover:!text-white cursor-pointer"
             >
-              <X size={18} />
+              {isDrawer
+                ? <X size={16} aria-hidden="true" />
+                : <ChevronLeft size={16} aria-hidden="true" />}
             </button>
           )}
         </div>
@@ -156,7 +165,7 @@ export function LessonSidebar({
       >
         {filteredLessons.length === 0 ? (
           <div className="text-center py-8 text-xs text-stone-400 font-medium">
-            Không tìm thấy bài học nào phù hợp.
+            <BilingualText vi="Không tìm thấy bài học nào phù hợp." en="No matching lessons found." />
           </div>
         ) : (
           filteredLessons.map((lesson, idx) => {
@@ -278,11 +287,11 @@ export function LessonSidebar({
       <div className="shrink-0 p-3 bg-stone-50 border-t border-[#E8E5DF]/40 text-center text-[11px] font-semibold text-stone-500">
         {completedCount === totalCount && totalCount > 0 ? (
           <span className="text-emerald-700 font-bold">
-            Bạn đã hoàn thành toàn bộ khóa học!
+            <BilingualText vi="Bạn đã hoàn thành toàn bộ khóa học!" en="You have completed the entire course!" />
           </span>
         ) : (
           <span>
-            Còn <strong className="text-[#FF7A00]">{totalCount - completedCount}</strong> bài học chưa hoàn thành
+            <BilingualText vi={<>Còn <strong className="text-[#FF7A00]">{totalCount - completedCount}</strong> bài học chưa hoàn thành</>} en={<><strong className="text-[#FF7A00]">{totalCount - completedCount}</strong> lessons remaining</>} />
           </span>
         )}
       </div>

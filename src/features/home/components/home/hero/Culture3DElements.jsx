@@ -1,4 +1,5 @@
-﻿import React from 'react';
+import React from 'react';
+import { BilingualText, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { motion } from 'motion/react';
 import { audioFeedback } from '@/utils/audioFeedback';
 
@@ -17,6 +18,7 @@ const speakVietnamese = (text, rate = 0.9) => {
  * Clean, lightweight, floating gently with audio pronunciation on tap.
  */
 export function Culture3DElements({ slideIndex = 0 }) {
+  const isVi = useTextLanguage() === 'vi';
   // Elements per slide:
   // Slide 0: Nón Lá & Hoa Sen
   // Slide 1: Sóng âm & Micro
@@ -105,7 +107,7 @@ export function Culture3DElements({ slideIndex = 0 }) {
       {
         icon: '🤖',
         label: 'AI Tutor 24/7',
-        sub: 'Sửa lỗi tức thì',
+        sub: isVi ? 'Sửa lỗi tức thì' : 'Instant Feedback',
         pos: 'top-6 -left-3 sm:-left-6',
         delay: 0.2,
         pronounce: 'Gia sư nhân tạo',
@@ -153,8 +155,9 @@ export function Culture3DElements({ slideIndex = 0 }) {
           }}
           whileHover={{ scale: 1.1, transition: { duration: 0.2 } }}
           className={`pointer-events-auto absolute ${item.pos} px-3 py-2 rounded-2xl bg-white/95 backdrop-blur-md border border-white/80 shadow-[0_12px_28px_rgba(67,25,20,0.1)] flex items-center gap-2 cursor-pointer group/culture`}
-          title={`Bấm để nghe phát âm "${item.pronounce}"`}
-          aria-label={`Chi tiết văn hóa ${item.label}`}
+          title={isVi ? `Bấm để nghe phát âm "${item.pronounce}"` : `Click to hear pronunciation "${item.pronounce}"`}
+          aria-label={isVi ? `Chi tiết văn hóa ${item.label}` : `Cultural item ${item.sub || item.label}`}
+
         >
           <span className="text-lg group-hover/culture:scale-125 transition-transform">
             {item.icon}

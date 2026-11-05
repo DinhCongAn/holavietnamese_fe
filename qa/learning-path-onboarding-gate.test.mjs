@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 
 const read = (path) => fs.readFile(new URL(path, import.meta.url), 'utf8');
 
-test('Learning Path requires authentication and completed onboarding', async () => {
+test('Learning Path requires completed onboarding only for learner accounts', async () => {
   const [app, gate, page] = await Promise.all([
     read('../src/app/router/AppRouter.jsx'),
     read('../src/shared/components/common/RequireLearningPathOnboarding.jsx'),
@@ -13,7 +13,8 @@ test('Learning Path requires authentication and completed onboarding', async () 
   assert.match(app, /<RequireAuth fallbackFeature="learning" \/>/);
   assert.match(app, /<RequireLearningPathOnboarding \/>/);
   assert.match(app, /path=\{ROUTES\.LEARNING_PATH\} element=\{<LearningPathPage \/>\}/);
-  assert.match(gate, /user\.onboardingCompleted !== true/);
+  assert.match(gate, /role === 'ADMIN' \|\| role === 'CONTENT'/);
+  assert.match(gate, /!isBackOfficeAccount && user\.onboardingCompleted !== true/);
   assert.match(gate, /to="\/onboarding\/reason"/);
   assert.match(gate, /onboardingGate: true/);
   assert.match(page, /path\.data\?\.requiresLevel/);

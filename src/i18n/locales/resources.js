@@ -12,7 +12,7 @@ const navigationEn = {
   leaderboard: 'Leaderboard', achievements: 'Achievements', progress: 'Progress', profile: 'My Profile',
   settings: 'Settings', signIn: 'Sign in', getStarted: 'Get started', learnFree: 'Learn for free',
   insideLessons: 'Inside lessons', insideCourses: 'Inside courses', comingSoon: 'Coming soon',
-  keepRhythm: 'Keep your rhythm', dailyVietnamese: 'A little Vietnamese every day.',
+  keepRhythm: 'Keep your rhythm', dailyVietnamese: 'A little Vietnamese every day.', expandSidebar: 'Expand navigation', collapseSidebar: 'Collapse navigation',
 };
 
 const navigationVi = {
@@ -23,7 +23,7 @@ const navigationVi = {
   leaderboard: 'Bảng xếp hạng', achievements: 'Thành tích', progress: 'Tiến độ', profile: 'Hồ sơ của tôi',
   settings: 'Cài đặt', signIn: 'Đăng nhập', getStarted: 'Bắt đầu', learnFree: 'Học miễn phí',
   insideLessons: 'Trong bài học', insideCourses: 'Trong khóa học', comingSoon: 'Sắp ra mắt',
-  keepRhythm: 'Giữ nhịp học', dailyVietnamese: 'Mỗi ngày một chút tiếng Việt.',
+  keepRhythm: 'Giữ nhịp học', dailyVietnamese: 'Mỗi ngày một chút tiếng Việt.', expandSidebar: 'Mở rộng thanh điều hướng', collapseSidebar: 'Thu gọn thanh điều hướng',
 };
 
 const homeEn = {

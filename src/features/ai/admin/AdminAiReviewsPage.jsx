@@ -1,10 +1,11 @@
-import { BilingualText, vietnameseLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, vietnameseLabel, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { useEffect, useState } from 'react';
 import { adminCultureAiService } from '@/features/ai/api/adminCultureAiService';
 import { Lock, FlaskConical } from 'lucide-react';
 import { AdminPagination } from '@/shared/components/common/AdminPagination';
 
 export function AdminAiReviewsPage() {
+  const lang = useTextLanguage();
   const [reviews, setReviews] = useState([]);
   const [selectedReview, setSelectedReview] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -31,7 +32,7 @@ export function AdminAiReviewsPage() {
       const updated = await adminCultureAiService.updateReviewRecordStatus(id, newStatus);
       setReviews(current => current.map(review => review.id === id ? { ...review, ...updated } : review));
       setSelectedReview(current => current?.id === id ? { ...current, ...updated } : current);
-      showToast(`Đã cập nhật trạng thái kiểm tra chất lượng: ${newStatus}`);
+      showToast(bilingualLabel(`Đã cập nhật trạng thái kiểm tra chất lượng: ${newStatus}`, `Updated quality review status: ${newStatus}`));
     } catch {
       showToast('Không thể cập nhật đánh giá AI.');
     }
@@ -44,7 +45,19 @@ export function AdminAiReviewsPage() {
     // Simulate backend test execution through admin evaluation pipeline
     setTimeout(() => {
       setIsTesting(false);
-      setTestOutput(`[AI Test Runner - v2.2.0-stable | Model: Gemini 2.5 Flash]
+      setTestOutput(lang === 'en' ? `[AI Test Runner - v2.2.0-stable | Model: Gemini 2.5 Flash]
+[PASS] Role recognition: Ms. Mai (Hanoi Pho shop owner)
+[PASS] Learner input analysis: "${testPrompt}"
+[PASS] Honorifics: Accurate (Dạ... nhé cô)
+[PASS] Custom preference handling: No green onions -> Recorded accurately
+
+Generated AI response:
+"Được rồi cháu ơi! Một bát tái lăn không hành nhé. Thịt bò xào lăn thơm phức đang sẵn trên chảo đây. Cháu có muốn dùng thêm đĩa quẩy giòn nhúng nước dùng hay uống trà đá không nào?"
+
+Automated evaluation:
+- Culinary factual errors: 0
+- Vietnamese grammar errors: 0
+- Cultural appropriateness: 100%` : `[AI Test Runner - v2.2.0-stable | Model: Gemini 2.5 Flash]
 [ĐẠT] Nhận diện vai trò: Cô Mai (Chủ quán phở Hà Nội)
 [ĐẠT] Phân tích câu thoại người học: "Dạ cho cháu một bát phở tái lăn, không cho hành lá nhé cô!"
 [ĐẠT] Kính ngữ: Rất chuẩn xác (Dạ... nhé cô)

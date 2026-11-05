@@ -10,7 +10,8 @@ export const vocabularyService = {
   async update(id, entry) { return new VocabularyEntry(await axiosClient.put(`/api/me/vocabulary/${id}`, validate(entry))) },
   async delete(id) { await axiosClient.delete(`/api/me/vocabulary/${id}`); return null },
   async enrichWord({ word, context = '', lessonTitle = '' }) {
-    return axiosClient.post('/api/ai/vocabulary/enrich', { word, context, lessonTitle })
+    const response = await axiosClient.post('/api/ai/vocabulary/enrich', { word, context, lessonTitle })
+    return response?.result ?? response
   },
   saveWord(source, lessonId = null) {
     const meaning = source.meanings?.[0]

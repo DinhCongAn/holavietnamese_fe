@@ -455,7 +455,7 @@ export function AiCoachPanel({
                       type="button"
                       className="ai-coach-coursera__action-btn hover:!bg-transparent focus:!bg-transparent hover:!shadow-none"
                       onClick={() => handleCopy(msg.id, msg.text)}
-                      title="Sao chép nội dung"
+                      title={isEn ? "Copy message" : "Sao chép nội dung"}
                     >
                       {isCopied ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
                       <span>{isCopied ? (isEn ? 'Copied' : 'Đã chép') : (isEn ? 'Copy' : 'Sao chép')}</span>
@@ -464,7 +464,7 @@ export function AiCoachPanel({
                       type="button"
                       className={`ai-coach-coursera__action-btn hover:!bg-transparent focus:!bg-transparent hover:!shadow-none ${isSpeaking ? 'text-orange-600 font-bold' : ''}`}
                       onClick={() => handleSpeak(msg.id, msg.text)}
-                      title="Nghe phát âm"
+                      title={isEn ? "Listen" : "Nghe phát âm"}
                     >
                       {isSpeaking ? <VolumeX size={12} className="text-orange-600 animate-pulse" /> : <Volume2 size={12} />}
                       <span>{isSpeaking ? (isEn ? 'Stop' : 'Dừng') : (isEn ? 'Listen' : 'Nghe')}</span>

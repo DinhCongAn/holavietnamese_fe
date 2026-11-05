@@ -1,4 +1,4 @@
-import { BilingualText, useBilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, useBilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { useEffect, useRef, useState } from 'react';
 import { Modal } from '@/shared/components/common/Modal';
 import { adminVocabularyService } from '@/features/vocabulary/api/adminVocabularyService';
@@ -9,6 +9,8 @@ import '@/features/vocabulary/components/dictionary.css';
 const dateText = (value) => value ? new Date(value).toLocaleString('vi-VN') : '—';
 
 function VocabularyDetail({ entry, onEdit, canEdit }) {
+  const lang = useTextLanguage();
+  const dateText = (value) => value ? new Date(value).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN') : '—';
   return <div className="admin-vocabulary-detail">
     <dl>
       <dt>ID</dt><dd>{entry.id}</dd><dt><BilingualText>{"Từ vựng"}</BilingualText></dt><dd>{entry.word}</dd>
@@ -74,7 +76,7 @@ export function AdminVocabularyModal({ mode, id, onClose, onSaved, onEdit, canEd
   const title = mode === 'view' ? 'Chi tiết từ vựng' : mode === 'edit' ? 'Cập nhật từ vựng' : 'Thêm từ vựng';
   return <Modal title={label(title)} onClose={onClose} busy={pending}>
     {loading ? <div className="state" role="status"><BilingualText>{"Đang tải từ vựng…"}</BilingualText></div> : loadError
-      ? <div className="state" role="alert"><p>{loadError}</p><button type="button" onClick={() => setRevision((value) => value + 1)}><BilingualText>{"Thử lại"}</BilingualText></button></div>
+      ? <div className="state" role="alert"><p><BilingualText>{loadError}</BilingualText></p><button type="button" onClick={() => setRevision((value) => value + 1)}><BilingualText>{"Thử lại"}</BilingualText></button></div>
       : mode === 'view' ? <VocabularyDetail entry={entry} onEdit={onEdit} canEdit={canEdit} />
       : <form className="admin-vocabulary-form" onSubmit={submit}>
         <fieldset disabled={pending} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>

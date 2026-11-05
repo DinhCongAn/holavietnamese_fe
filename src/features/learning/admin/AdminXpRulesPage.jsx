@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { adminService } from '@/features/admin/api/adminService';
 import { useConfirmDialog } from '@/shared/components/common/ConfirmDialog';
 import { Zap, Power, Sparkles, BookOpen, Flame, Award, CheckCircle2 } from 'lucide-react';
@@ -24,6 +24,7 @@ const emptyDraft = {
 };
 
 export function AdminXpRulesPage() {
+  useTextLanguage();
   const { confirm, confirmationDialog } = useConfirmDialog();
   const [items, setItems] = useState([]);
   const [draft, setDraft] = useState(emptyDraft);
@@ -163,24 +164,24 @@ export function AdminXpRulesPage() {
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-[#EA580C] text-xs font-bold w-fit">
           <Zap size={13} /> QUY TẮC TÍNH ĐIỂM
         </div>
-        <h1 className="text-2xl font-black text-[#253044] m-0">Quy tắc cộng điểm XP</h1>
+        <h1 className="text-2xl font-black text-[#253044] m-0"><BilingualText>Quy tắc cộng điểm XP</BilingualText></h1>
         <p className="text-sm text-[#64748B] m-0">
-          Quản lý cơ chế thưởng XP cho từng hoạt động học tập và cấu hình giới hạn chống cày điểm lạm phát.
+          <BilingualText>Quản lý cơ chế thưởng XP cho từng hoạt động học tập và cấu hình giới hạn chống cày điểm lạm phát.</BilingualText>
         </p>
       </div>
 
       {/* KPI Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-white border border-[#E8E5DF] shadow-2xs">
-          <div className="text-xs font-bold text-[#64748B] uppercase tracking-wide">Tổng số quy tắc</div>
+          <div className="text-xs font-bold text-[#64748B] uppercase tracking-wide"><BilingualText>Tổng số quy tắc</BilingualText></div>
           <div className="text-2xl font-black text-[#253044] mt-1">{stats.total}</div>
         </div>
         <div className="p-4 rounded-2xl bg-white border border-[#E8E5DF] shadow-2xs">
-          <div className="text-xs font-bold text-emerald-700 uppercase tracking-wide">Đang áp dụng (Bật)</div>
+          <div className="text-xs font-bold text-emerald-700 uppercase tracking-wide"><BilingualText>Đang áp dụng (Bật)</BilingualText></div>
           <div className="text-2xl font-black text-emerald-600 mt-1">{stats.active}</div>
         </div>
         <div className="p-4 rounded-2xl bg-white border border-[#E8E5DF] shadow-2xs">
-          <div className="text-xs font-bold text-[#EA580C] uppercase tracking-wide">Giới hạn tối đa/ngày</div>
+          <div className="text-xs font-bold text-[#EA580C] uppercase tracking-wide"><BilingualText>Giới hạn tối đa/ngày</BilingualText></div>
           <div className="text-2xl font-black text-[#EA580C] mt-1">~{stats.maxDailyPotential} XP</div>
         </div>
       </div>
@@ -203,7 +204,7 @@ export function AdminXpRulesPage() {
       <div className="rounded-2xl border border-[#E8E5DF] bg-white p-5 shadow-2xs text-left">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <h2 className="text-base font-bold text-[#253044] m-0">
-            {editingId ? 'Chỉnh sửa quy tắc XP' : 'Thêm quy tắc XP mới'}
+            <BilingualText>{editingId ? 'Chỉnh sửa quy tắc XP' : 'Thêm quy tắc XP mới'}</BilingualText>
           </h2>
 
           {!editingId && (
@@ -324,12 +325,12 @@ export function AdminXpRulesPage() {
           <table className="w-full text-left border-collapse text-sm">
             <thead>
               <tr className="border-b border-[#E8E5DF] bg-[#FFFBF5] text-xs font-bold uppercase tracking-wider text-[#64748B]">
-                <th className="py-3 px-4">Mã sự kiện (Event Type)</th>
-                <th className="py-3 px-4">Tên hoạt động</th>
-                <th className="py-3 px-4">Điểm XP thưởng</th>
-                <th className="py-3 px-4">Giới hạn / ngày (Chống spam)</th>
-                <th className="py-3 px-4 text-center">Trạng thái</th>
-                <th className="py-3 px-4 text-right">Thao tác</th>
+                <th className="py-3 px-4"><BilingualText>Mã sự kiện (Event Type)</BilingualText></th>
+                <th className="py-3 px-4"><BilingualText>Tên hoạt động</BilingualText></th>
+                <th className="py-3 px-4"><BilingualText>Điểm XP thưởng</BilingualText></th>
+                <th className="py-3 px-4"><BilingualText>Giới hạn / ngày (Chống spam)</BilingualText></th>
+                <th className="py-3 px-4 text-center"><BilingualText>Trạng thái</BilingualText></th>
+                <th className="py-3 px-4 text-right"><BilingualText>Thao tác</BilingualText></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E8E5DF]">
@@ -337,7 +338,7 @@ export function AdminXpRulesPage() {
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-[#64748B]">
                     <span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-[#EA580C] border-t-transparent mr-2" />
-                    Đang tải danh sách quy tắc XP…
+                    <BilingualText>Đang tải danh sách quy tắc XP…</BilingualText>
                   </td>
                 </tr>
               ) : items.length === 0 ? (
@@ -393,14 +394,14 @@ export function AdminXpRulesPage() {
                           }`}
                         >
                           <Power size={12} />
-                          {isActive ? 'Hoạt động' : 'Tạm dừng'}
+                          <BilingualText>{isActive ? 'Hoạt động' : 'Tạm dừng'}</BilingualText>
                         </button>
                       </td>
 
                       {/* Actions */}
                       <td className="py-3 px-4 text-right">
                         <AdminActionGroup>
-                          <AdminActionButton tone="neutral" onClick={() => startEdit(item)}>Sửa</AdminActionButton>
+                          <AdminActionButton tone="neutral" onClick={() => startEdit(item)}><BilingualText>Sửa</BilingualText></AdminActionButton>
                           <AdminActionButton tone="delete" iconOnly onClick={() => remove(item.id, item.eventName)} title="Xóa quy tắc" aria-label="Xóa quy tắc" />
                         </AdminActionGroup>
                       </td>

@@ -1,3 +1,5 @@
+import { bilingualLabel } from '@/shared/components/common/BilingualText';
+
 export const REGIONAL_REGIONS = [
   { value: 'NORTH', vi: 'Miền Bắc', en: 'North' },
   { value: 'CENTRAL', vi: 'Miền Trung', en: 'Central' },
@@ -9,13 +11,13 @@ export function regionalDraft(entry) {
     .map(key => [key, entry?.[key] ?? (key === 'status' ? 'DRAFT' : '')]));
 }
 export function regionalPayload(draft) {
-  if (!/^\d+$/.test(String(draft.vocabularyId)) || !Number.isSafeInteger(Number(draft.vocabularyId)) || Number(draft.vocabularyId) < 1) throw new Error('Vui lòng chọn từ vựng chuẩn.');
-  if (!REGIONAL_REGIONS.some(region => region.value === draft.region)) throw new Error('Vui lòng chọn miền Bắc, Trung hoặc Nam.');
-  if (!REGIONAL_STATUSES.includes(draft.status)) throw new Error('Trạng thái không hợp lệ.');
+  if (!/^\d+$/.test(String(draft.vocabularyId)) || !Number.isSafeInteger(Number(draft.vocabularyId)) || Number(draft.vocabularyId) < 1) throw new Error(bilingualLabel('Vui lòng chọn từ vựng chuẩn.', 'Please select a standard word.'));
+  if (!REGIONAL_REGIONS.some(region => region.value === draft.region)) throw new Error(bilingualLabel('Vui lòng chọn miền Bắc, Trung hoặc Nam.', 'Please select North, Central, or South.'));
+  if (!REGIONAL_STATUSES.includes(draft.status)) throw new Error(bilingualLabel('Trạng thái không hợp lệ.', 'Invalid status.'));
   const text = (key, max, required = false) => {
     const value = (draft[key] ?? '').trim();
-    if (required && !value) throw new Error('Từ biến thể và nghĩa không được để trống.');
-    if (value.length > max) throw new Error(`${key}: tối đa ${max} ký tự.`);
+    if (required && !value) throw new Error(bilingualLabel('Từ biến thể và nghĩa không được để trống.', 'Variant word and meaning cannot be empty.'));
+    if (value.length > max) throw new Error(bilingualLabel(`${key}: tối đa ${max} ký tự.`, `${key}: max ${max} characters.`));
     return value || null;
   };
   const exampleSentence = text('exampleSentence', 2000);

@@ -1128,7 +1128,7 @@ export function AiTutorPage() {
                         <Sparkles size={12} aria-hidden="true" />
                         <span style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>Hola AI</span>
                         <span className="ai-tutor-message__dot" aria-hidden="true" />
-                        <span style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>Trợ giảng tiếng Việt</span>
+                        <span style={{ whiteSpace: 'nowrap', flexShrink: 0 }}><BilingualText vi="Trợ giảng tiếng Việt" en="Vietnamese Tutor" /></span>
                       </div>
                     )}
 
@@ -1285,7 +1285,7 @@ export function AiTutorPage() {
                           type="button"
                           onClick={() => handleCopy(msg.id, getDisplayMessageText(msg.text))}
                           className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[#78685B] hover:text-[#202124] hover:bg-[#FAF8F5] transition-colors cursor-pointer"
-                          title="Sao chép nội dung tin nhắn"
+                          title={isEn ? "Copy message" : "Sao chép nội dung tin nhắn"}
                         >
                           {isCopied ? (
                             <>

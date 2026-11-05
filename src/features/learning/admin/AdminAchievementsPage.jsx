@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { Modal } from '@/shared/components/common/Modal';
 import { adminService } from '@/features/admin/api/adminService';
 import { useConfirmDialog } from '@/shared/components/common/ConfirmDialog';
@@ -36,6 +36,7 @@ const initialBadge = {
 };
 
 export function AdminAchievementsPage() {
+  useTextLanguage();
   const [achievements, setAchievements] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -183,9 +184,9 @@ export function AdminAchievementsPage() {
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold mb-1.5">
             <Trophy size={13} /> QUẢN TRỊ HỆ THỐNG
           </div>
-          <h1 className="text-2xl font-black text-[#253044] m-0">Quản lý Thành tích & Huy hiệu</h1>
+          <h1 className="text-2xl font-black text-[#253044] m-0"><BilingualText>Quản lý Thành tích & Huy hiệu</BilingualText></h1>
           <p className="text-sm text-[#64748B] mt-1 m-0">
-            Cấu hình danh mục huy hiệu, điều kiện mở khóa và điểm thưởng XP tự động cho học viên.
+            <BilingualText>Cấu hình danh mục huy hiệu, điều kiện mở khóa và điểm thưởng XP tự động cho học viên.</BilingualText>
           </p>
         </div>
         <button
@@ -193,22 +194,22 @@ export function AdminAchievementsPage() {
           onClick={handleOpenCreate}
           className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#EA580C] hover:bg-[#C2410C] text-white text-sm font-bold shadow-xs transition-all cursor-pointer !min-h-0 !border-0"
         >
-          <Plus size={16} /> Thêm huy hiệu mới
+          <Plus size={16} /> <BilingualText>Thêm huy hiệu mới</BilingualText>
         </button>
       </div>
 
       {/* KPI Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-white border border-[#E8E5DF] shadow-2xs">
-          <div className="text-xs font-bold text-[#64748B] uppercase tracking-wide">Tổng số huy hiệu</div>
+          <div className="text-xs font-bold text-[#64748B] uppercase tracking-wide"><BilingualText>Tổng số huy hiệu</BilingualText></div>
           <div className="text-2xl font-black text-[#253044] mt-1">{stats.total}</div>
         </div>
         <div className="p-4 rounded-2xl bg-white border border-[#E8E5DF] shadow-2xs">
-          <div className="text-xs font-bold text-emerald-700 uppercase tracking-wide">Đang hoạt động (Bật)</div>
+          <div className="text-xs font-bold text-emerald-700 uppercase tracking-wide"><BilingualText>Đang hoạt động (Bật)</BilingualText></div>
           <div className="text-2xl font-black text-emerald-600 mt-1">{stats.active}</div>
         </div>
         <div className="p-4 rounded-2xl bg-white border border-[#E8E5DF] shadow-2xs">
-          <div className="text-xs font-bold text-amber-700 uppercase tracking-wide">Tổng điểm thưởng XP</div>
+          <div className="text-xs font-bold text-amber-700 uppercase tracking-wide"><BilingualText>Tổng điểm thưởng XP</BilingualText></div>
           <div className="text-2xl font-black text-amber-600 mt-1">+{stats.totalXp} XP</div>
         </div>
       </div>
@@ -233,13 +234,13 @@ export function AdminAchievementsPage() {
           <table className="w-full text-left border-collapse text-sm">
             <thead>
               <tr className="border-b border-[#E8E5DF] bg-[#FFFBF5] text-xs font-bold uppercase tracking-wider text-[#64748B]">
-                <th className="py-3 px-4">Mã Code & Biểu tượng</th>
-                <th className="py-3 px-4">Tên & Mô tả huy hiệu</th>
-                <th className="py-3 px-4">Danh mục</th>
-                <th className="py-3 px-4">Điều kiện mở khóa</th>
-                <th className="py-3 px-4">Thưởng XP</th>
-                <th className="py-3 px-4 text-center">Trạng thái</th>
-                <th className="py-3 px-4 text-right">Thao tác</th>
+                <th className="py-3 px-4"><BilingualText>Mã Code & Biểu tượng</BilingualText></th>
+                <th className="py-3 px-4"><BilingualText>Tên & Mô tả huy hiệu</BilingualText></th>
+                <th className="py-3 px-4"><BilingualText>Danh mục</BilingualText></th>
+                <th className="py-3 px-4"><BilingualText>Điều kiện mở khóa</BilingualText></th>
+                <th className="py-3 px-4"><BilingualText>Thưởng XP</BilingualText></th>
+                <th className="py-3 px-4 text-center"><BilingualText>Trạng thái</BilingualText></th>
+                <th className="py-3 px-4 text-right"><BilingualText>Thao tác</BilingualText></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E8E5DF]">
@@ -247,7 +248,7 @@ export function AdminAchievementsPage() {
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-[#64748B]">
                     <span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-[#EA580C] border-t-transparent mr-2" />
-                    Đang tải danh sách huy hiệu…
+                    <BilingualText>Đang tải danh sách huy hiệu…</BilingualText>
                   </td>
                 </tr>
               ) : achievements.length === 0 ? (
@@ -287,7 +288,7 @@ export function AdminAchievementsPage() {
                       {/* Category */}
                       <td className="py-3 px-4">
                         <span className="inline-flex items-center gap-1 rounded-md bg-stone-100 px-2 py-0.5 text-xs font-semibold text-[#253044]">
-                          {categoryMeta.label}
+                          <BilingualText>{categoryMeta.label}</BilingualText>
                         </span>
                       </td>
 
@@ -319,14 +320,14 @@ export function AdminAchievementsPage() {
                           }`}
                         >
                           <Power size={12} />
-                          {isActive ? 'Hoạt động' : 'Tạm ẩn'}
+                          <BilingualText>{isActive ? 'Hoạt động' : 'Tạm ẩn'}</BilingualText>
                         </button>
                       </td>
 
                       {/* Actions */}
                       <td className="py-3 px-4 text-right">
                         <AdminActionGroup>
-                          <AdminActionButton tone="neutral" onClick={() => handleOpenEdit(badge)}>Sửa</AdminActionButton>
+                          <AdminActionButton tone="neutral" onClick={() => handleOpenEdit(badge)}><BilingualText>Sửa</BilingualText></AdminActionButton>
                           <AdminActionButton tone="delete" iconOnly onClick={() => handleDelete(badge.id, badge.name || badge.title)} title="Xóa huy hiệu" aria-label="Xóa huy hiệu" />
                         </AdminActionGroup>
                       </td>
@@ -400,7 +401,7 @@ export function AdminAchievementsPage() {
                 >
                   {CATEGORIES.map((cat) => (
                     <option key={cat.value} value={cat.value}>
-                      {cat.label}
+                      {bilingualLabel(cat.label)}
                     </option>
                   ))}
                 </select>
@@ -433,7 +434,7 @@ export function AdminAchievementsPage() {
                 >
                   {CONDITION_TYPES.map((cond) => (
                     <option key={cond.value} value={cond.value}>
-                      {cond.label}
+                      {bilingualLabel(cond.label)}
                     </option>
                   ))}
                 </select>

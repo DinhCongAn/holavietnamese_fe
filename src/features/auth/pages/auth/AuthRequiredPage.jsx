@@ -314,7 +314,7 @@ export function AuthRequiredPage({ forcedFeature, targetPath: propTargetPath }) 
                     className="w-full sm:flex-1 py-3.5 px-6 rounded-2xl bg-[#FFF7E8] hover:bg-[#FFF0DC]/50 text-[#253044] border-2 border-[#E1B65B] font-black text-sm text-center shadow-xs hover:border-[#FF7A00] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
                   >
                     
-                    <BilingualText vi="Trải nghiệm trang Welcome" en="Explore Welcome" />
+                    <BilingualText vi="Trải nghiệm học thử" en="Explore Welcome" />
                   </Link>
                 </>
               ) : (

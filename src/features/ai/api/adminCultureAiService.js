@@ -341,9 +341,10 @@ export const adminCultureAiService = {
 
   async updateAiSettings(settings) {
     const limits = settings?.limits || {};
-    const response = await axiosClient.put('/api/admin/ai/settings', {
+    const payload = {
       activeModel: settings.activeModel,
       systemPromptVersion: settings.systemPromptVersion,
+      systemPrompt: settings.systemPrompt ?? '',
       maxTurnsPerSession: Number(limits.maxTurnsPerSession),
       maxTokensPerResponse: Number(limits.maxTokensPerResponse),
       rateLimitPerMinute: Number(limits.rateLimitPerMinute),
@@ -351,7 +352,13 @@ export const adminCultureAiService = {
       monthlyBudgetCapUsd: Number(limits.monthlyBudgetCapUsd),
       costAlertThresholdPercent: Number(limits.costAlertThresholdPercent),
       enabledModes: Array.isArray(settings.enabledModes) ? settings.enabledModes.join(',') : settings.enabledModes,
-    });
+      contextOptions: Array.isArray(settings.contextOptions) ? settings.contextOptions.join(',') : settings.contextOptions,
+      moderationEnabled: Boolean(settings.moderationEnabled ?? true),
+    };
+    if (settings.apiKey && settings.apiKey.trim()) {
+      payload.apiKey = settings.apiKey.trim();
+    }
+    const response = await axiosClient.put('/api/admin/ai/settings', payload);
     return response?.result ?? response;
   },
 
@@ -380,22 +387,7 @@ export const adminCultureAiService = {
     const records = response?.result ?? response;
     if (!Array.isArray(records)) return [];
 
-    const backendRecords = records.map(scenarioFromApi);
-    const backendIds = new Set(backendRecords.map(record => record.id));
-
-    // Keep the backend catalog aligned with the six learner scenarios. This
-    // also repairs installations where the Flyway seed was not applied yet.
-    const { SCENARIOS } = await import('@/features/ai/api/aiRoleplayService');
-    const missingScenarios = SCENARIOS.filter(scenario => !backendIds.has(scenario.id));
-    if (missingScenarios.length === 0) return backendRecords;
-
-    const created = await Promise.all(
-      missingScenarios.map(scenario =>
-        axiosClient.post('/api/admin/ai/scenarios', scenarioToApiPayload({ ...scenario, status: 'ACTIVE' }))
-          .then(result => scenarioFromApi(result?.result ?? result))
-      )
-    );
-    return [...backendRecords, ...created];
+    return records.map(scenarioFromApi);
   },
   async saveScenarioRecord(data) {
     const response = await axiosClient.post('/api/admin/ai/scenarios', scenarioToApiPayload(data));

@@ -828,7 +828,7 @@ Pick a suggested question below or ask me anything!`,
         <div className="coursera-ai-body">
           {/* Announcement Banner - Vàng ấm chuẩn Hola AI như trong ảnh */}
           {showBanner && (
-            <div className="coursera-ai-banner" role="region" aria-label="Thông báo mới">
+            <div className="coursera-ai-banner" role="region" aria-label={isVi ? "Thông báo mới" : "New announcement"}>
               <div className="coursera-ai-banner__header">
                 <Sparkles size={15} />
                 <span>{isVi ? 'Mới! Hola AI đã hiểu ngữ cảnh bài học' : 'New! Hola AI is now lesson-aware'}</span>

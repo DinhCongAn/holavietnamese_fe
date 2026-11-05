@@ -15,7 +15,7 @@ import {
   Flame,
   Info,
 } from 'lucide-react';
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { BilingualText, bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { learnerService } from '@/features/learning/api/learnerService';
 import {
   DEFAULT_USER_SETTINGS,
@@ -91,6 +91,7 @@ const VIETNAMESE_TONES_GUIDE = [
 ];
 
 export function SettingsPage() {
+  useTextLanguage();
   const [form, setForm] = useState(null);
   const [state, setState] = useState({ loading: true, saving: false, error: '', message: '' });
   const [isPlayingAudioSample, setIsPlayingAudioSample] = useState(false);

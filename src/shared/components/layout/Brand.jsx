@@ -1,10 +1,11 @@
-import { bilingualLabel } from '@/shared/components/common/BilingualText';
+import { bilingualLabel, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { Link } from 'react-router-dom';
 
-export function Brand({ compact = false, collapsed = false, className = '', to = '/' }) {
+export function Brand({ compact = false, collapsed = false, className = '' }) {
+  useTextLanguage();
   return (
     <Link
-      to={to}
+      to="/"
       className={`site-brand${compact ? ' site-brand--compact' : ''}${collapsed ? ' site-brand--collapsed' : ''}${className ? ` ${className}` : ''}`}
       aria-label={bilingualLabel("HolaVietnamese - Trang chủ", "HolaVietnamese - Home")}
     >

@@ -1,4 +1,4 @@
-import { BilingualText } from '@/shared/components/common/BilingualText';
+import { BilingualText, useTextLanguage } from '@/shared/components/common/BilingualText';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/features/auth/context/AuthContext';
@@ -25,6 +25,7 @@ function MainLayoutShell({
   closeGuestDrawer,
 }) {
   const location = useLocation();
+  useTextLanguage();
   const isGuestHome = (location.pathname === '/' || location.pathname === '') && !isAuthenticated;
   const { isOpen: isAiOpen, width: aiWidth, setWidth: setAiWidth, closeAiSidebar } = useAiSidebar();
   const bodyRef = useRef(null);
@@ -102,6 +103,7 @@ function MainLayoutShell({
 export function MainLayout() {
   const { isAuthenticated, user, logout } = useAuth();
   const location = useLocation();
+  useTextLanguage();
   const [learnerStats, setLearnerStats] = useState({ streak: 0, xp: 0 });
   const [toastError, setToastError] = useState(location.state?.authError || null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
