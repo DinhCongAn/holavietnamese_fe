@@ -89,6 +89,15 @@ test('Import preview explains regional columns, reconciles duplicates and pagina
   const regionalAdmin = await fs.readFile(new URL('../src/features/explore/regional/admin/AdminRegionalLanguagePage.jsx', import.meta.url), 'utf8');
   const actions = await fs.readFile(new URL('../src/shared/components/common/AdminTableActions.jsx', import.meta.url), 'utf8');
   const actionStyles = await fs.readFile(new URL('../src/styles/admin.css', import.meta.url), 'utf8');
+  const standardizedAdminPages = await Promise.all([
+    '../src/features/admin/pages/AdminUsersPage.jsx',
+    '../src/features/admin/pages/AdminContentPages.jsx',
+    '../src/features/admin/pages/AdminRolesPage.jsx',
+    '../src/features/learning/admin/AdminQuizPages.jsx',
+    '../src/features/learning/admin/AdminAchievementsPage.jsx',
+    '../src/features/learning/admin/AdminXpRulesPage.jsx',
+    '../src/features/vocabulary/admin/AdminVocabularyPage.jsx',
+  ].map(path => fs.readFile(new URL(path, import.meta.url), 'utf8')));
 
   for (const contract of ['regional_*', 'NORTH/CENTRAL/SOUTH', 'bỏ qua']) assert.ok(uploadPage.includes(contract));
   for (const key of ['createdWords', 'duplicateWords', 'createdRegionalVariants', 'duplicateRegionalVariants']) assert.ok(resultView.includes(key));
@@ -98,4 +107,5 @@ test('Import preview explains regional columns, reconciles duplicates and pagina
   assert.ok(regionalAdmin.includes('<Pagination page={data.number}'));
   assert.ok(actions.includes('AdminActionLink'));
   for (const tone of ['detail', 'edit', 'delete']) assert.ok(actionStyles.includes(`admin-row-action--${tone}`));
+  for (const source of standardizedAdminPages) assert.ok(source.includes('AdminActionGroup'));
 });
