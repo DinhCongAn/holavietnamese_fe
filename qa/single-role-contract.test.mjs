@@ -24,7 +24,7 @@ test('admin role update sends the backend single-role contract', () => {
   const list = read('src/features/admin/pages/AdminUsersPage.jsx');
   const detail = read('src/features/admin/pages/AdminUserDetailPage.jsx');
 
-  assert.match(service, /put\(`\/api\/admin\/users\/\$\{id\}\/roles`, \{ role \}\)/);
+  assert.match(service, /put\(`\/api\/admin\/users\/\$\{id\}\/role`, \{ role \}\)/);
   assert.match(list, /const EDITABLE_ROLES = \['LEARNER', 'CONTENT'\]/);
   assert.match(list, /userRole !== 'ADMIN'/);
   assert.match(detail, /const canEditRole = isAdmin && userRole !== 'ADMIN'/);
