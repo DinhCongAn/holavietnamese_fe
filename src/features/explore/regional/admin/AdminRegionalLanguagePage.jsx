@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { BilingualText, useBilingualLabel } from '@/shared/components/common/BilingualText';
-import { PageHeader, Breadcrumb, EmptyState, Notice, Pagination } from '@/shared/components/common/Ui';
+import { PageHeader, Breadcrumb, EmptyState, Notice } from '@/shared/components/common/Ui';
 import { ResourceState } from '@/shared/components/common/ResourceState';
 import { Modal } from '@/shared/components/common/Modal';
 import { useAsyncResource } from '@/shared/hooks/useAsyncResource';
@@ -12,6 +12,7 @@ import '@/features/explore/regional/components/regional.css';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { canReviewVocabulary, canWriteVocabulary } from '@/utils/permissions/contentAccess';
 import { AdminActionButton, AdminActionGroup } from '@/shared/components/common/AdminTableActions';
+import { AdminPagination } from '@/shared/components/common/AdminPagination';
 
 export function AdminRegionalLanguagePage() {
   const { user } = useAuth();
@@ -74,7 +75,7 @@ export function AdminRegionalLanguagePage() {
       {mayWrite && ['DRAFT', 'PUBLISHED'].includes(item.status) && <AdminActionButton tone="delete" iconOnly disabled={busy} title={label('Lưu trữ biến thể', 'Archive variant')} aria-label={label('Lưu trữ biến thể', 'Archive variant')} onClick={() => transition(item, 'ARCHIVE')} />}
       {mayWrite && item.status === 'ARCHIVED' && <AdminActionButton tone="restore" disabled={busy} onClick={() => transition(item, 'RESTORE')}><BilingualText vi="Khôi phục" en="Restore" /></AdminActionButton>}
       {mayReview && item.status === 'PENDING_REVIEW' && <><AdminActionButton tone="approve" disabled={busy} onClick={() => transition(item, 'APPROVE')}><BilingualText vi="Duyệt" en="Approve" /></AdminActionButton><AdminActionButton tone="edit" disabled={busy} onClick={() => transition(item, 'REJECT')}><BilingualText vi="Trả nháp" en="Return" /></AdminActionButton></>}
-    </AdminActionGroup></td></tr>)}</tbody></table><p className="muted"><BilingualText vi={`${data.totalElements} biến thể`} en={`${data.totalElements} variants`} /></p><Pagination page={data.number} totalPages={data.totalPages} onChange={setPage} /></div> : <EmptyState title={<BilingualText vi="Chưa có biến thể phù hợp" en="No matching variants" />} />}</ResourceState>
+    </AdminActionGroup></td></tr>)}</tbody></table><AdminPagination currentPage={data.number + 1} pageSize={20} totalItems={data.totalElements} onPageChange={(nextPage) => setPage(nextPage - 1)} /></div> : <EmptyState title={<BilingualText vi="Chưa có biến thể phù hợp" en="No matching variants" />} />}</ResourceState>
     {editing && <RegionalEditor entry={editing} masters={masters} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); setMessage(label('Đã lưu biến thể vùng miền.', 'Regional variant saved.')); resource.reload(); }} />}
   </section>;
 }

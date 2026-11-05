@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Notice, Pagination } from '@/shared/components/common/Ui';
+import { Notice } from '@/shared/components/common/Ui';
 import { BilingualText, useBilingualLabel } from '@/shared/components/common/BilingualText';
 import { useTranslation } from 'react-i18next';
 import '@/features/content-import/components/content-import.css';
 
+import { AdminPagination } from '@/shared/components/common/AdminPagination';
 export const IMPORT_STATUS_LABELS = {
   READY: 'Chờ xác nhận',
   VALIDATION_FAILED: 'Dữ liệu không hợp lệ',
@@ -45,8 +46,8 @@ export function ImportJobResult({ job }) {
     {summaryGroups.length > 0 && <section className="import-summary-grid" aria-label={label('Kết quả đối chiếu dữ liệu', 'Data reconciliation result')}>
       {summaryGroups.map(group => <ImportSummaryGroup key={group.key} group={group} items={summary[group.key]} />)}
     </section>}
-    {errors.length > 0 && <section><h2><BilingualText>{"Lỗi cần xử lý"}</BilingualText></h2><div className="import-table-scroll"><table className="admin-table"><thead><tr><th><BilingualText>{"Sheet"}</BilingualText></th><th><BilingualText>{"Dòng nguồn"}</BilingualText></th><th><BilingualText>{"Cột"}</BilingualText></th><th><BilingualText>{"Lỗi"}</BilingualText></th></tr></thead><tbody>{errors.slice(errorPage * 20, (errorPage + 1) * 20).map((error, index) => <tr key={`${errorPage}-${index}`}><td>{error.sheet || 'File'}</td><td>{error.row || '—'}</td><td>{error.column}</td><td>{error.message}</td></tr>)}</tbody></table></div><Pagination page={errorPage} totalPages={Math.ceil(errors.length / 20)} onChange={setErrorPage} /></section>}
-    {rows.length > 0 && <section><h2><BilingualText>{"Dữ liệu trong file"}</BilingualText></h2><div className="import-table-scroll"><table className="admin-table"><thead><tr><th><BilingualText>{"Dòng nguồn"}</BilingualText></th>{columns.map(column => <th key={column}>{column}</th>)}</tr></thead><tbody>{rows.slice(rowPage * 20, (rowPage + 1) * 20).map(row => <tr key={row.rowNumber} className={badRows.has(row.rowNumber) ? 'import-invalid-row' : ''}><td>{row.rowNumber}</td>{columns.map(column => <td key={column}>{row.values[column] || '—'}</td>)}</tr>)}</tbody></table></div><Pagination page={rowPage} totalPages={Math.ceil(rows.length / 20)} onChange={setRowPage} /></section>}
+    {errors.length > 0 && <section><h2><BilingualText>{"Lỗi cần xử lý"}</BilingualText></h2><div className="import-table-scroll"><table className="admin-table"><thead><tr><th><BilingualText>{"Sheet"}</BilingualText></th><th><BilingualText>{"Dòng nguồn"}</BilingualText></th><th><BilingualText>{"Cột"}</BilingualText></th><th><BilingualText>{"Lỗi"}</BilingualText></th></tr></thead><tbody>{errors.slice(errorPage * 20, (errorPage + 1) * 20).map((error, index) => <tr key={`${errorPage}-${index}`}><td>{error.sheet || 'File'}</td><td>{error.row || '—'}</td><td>{error.column}</td><td>{error.message}</td></tr>)}</tbody></table></div><AdminPagination currentPage={errorPage + 1} pageSize={20} totalItems={errors.length} onPageChange={(nextPage) => setErrorPage(nextPage - 1)} /></section>}
+    {rows.length > 0 && <section><h2><BilingualText>{"Dữ liệu trong file"}</BilingualText></h2><div className="import-table-scroll"><table className="admin-table"><thead><tr><th><BilingualText>{"Dòng nguồn"}</BilingualText></th>{columns.map(column => <th key={column}>{column}</th>)}</tr></thead><tbody>{rows.slice(rowPage * 20, (rowPage + 1) * 20).map(row => <tr key={row.rowNumber} className={badRows.has(row.rowNumber) ? 'import-invalid-row' : ''}><td>{row.rowNumber}</td>{columns.map(column => <td key={column}>{row.values[column] || '—'}</td>)}</tr>)}</tbody></table></div><AdminPagination currentPage={rowPage + 1} pageSize={20} totalItems={rows.length} onPageChange={(nextPage) => setRowPage(nextPage - 1)} /></section>}
   </section>;
 }
 
@@ -59,6 +60,6 @@ function ImportSummaryGroup({ group, items }) {
     <h3>{group.title} <span>{items.length}</span></h3>
     <ul>{items.slice(safePage * pageSize, (safePage + 1) * pageSize)
       .map((item, index) => <li key={`${group.key}-${safePage * pageSize + index}`}>{group.text(item)}</li>)}</ul>
-    {totalPages > 1 && <Pagination page={safePage} totalPages={totalPages} onChange={setPage} />}
+    <AdminPagination currentPage={safePage + 1} pageSize={pageSize} totalItems={items.length} onPageChange={(nextPage) => setPage(nextPage - 1)} />
   </article>;
 }

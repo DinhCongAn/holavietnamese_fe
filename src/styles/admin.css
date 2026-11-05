@@ -247,23 +247,24 @@
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 6px;
 }
 
 .admin-row-action {
-  min-height: 34px;
-  padding: 0 12px;
+  min-height: 32px;
+  height: 32px;
+  padding: 0 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   border: 1px solid #cbd5e1;
-  border-radius: 9px;
+  border-radius: 8px;
   background: #fff;
   color: #334155;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
   line-height: 1;
   white-space: nowrap;
   text-decoration: none;
@@ -278,7 +279,8 @@
 .admin-row-action--approve { color: #15803d; background: #f0fdf4; border-color: #bbf7d0; }
 .admin-row-action--submit { color: #1d4ed8; background: #eff6ff; border-color: #bfdbfe; }
 .admin-row-action--restore { color: #047857; background: #ecfdf5; border-color: #a7f3d0; }
-.admin-row-action--icon { width: 34px; min-width: 34px; padding: 0; }
+.admin-row-action--neutral { color: #334155; background: #ffffff; border-color: #cbd5e1; }
+.admin-row-action--icon { width: 32px; min-width: 32px; padding: 0; }
 .admin-row-action:disabled { cursor: not-allowed; opacity: .55; transform: none; }
 
 .admin-badge {
@@ -547,15 +549,21 @@
    orange Admin button theme declared above. */
 .admin-content .admin-row-action {
   min-width: auto;
-  min-height: 34px;
-  height: 34px;
-  padding: 0 12px;
-  border-radius: 9px;
+  min-height: 32px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
 }
 .admin-content table .admin-row-action.admin-row-action--icon {
-  width: 34px;
-  min-width: 34px;
+  width: 32px;
+  min-width: 32px;
   padding: 0;
+}
+.admin-content .admin-row-action.admin-row-action--neutral,
+.admin-content .admin-row-action.admin-row-action--neutral:hover {
+  color: #334155;
+  background: #ffffff;
+  border-color: #cbd5e1;
 }
 .admin-content .admin-row-action.admin-row-action--detail,
 .admin-content .admin-row-action.admin-row-action--detail:hover {

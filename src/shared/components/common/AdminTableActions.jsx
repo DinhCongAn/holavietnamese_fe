@@ -22,7 +22,7 @@ export function AdminActionButton({ tone = 'neutral', icon: Icon = DEFAULT_ICONS
     className={`admin-row-action admin-row-action--${tone}${iconOnly ? ' admin-row-action--icon' : ''} ${className}`.trim()}
     {...props}
   >
-    {Icon && <Icon size={14} strokeWidth={2.2} aria-hidden="true" />}
+    {Icon && <Icon size={13} strokeWidth={2.2} aria-hidden="true" />}
     {!iconOnly && <span>{children}</span>}
   </button>;
 }
@@ -33,7 +33,7 @@ export function AdminActionLink({ tone = 'detail', icon: Icon = DEFAULT_ICONS[to
     className={`admin-row-action admin-row-action--${tone}${iconOnly ? ' admin-row-action--icon' : ''} ${className}`.trim()}
     {...props}
   >
-    {Icon && <Icon size={14} strokeWidth={2.2} aria-hidden="true" />}
+    {Icon && <Icon size={13} strokeWidth={2.2} aria-hidden="true" />}
     {!iconOnly && <span>{children}</span>}
   </Link>;
 }

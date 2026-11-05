@@ -326,7 +326,7 @@ export function AdminAchievementsPage() {
                       {/* Actions */}
                       <td className="py-3 px-4 text-right">
                         <AdminActionGroup>
-                          <AdminActionButton tone="edit" onClick={() => handleOpenEdit(badge)}>Sửa</AdminActionButton>
+                          <AdminActionButton tone="neutral" onClick={() => handleOpenEdit(badge)}>Sửa</AdminActionButton>
                           <AdminActionButton tone="delete" iconOnly onClick={() => handleDelete(badge.id, badge.name || badge.title)} title="Xóa huy hiệu" aria-label="Xóa huy hiệu" />
                         </AdminActionGroup>
                       </td>

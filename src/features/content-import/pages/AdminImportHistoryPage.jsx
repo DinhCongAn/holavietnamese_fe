@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Breadcrumb, EmptyState, PageHeader, Pagination } from '@/shared/components/common/Ui';
+import { Breadcrumb, EmptyState, PageHeader } from '@/shared/components/common/Ui';
 import { Modal } from '@/shared/components/common/Modal';
 import { ResourceState } from '@/shared/components/common/ResourceState';
 import { ImportJobResult, IMPORT_STATUS_LABELS } from '@/features/content-import/components/ImportJobResult';
@@ -10,6 +10,8 @@ import { ROUTES } from '@/constants/routes';
 import { BilingualText, useBilingualLabel } from '@/shared/components/common/BilingualText';
 import { useTranslation } from 'react-i18next';
 import '@/features/content-import/components/content-import.css';
+import { AdminPagination } from '@/shared/components/common/AdminPagination';
+import { AdminActionButton, AdminActionGroup } from '@/shared/components/common/AdminTableActions';
 
 export function AdminImportHistoryPage() {
   const label = useBilingualLabel();
@@ -51,13 +53,13 @@ export function AdminImportHistoryPage() {
                 <td>{job.filename}</td>
                 <td><BilingualText>{IMPORT_STATUS_LABELS[job.status] || job.status}</BilingualText></td>
                 <td>{job.importedRows} / {job.failedRows}</td>
-                <td><button className="secondary" onClick={() => setParams({ page: String(page), id: job.id })}><BilingualText vi="Xem chi tiết" en="View Details" /></button></td>
+                <td><AdminActionGroup><AdminActionButton tone="detail" onClick={() => setParams({ page: String(page), id: job.id })}><BilingualText vi="Xem" en="View" /></AdminActionButton></AdminActionGroup></td>
               </tr>)}
             </tbody>
           </table>
         </div>
+        <AdminPagination currentPage={page + 1} pageSize={20} totalItems={data.totalElements ?? data.content.length} onPageChange={(nextPage) => setParams({ page: String(nextPage - 1) })} />
       </div>
-      <Pagination page={page} totalPages={data.totalPages} onChange={next => setParams({ page: String(next) })} />
     </> : <EmptyState title={<BilingualText vi="Chưa có lịch sử import" en="No import history yet" />} />}</ResourceState>
     {selected && <ImportDetail key={selected} id={selected} onClose={() => setParams({ page: String(page) })} />}
   </section>;

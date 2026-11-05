@@ -102,9 +102,9 @@ test('Import preview explains regional columns, reconciles duplicates and pagina
   for (const contract of ['regional_*', 'NORTH/CENTRAL/SOUTH', 'bỏ qua']) assert.ok(uploadPage.includes(contract));
   for (const key of ['createdWords', 'duplicateWords', 'createdRegionalVariants', 'duplicateRegionalVariants']) assert.ok(resultView.includes(key));
   assert.ok(resultView.includes('function ImportSummaryGroup'));
-  assert.ok(resultView.includes('<Pagination page={safePage}'));
+  assert.ok(resultView.includes('<AdminPagination currentPage={safePage + 1}'));
   assert.ok(regionalAdmin.includes('{ ...query, page, size: 20 }'));
-  assert.ok(regionalAdmin.includes('<Pagination page={data.number}'));
+  assert.ok(regionalAdmin.includes('<AdminPagination currentPage={data.number + 1}'));
   assert.ok(actions.includes('AdminActionLink'));
   for (const tone of ['detail', 'edit', 'delete']) assert.ok(actionStyles.includes(`admin-row-action--${tone}`));
   for (const source of standardizedAdminPages) assert.ok(source.includes('AdminActionGroup'));

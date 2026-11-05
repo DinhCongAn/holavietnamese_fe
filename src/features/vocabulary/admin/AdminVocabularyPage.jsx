@@ -4,13 +4,14 @@ import { adminVocabularyService } from '@/features/vocabulary/api/adminVocabular
 import { ResourceState } from '@/shared/components/common/ResourceState';
 import { AdminVocabularyModal } from '@/features/vocabulary/components/admin/AdminVocabularyModal';
 import { VOCABULARY_STATUSES } from '@/features/vocabulary/models/AdminVocabulary';
-import { Breadcrumb, PageHeader, Pagination } from '@/shared/components/common/Ui';
+import { Breadcrumb, PageHeader } from '@/shared/components/common/Ui';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/constants/routes';
 import { Plus } from 'lucide-react';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { canImportVocabulary, canReviewVocabulary, canWriteVocabulary } from '@/utils/permissions/contentAccess';
 import { AdminActionButton, AdminActionGroup } from '@/shared/components/common/AdminTableActions';
+import { AdminPagination } from '@/shared/components/common/AdminPagination';
 import '@/features/vocabulary/components/admin/admin-vocabulary.css';
 
 const emptyFilters = { keyword: '', status: '', partOfSpeech: '' };
@@ -106,9 +107,8 @@ export function AdminVocabularyPage() {
             {mayReview && item.status === 'PENDING_REVIEW' && <><AdminActionButton tone="approve" onClick={() => transition(item, 'APPROVE')}><BilingualText vi="Duyệt" en="Approve" /></AdminActionButton><AdminActionButton tone="edit" onClick={() => transition(item, 'REJECT')}><BilingualText vi="Trả nháp" en="Return" /></AdminActionButton></>}
           </AdminActionGroup></td>
         </tr>)}</tbody>
-      </table></div>}
+      </table><AdminPagination currentPage={page + 1} pageSize={20} totalItems={pageInfo.totalElements} onPageChange={(nextPage) => setPage(nextPage - 1)} /></div>}
     </ResourceState>
-    {!resource.loading && !resource.error && pageInfo.totalPages > 0 && <div className="admin-vocabulary-pagination"><p className="muted"><BilingualText vi={`${pageInfo.totalElements} mục từ`} en={`${pageInfo.totalElements} entries`} /></p><Pagination page={page} totalPages={pageInfo.totalPages} onChange={setPage} /></div>}
     {modal && <AdminVocabularyModal key={`${modal.mode}-${modal.id ?? 'new'}`} {...modal} canEdit={mayWrite} onClose={() => setModal(null)} onSaved={saved} onEdit={() => setModal({ mode: 'edit', id: modal.id })} />}
   </div>;
 }

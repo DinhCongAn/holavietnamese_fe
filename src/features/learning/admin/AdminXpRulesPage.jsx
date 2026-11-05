@@ -400,7 +400,7 @@ export function AdminXpRulesPage() {
                       {/* Actions */}
                       <td className="py-3 px-4 text-right">
                         <AdminActionGroup>
-                          <AdminActionButton tone="edit" onClick={() => startEdit(item)}>Sửa</AdminActionButton>
+                          <AdminActionButton tone="neutral" onClick={() => startEdit(item)}>Sửa</AdminActionButton>
                           <AdminActionButton tone="delete" iconOnly onClick={() => remove(item.id, item.eventName)} title="Xóa quy tắc" aria-label="Xóa quy tắc" />
                         </AdminActionGroup>
                       </td>

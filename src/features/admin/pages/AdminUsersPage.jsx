@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { adminService } from '@/features/admin/api/adminService';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { AdminActionButton, AdminActionGroup, AdminActionLink } from '@/shared/components/common/AdminTableActions';
+import { AdminPagination } from '@/shared/components/common/AdminPagination';
 
 const PAGE_SIZE = 10;
 const ALL_ROLES = ['LEARNER', 'CONTENT', 'ADMIN'];
@@ -101,30 +102,28 @@ export function AdminUsersPage() {
 
       <div className="admin-card" style={{ padding: 0, overflowX: 'auto' }}>
         {state.loading ? <div className="state"><BilingualText>{"Đang tải người dùng…"}</BilingualText></div> : users.length === 0 ? <div className="state"><BilingualText>{"Không tìm thấy người dùng phù hợp."}</BilingualText></div> : (
-          <table className="admin-table"><thead><tr><th><BilingualText>{"Người dùng"}</BilingualText></th><th><BilingualText>{"Thư điện tử"}</BilingualText></th><th><BilingualText>{"Vai trò"}</BilingualText></th><th><BilingualText>{"Trạng thái"}</BilingualText></th><th style={{ textAlign: 'right' }}><BilingualText>{"Thao tác"}</BilingualText></th></tr></thead>
-            <tbody>{users.map((user) => {
-              const userRole = String(user.role || '').replace(/^ROLE_/, '');
-              return <tr key={user.id ?? user.userId}>
-                <td><strong>{user.fullName || user.username}</strong><small style={{ display: 'block', color: 'var(--color-muted)' }}>@{user.username}</small></td>
-                <td>{user.email || '—'}</td>
-                <td><span className="admin-badge admin-badge-info">{userRole || '—'}</span></td>
-                <td><span className={`admin-badge ${user.status === 'ACTIVE' ? 'admin-badge-success' : 'admin-badge-danger'}`}><BilingualText>{user.status}</BilingualText></span></td>
-                <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                  <AdminActionGroup>
-                    <AdminActionLink tone="detail" to={`/admin/users/${user.id ?? user.userId}`}><BilingualText>{"Chi tiết"}</BilingualText></AdminActionLink>
-                    {isAdmin && userRole !== 'ADMIN' && <AdminActionButton tone="edit" onClick={() => { setRoleUser(user); setSelectedRole(EDITABLE_ROLES.includes(userRole) ? userRole : 'LEARNER'); }}><BilingualText>{"Vai trò"}</BilingualText></AdminActionButton>}
-                    <AdminActionButton tone={user.status === 'ACTIVE' ? 'delete' : 'restore'} onClick={() => changeStatus(user)}><BilingualText>{user.status === 'ACTIVE' ? 'Khóa' : 'Kích hoạt'}</BilingualText></AdminActionButton>
-                  </AdminActionGroup>
-                </td>
-              </tr>;
-            })}</tbody>
-          </table>
+          <>
+            <table className="admin-table"><thead><tr><th><BilingualText>{"Người dùng"}</BilingualText></th><th><BilingualText>{"Thư điện tử"}</BilingualText></th><th><BilingualText>{"Vai trò"}</BilingualText></th><th><BilingualText>{"Trạng thái"}</BilingualText></th><th style={{ textAlign: 'right' }}><BilingualText>{"Thao tác"}</BilingualText></th></tr></thead>
+              <tbody>{users.map((user) => {
+                const userRole = String(user.role || '').replace(/^ROLE_/, '');
+                return <tr key={user.id ?? user.userId}>
+                  <td><strong>{user.fullName || user.username}</strong><small style={{ display: 'block', color: 'var(--color-muted)' }}>@{user.username}</small></td>
+                  <td>{user.email || '—'}</td>
+                  <td><span className="admin-badge admin-badge-info">{userRole || '—'}</span></td>
+                  <td><span className={`admin-badge ${user.status === 'ACTIVE' ? 'admin-badge-success' : 'admin-badge-danger'}`}><BilingualText>{user.status}</BilingualText></span></td>
+                  <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                    <AdminActionGroup>
+                      <AdminActionLink tone="detail" to={`/admin/users/${user.id ?? user.userId}`}><BilingualText>{"Chi tiết"}</BilingualText></AdminActionLink>
+                      {isAdmin && userRole !== 'ADMIN' && <AdminActionButton tone="neutral" onClick={() => { setRoleUser(user); setSelectedRole(EDITABLE_ROLES.includes(userRole) ? userRole : 'LEARNER'); }}><BilingualText>{"Vai trò"}</BilingualText></AdminActionButton>}
+                      <AdminActionButton tone={user.status === 'ACTIVE' ? 'delete' : 'restore'} onClick={() => changeStatus(user)}><BilingualText>{user.status === 'ACTIVE' ? 'Khóa' : 'Kích hoạt'}</BilingualText></AdminActionButton>
+                    </AdminActionGroup>
+                  </td>
+                </tr>;
+              })}</tbody>
+            </table>
+            <AdminPagination currentPage={query.page + 1} pageSize={query.size} totalItems={data.totalElements} onPageChange={(nextPage) => setQuery((q) => ({ ...q, page: nextPage - 1 }))} />
+          </>
         )}
-      </div>
-
-      <div className="actions" style={{ justifyContent: 'space-between', marginTop: 16 }}>
-        <span className="muted"><BilingualText>{"Tổng cộng"}</BilingualText>{data.totalElements}<BilingualText>{"người dùng"}</BilingualText></span>
-        <div className="actions"><button className="secondary" disabled={query.page === 0 || state.loading} onClick={() => setQuery((q) => ({ ...q, page: q.page - 1 }))}><BilingualText>{"← Trước"}</BilingualText></button><span><BilingualText>{"Trang"}</BilingualText>{query.page + 1}/{Math.max(data.totalPages, 1)}</span><button className="secondary" disabled={query.page + 1 >= data.totalPages || state.loading} onClick={() => setQuery((q) => ({ ...q, page: q.page + 1 }))}><BilingualText>{"Sau →"}</BilingualText></button></div>
       </div>
 
       {roleUser && <Modal title={bilingualLabel("Cập nhật vai trò", "Update Role")} onClose={()=>setRoleUser(null)}>
