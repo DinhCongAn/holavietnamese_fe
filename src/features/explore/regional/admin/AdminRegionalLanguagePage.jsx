@@ -1,7 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { BilingualText, useBilingualLabel } from '@/shared/components/common/BilingualText';
-import { PageHeader, Breadcrumb, EmptyState, Notice } from '@/shared/components/common/Ui';
+import { PageHeader, Breadcrumb, EmptyState, Notice, Pagination } from '@/shared/components/common/Ui';
 import { ResourceState } from '@/shared/components/common/ResourceState';
 import { Modal } from '@/shared/components/common/Modal';
 import { useAsyncResource } from '@/shared/hooks/useAsyncResource';
@@ -12,6 +11,7 @@ import { ROUTES } from '@/constants/routes';
 import '@/features/explore/regional/components/regional.css';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { canReviewVocabulary, canWriteVocabulary } from '@/utils/permissions/contentAccess';
+import { AdminActionButton, AdminActionGroup } from '@/shared/components/common/AdminTableActions';
 
 export function AdminRegionalLanguagePage() {
   const { user } = useAuth();
@@ -19,11 +19,12 @@ export function AdminRegionalLanguagePage() {
   const mayReview = canReviewVocabulary(user);
   const label = useBilingualLabel();
   const [query, setQuery] = useState({ keyword: '', region: '', status: '', vocabularyId: '' });
+  const [page, setPage] = useState(0);
   const [search, setSearch] = useState(''), [editing, setEditing] = useState(null), [message, setMessage] = useState(''), [error, setError] = useState(null), [busy, setBusy] = useState(false);
   const actionPending = useRef(false);
-  const resource = useAsyncResource(useCallback(signal => adminRegionalVocabularyService.list(query, { signal }), [query]));
+  const resource = useAsyncResource(useCallback(signal => adminRegionalVocabularyService.list({ ...query, page, size: 20 }, { signal }), [query, page]));
   const masters = useAsyncResource(useCallback(signal => adminVocabularyService.list({}, { signal }), []));
-  const filter = (key, value) => setQuery(current => ({ ...current, [key]: value }));
+  const filter = (key, value) => { setPage(0); setQuery(current => ({ ...current, [key]: value })); };
   async function transition(entry, action) {
     if (actionPending.current) return;
     actionPending.current = true; setBusy(true); setError(null); setMessage('');
@@ -39,6 +40,7 @@ export function AdminRegionalLanguagePage() {
             : action === 'ARCHIVE' ? label('Đã lưu trữ biến thể.', 'Variant archived.')
               : action === 'RESTORE' ? label('Đã khôi phục biến thể về bản nháp.', 'Variant restored to draft.')
                 : label('Đã chuyển biến thể về bản nháp để chỉnh sửa.', 'Variant returned to draft for revision.'));
+      setPage(0);
       resource.reload();
     } catch (failure) {
       setError(failure);
@@ -63,16 +65,16 @@ export function AdminRegionalLanguagePage() {
       <label><BilingualText vi="Vùng miền" en="Region" /><select value={query.region} onChange={event => filter('region', event.target.value)}><option value="">{label("Tất cả vùng miền")}</option>{REGIONAL_REGIONS.map(item => <option value={item.value} key={item.value}>{label(item)}</option>)}</select></label>
       <label><BilingualText>{"Trạng thái"}</BilingualText><select value={query.status} onChange={event => filter('status', event.target.value)}><option value="">{label("Tất cả trạng thái")}</option>{REGIONAL_STATUSES.map(status => <option key={status} value={status}>{label(status)}</option>)}</select></label>
       <label><BilingualText>{"Từ chuẩn"}</BilingualText><select value={query.vocabularyId} disabled={masters.loading || !!masters.error} onChange={event => filter('vocabularyId', event.target.value)}><option value="">{label("Tất cả từ chuẩn", "All standard words")}</option>{(masters.data || []).map(master => <option value={master.id} key={master.id}>{master.word} · {label(master.partOfSpeech)}</option>)}</select></label>
-      <button><BilingualText>{"Tìm kiếm"}</BilingualText></button><button className="secondary" type="button" onClick={() => { setSearch(''); setQuery({ keyword: '', region: '', status: '', vocabularyId: '' }); }}><BilingualText>{"Đặt lại"}</BilingualText></button>
+      <button><BilingualText>{"Tìm kiếm"}</BilingualText></button><button className="secondary" type="button" onClick={() => { setPage(0); setSearch(''); setQuery({ keyword: '', region: '', status: '', vocabularyId: '' }); }}><BilingualText>{"Đặt lại"}</BilingualText></button>
     </form>
     {masters.error && <Notice kind="error">{masters.error.message} <button className="secondary" onClick={masters.reload}><BilingualText>{"Thử lại từ chuẩn"}</BilingualText></button></Notice>}
-    <ResourceState resource={resource}>{items => items.length ? <div className="admin-card regional-table"><table className="admin-table"><thead><tr><th><BilingualText>{"Từ chuẩn"}</BilingualText></th><th><BilingualText vi="Vùng miền" en="Region" /></th><th><BilingualText>{"Biến thể"}</BilingualText></th><th><BilingualText>{"Nghĩa"}</BilingualText></th><th><BilingualText>{"Trạng thái"}</BilingualText></th><th><BilingualText>{"Thao tác"}</BilingualText></th></tr></thead><tbody>{items.map(item => <tr key={item.id}><td>{item.masterWord}</td><td>{label(REGIONAL_REGIONS.find(region => region.value === item.region) || item.region)}</td><td><strong>{item.word}</strong></td><td>{item.meaning}</td><td>{label(item.status)}</td><td><div className="actions">
-      {mayWrite && item.status === 'DRAFT' && <><button className="secondary" disabled={busy} onClick={() => setEditing(item)}><BilingualText>{"Sửa"}</BilingualText></button><button disabled={busy} onClick={() => transition(item, 'SUBMIT')}><BilingualText vi="Gửi duyệt" en="Submit for review" /></button></>}
-      {mayWrite && item.status === 'PUBLISHED' && <button disabled={busy} onClick={async () => { await transition(item, 'REVISE'); setEditing({ ...item, status: 'DRAFT' }); }}><BilingualText vi="Chỉnh sửa lại" en="Revise" /></button>}
-      {mayWrite && ['DRAFT', 'PUBLISHED'].includes(item.status) && <button className="secondary" disabled={busy} onClick={() => transition(item, 'ARCHIVE')}><BilingualText vi="Lưu trữ" en="Archive" /></button>}
-      {mayWrite && item.status === 'ARCHIVED' && <button className="secondary" disabled={busy} onClick={() => transition(item, 'RESTORE')}><BilingualText vi="Khôi phục bản nháp" en="Restore draft" /></button>}
-      {mayReview && item.status === 'PENDING_REVIEW' && <><button disabled={busy} onClick={() => transition(item, 'APPROVE')}><BilingualText vi="Phê duyệt & công khai" en="Approve & publish" /></button><button className="secondary" disabled={busy} onClick={() => transition(item, 'REJECT')}><BilingualText vi="Trả về bản nháp" en="Return to draft" /></button></>}
-    </div></td></tr>)}</tbody></table></div> : <EmptyState title={<BilingualText vi="Chưa có biến thể phù hợp" en="No matching variants" />} />}</ResourceState>
+    <ResourceState resource={resource}>{data => (data.content || []).length ? <div className="admin-card regional-table"><table className="admin-table"><thead><tr><th><BilingualText>{"Từ chuẩn"}</BilingualText></th><th><BilingualText vi="Vùng miền" en="Region" /></th><th><BilingualText>{"Biến thể"}</BilingualText></th><th><BilingualText>{"Nghĩa"}</BilingualText></th><th><BilingualText>{"Trạng thái"}</BilingualText></th><th><BilingualText>{"Thao tác"}</BilingualText></th></tr></thead><tbody>{data.content.map(item => <tr key={item.id}><td>{item.masterWord}</td><td>{label(REGIONAL_REGIONS.find(region => region.value === item.region) || item.region)}</td><td><strong>{item.word}</strong></td><td>{item.meaning}</td><td>{label(item.status)}</td><td><AdminActionGroup>
+      {mayWrite && item.status === 'DRAFT' && <><AdminActionButton tone="edit" disabled={busy} onClick={() => setEditing(item)}><BilingualText vi="Sửa nháp" en="Edit draft" /></AdminActionButton><AdminActionButton tone="submit" disabled={busy} onClick={() => transition(item, 'SUBMIT')}><BilingualText vi="Gửi duyệt" en="Submit" /></AdminActionButton></>}
+      {mayWrite && item.status === 'PUBLISHED' && <AdminActionButton tone="edit" disabled={busy} onClick={async () => { await transition(item, 'REVISE'); setEditing({ ...item, status: 'DRAFT' }); }}><BilingualText vi="Sửa nháp" en="Revise" /></AdminActionButton>}
+      {mayWrite && ['DRAFT', 'PUBLISHED'].includes(item.status) && <AdminActionButton tone="delete" iconOnly disabled={busy} title={label('Lưu trữ biến thể', 'Archive variant')} aria-label={label('Lưu trữ biến thể', 'Archive variant')} onClick={() => transition(item, 'ARCHIVE')} />}
+      {mayWrite && item.status === 'ARCHIVED' && <AdminActionButton tone="restore" disabled={busy} onClick={() => transition(item, 'RESTORE')}><BilingualText vi="Khôi phục" en="Restore" /></AdminActionButton>}
+      {mayReview && item.status === 'PENDING_REVIEW' && <><AdminActionButton tone="approve" disabled={busy} onClick={() => transition(item, 'APPROVE')}><BilingualText vi="Duyệt" en="Approve" /></AdminActionButton><AdminActionButton tone="edit" disabled={busy} onClick={() => transition(item, 'REJECT')}><BilingualText vi="Trả nháp" en="Return" /></AdminActionButton></>}
+    </AdminActionGroup></td></tr>)}</tbody></table><p className="muted"><BilingualText vi={`${data.totalElements} biến thể`} en={`${data.totalElements} variants`} /></p><Pagination page={data.number} totalPages={data.totalPages} onChange={setPage} /></div> : <EmptyState title={<BilingualText vi="Chưa có biến thể phù hợp" en="No matching variants" />} />}</ResourceState>
     {editing && <RegionalEditor entry={editing} masters={masters} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); setMessage(label('Đã lưu biến thể vùng miền.', 'Regional variant saved.')); resource.reload(); }} />}
   </section>;
 }

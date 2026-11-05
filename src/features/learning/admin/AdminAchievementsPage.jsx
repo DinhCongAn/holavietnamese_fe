@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
-import { BilingualText, vietnameseLabel, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { bilingualLabel } from '@/shared/components/common/BilingualText';
 import { Modal } from '@/shared/components/common/Modal';
 import { adminService } from '@/features/admin/api/adminService';
 import { useConfirmDialog } from '@/shared/components/common/ConfirmDialog';
-import { Trophy, Award, Flame, BookOpen, Sparkles, CheckCircle2, XCircle, Plus, Edit2, Trash2, Power } from 'lucide-react';
+import { Trophy, Award, Flame, BookOpen, Sparkles, Plus, Power } from 'lucide-react';
+import { AdminActionButton, AdminActionGroup } from '@/shared/components/common/AdminTableActions';
 
 const CATEGORIES = [
   { value: 'LESSON', label: 'Bài học', icon: BookOpen, color: '#2563EB' },
@@ -324,24 +325,10 @@ export function AdminAchievementsPage() {
 
                       {/* Actions */}
                       <td className="py-3 px-4 text-right">
-                        <div className="inline-flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenEdit(badge)}
-                            className="p-1.5 rounded-lg text-stone-600 hover:text-[#EA580C] hover:bg-orange-50 border border-transparent hover:border-orange-200 transition-colors cursor-pointer !min-h-0"
-                            title="Sửa huy hiệu"
-                          >
-                            <Edit2 size={15} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(badge.id, badge.name || badge.title)}
-                            className="p-1.5 rounded-lg text-stone-600 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors cursor-pointer !min-h-0"
-                            title="Xóa huy hiệu"
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
+                        <AdminActionGroup>
+                          <AdminActionButton tone="edit" onClick={() => handleOpenEdit(badge)}>Sửa</AdminActionButton>
+                          <AdminActionButton tone="delete" iconOnly onClick={() => handleDelete(badge.id, badge.name || badge.title)} title="Xóa huy hiệu" aria-label="Xóa huy hiệu" />
+                        </AdminActionGroup>
                       </td>
                     </tr>
                   );

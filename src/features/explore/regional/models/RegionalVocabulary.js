@@ -18,8 +18,11 @@ export function regionalPayload(draft) {
     if (value.length > max) throw new Error(`${key}: tối đa ${max} ký tự.`);
     return value || null;
   };
+  const exampleSentence = text('exampleSentence', 2000);
+  const exampleSentenceEn = text('exampleSentenceEn', 2000);
+  if (exampleSentenceEn && !exampleSentence) throw new Error('Bản dịch ví dụ tiếng Anh cần có câu ví dụ tiếng Việt.');
   return { vocabularyId: Number(draft.vocabularyId), region: draft.region, status: draft.status,
     word: text('word', 200, true), meaning: text('meaning', 1000, true), meaningEn: text('meaningEn', 1000), pronunciation: text('pronunciation', 200),
-    audioUrl: text('audioUrl', 2048), exampleSentence: text('exampleSentence', 2000), exampleSentenceEn: text('exampleSentenceEn', 2000),
+    audioUrl: text('audioUrl', 2048), exampleSentence, exampleSentenceEn,
     usageNote: text('usageNote', 2000), usageNoteEn: text('usageNoteEn', 2000) };
 }

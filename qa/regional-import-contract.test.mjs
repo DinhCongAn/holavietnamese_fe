@@ -27,12 +27,13 @@ const { contentImportService } = await service('contentImportService');
 const jobId = 'e7c658d0-7bc0-49d0-9ac0-221e5538d0ca';
 
 test('Regional request validates identity and region and excludes server owned fields', () => {
-  const payload = regionalPayload({ ...regionalDraft(), vocabularyId: '12', region: 'SOUTH', word: ' Thơm ', meaning: ' Trái dứa ', meaningEn: ' Pineapple ', exampleSentenceEn: ' I bought a pineapple. ', usageNoteEn: 'Southern usage.', status: 'PUBLISHED', id: 99, actorId: 42, createdAt: 'forged' });
+  const payload = regionalPayload({ ...regionalDraft(), vocabularyId: '12', region: 'SOUTH', word: ' Thơm ', meaning: ' Trái dứa ', meaningEn: ' Pineapple ', exampleSentence: ' Tôi mua một trái thơm. ', exampleSentenceEn: ' I bought a pineapple. ', usageNoteEn: 'Southern usage.', status: 'PUBLISHED', id: 99, actorId: 42, createdAt: 'forged' });
   assert.equal(payload.vocabularyId, 12); assert.equal(payload.word, 'Thơm'); assert.equal(payload.meaning, 'Trái dứa');
   assert.equal(payload.meaningEn, 'Pineapple'); assert.equal(payload.exampleSentenceEn, 'I bought a pineapple.'); assert.equal(payload.usageNoteEn, 'Southern usage.');
   assert.equal(payload.pronunciation, null); assert.ok(!('id' in payload)); assert.ok(!('actorId' in payload));
   for (const override of [{ vocabularyId: '' }, { vocabularyId: '-1' }, { region: 'WEST' }, { word: ' ' }, { status: 'UNKNOWN' }])
     assert.throws(() => regionalPayload({ ...payload, ...override }));
+  assert.throws(() => regionalPayload({ ...payload, exampleSentence: '', exampleSentenceEn: 'English only' }), /câu ví dụ tiếng Việt/);
 });
 test('Regional reads preserve filters, cancellation and publication decisions from the server', async () => {
   calls.length = 0; result = [{ vocabularyId: 12, word: 'Từ chuẩn', variants: [{ region: 'NORTH' }, { region: 'SOUTH' }] }];
@@ -40,8 +41,9 @@ test('Regional reads preserve filters, cancellation and publication decisions fr
   assert.deepEqual(await regionalVocabularyService.list({ keyword: 'Thơm', region: 'SOUTH', empty: '' }, { signal: controller.signal }), result);
   assert.deepEqual(calls[0].params, { keyword: 'Thơm', region: 'SOUTH' }); assert.equal(calls[0].signal, controller.signal);
   await regionalVocabularyService.get(12); assert.equal(calls[1].url, '/api/regional-vietnamese/12');
-  await adminRegionalVocabularyService.list({ vocabularyId: 12, status: 'DRAFT' });
-  assert.equal(calls[2].url, '/api/admin/regional-language'); assert.equal(calls[2].params.status, 'DRAFT');
+  await adminRegionalVocabularyService.list({ vocabularyId: 12, status: 'DRAFT', page: 2, size: 20 });
+  assert.equal(calls[2].url, '/api/admin/regional-language');
+  assert.deepEqual(calls[2].params, { vocabularyId: 12, status: 'DRAFT', page: 2, size: 20 });
 });
 test('Regional administration uses existing POST and PUT semantics and never deletes records', async () => {
   calls.length = 0; const payload = regionalPayload({ ...regionalDraft(), vocabularyId: 12, region: 'NORTH', word: 'Dứa', meaning: 'Pineapple' });
@@ -79,4 +81,21 @@ test('Import history keeps pagination and uses the persisted job detail endpoint
   const app = await fs.readFile(new URL('../src/app/router/AppRouter.jsx', import.meta.url), 'utf8');
   const adminRoutes = app.slice(app.indexOf('<Route element={<AdminRoute />}>'));
   for (const route of ['ADMIN_REGIONAL_LANGUAGE', 'ADMIN_IMPORT', 'ADMIN_IMPORT_HISTORY']) assert.ok(adminRoutes.includes(`path={ROUTES.${route}}`));
+});
+
+test('Import preview explains regional columns, reconciles duplicates and paginates every result list', async () => {
+  const uploadPage = await fs.readFile(new URL('../src/features/content-import/pages/AdminImportPage.jsx', import.meta.url), 'utf8');
+  const resultView = await fs.readFile(new URL('../src/features/content-import/components/ImportJobResult.jsx', import.meta.url), 'utf8');
+  const regionalAdmin = await fs.readFile(new URL('../src/features/explore/regional/admin/AdminRegionalLanguagePage.jsx', import.meta.url), 'utf8');
+  const actions = await fs.readFile(new URL('../src/shared/components/common/AdminTableActions.jsx', import.meta.url), 'utf8');
+  const actionStyles = await fs.readFile(new URL('../src/styles/admin.css', import.meta.url), 'utf8');
+
+  for (const contract of ['regional_*', 'NORTH/CENTRAL/SOUTH', 'bỏ qua']) assert.ok(uploadPage.includes(contract));
+  for (const key of ['createdWords', 'duplicateWords', 'createdRegionalVariants', 'duplicateRegionalVariants']) assert.ok(resultView.includes(key));
+  assert.ok(resultView.includes('function ImportSummaryGroup'));
+  assert.ok(resultView.includes('<Pagination page={safePage}'));
+  assert.ok(regionalAdmin.includes('{ ...query, page, size: 20 }'));
+  assert.ok(regionalAdmin.includes('<Pagination page={data.number}'));
+  assert.ok(actions.includes('AdminActionLink'));
+  for (const tone of ['detail', 'edit', 'delete']) assert.ok(actionStyles.includes(`admin-row-action--${tone}`));
 });

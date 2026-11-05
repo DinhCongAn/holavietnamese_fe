@@ -1,9 +1,9 @@
 import { BilingualText, vietnameseLabel, bilingualLabel } from '@/shared/components/common/BilingualText';
 import { Modal } from '@/shared/components/common/Modal';
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { adminService } from '@/features/admin/api/adminService';
 import { useAuth } from '@/features/auth/context/AuthContext';
+import { AdminActionButton, AdminActionGroup, AdminActionLink } from '@/shared/components/common/AdminTableActions';
 
 const PAGE_SIZE = 10;
 const ALL_ROLES = ['LEARNER', 'CONTENT', 'ADMIN'];
@@ -110,9 +110,11 @@ export function AdminUsersPage() {
                 <td><span className="admin-badge admin-badge-info">{userRole || '—'}</span></td>
                 <td><span className={`admin-badge ${user.status === 'ACTIVE' ? 'admin-badge-success' : 'admin-badge-danger'}`}><BilingualText>{user.status}</BilingualText></span></td>
                 <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                  {isAdmin && userRole !== 'ADMIN' && <><button className="secondary" onClick={() => { setRoleUser(user); setSelectedRole(EDITABLE_ROLES.includes(userRole) ? userRole : 'LEARNER'); }}><BilingualText>{"Vai trò"}</BilingualText></button>{' '}</>}
-                  <Link className="button secondary" to={`/admin/users/${user.id ?? user.userId}`}><BilingualText>{"Chi tiết"}</BilingualText></Link>{' '}
-                  <button className={user.status === 'ACTIVE' ? 'danger' : ''} onClick={() => changeStatus(user)}><BilingualText>{user.status === 'ACTIVE' ? 'Khóa' : 'Kích hoạt'}</BilingualText></button>
+                  <AdminActionGroup>
+                    <AdminActionLink tone="detail" to={`/admin/users/${user.id ?? user.userId}`}><BilingualText>{"Chi tiết"}</BilingualText></AdminActionLink>
+                    {isAdmin && userRole !== 'ADMIN' && <AdminActionButton tone="edit" onClick={() => { setRoleUser(user); setSelectedRole(EDITABLE_ROLES.includes(userRole) ? userRole : 'LEARNER'); }}><BilingualText>{"Vai trò"}</BilingualText></AdminActionButton>}
+                    <AdminActionButton tone={user.status === 'ACTIVE' ? 'delete' : 'restore'} onClick={() => changeStatus(user)}><BilingualText>{user.status === 'ACTIVE' ? 'Khóa' : 'Kích hoạt'}</BilingualText></AdminActionButton>
+                  </AdminActionGroup>
                 </td>
               </tr>;
             })}</tbody>

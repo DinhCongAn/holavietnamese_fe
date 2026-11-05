@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { bilingualLabel } from '@/shared/components/common/BilingualText';
 import { adminService } from '@/features/admin/api/adminService';
 import { useConfirmDialog } from '@/shared/components/common/ConfirmDialog';
-import { Zap, Plus, Edit2, Trash2, Power, ShieldAlert, Sparkles, BookOpen, Flame, Award, CheckCircle2 } from 'lucide-react';
+import { Zap, Power, Sparkles, BookOpen, Flame, Award, CheckCircle2 } from 'lucide-react';
+import { AdminActionButton, AdminActionGroup } from '@/shared/components/common/AdminTableActions';
 
 const PRESETS = [
   { eventType: 'LESSON_COMPLETE', eventName: 'Hoàn thành 1 bài học', xpReward: 20, dailyCap: 200, icon: BookOpen },
@@ -398,24 +399,10 @@ export function AdminXpRulesPage() {
 
                       {/* Actions */}
                       <td className="py-3 px-4 text-right">
-                        <div className="inline-flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => startEdit(item)}
-                            className="p-1.5 rounded-lg text-stone-600 hover:text-[#EA580C] hover:bg-orange-50 border border-transparent hover:border-orange-200 transition-colors cursor-pointer !min-h-0"
-                            title="Sửa quy tắc"
-                          >
-                            <Edit2 size={15} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => remove(item.id, item.eventName)}
-                            className="p-1.5 rounded-lg text-stone-600 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors cursor-pointer !min-h-0"
-                            title="Xóa quy tắc"
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
+                        <AdminActionGroup>
+                          <AdminActionButton tone="edit" onClick={() => startEdit(item)}>Sửa</AdminActionButton>
+                          <AdminActionButton tone="delete" iconOnly onClick={() => remove(item.id, item.eventName)} title="Xóa quy tắc" aria-label="Xóa quy tắc" />
+                        </AdminActionGroup>
                       </td>
                     </tr>
                   );

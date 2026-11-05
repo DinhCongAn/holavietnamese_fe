@@ -15,6 +15,14 @@
 .import-statistics > div { border: 1px solid var(--color-border); border-radius: 16px; padding: 20px; background: var(--color-paper); }
 .import-statistics dt { color: var(--color-muted); font-size: 12px; }
 .import-statistics dd { margin: 8px 0 0; font-size: 26px; font-weight: 800; }
+.import-summary-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 12px; margin: 0; }
+.import-summary-card { padding: 14px 16px; border: 1px solid #dbe4ee; border-radius: 12px; background: #fff; }
+.import-summary-card--created { border-color: #99f6e4; background: #f0fdfa; }
+.import-summary-card--duplicate { border-color: #fed7aa; background: #fff7ed; }
+.import-summary-card h3 { margin: 0 0 10px; font-size: 14px; color: #334155; }
+.import-summary-card h3 span { display: inline-flex; min-width: 22px; justify-content: center; margin-left: 4px; padding: 2px 6px; border-radius: 999px; background: rgb(255 255 255 / 75%); }
+.import-summary-card ul { max-height: 180px; overflow: auto; margin: 0; padding-left: 20px; }
+.import-summary-card li { padding: 3px 0; color: #475569; font-size: 13px; }
 .import-table-scroll { overflow-x: auto; max-width: 100%; border: 1px solid var(--color-border); border-radius: 12px; }
 .import-table-scroll .admin-table { min-width: 680px; }
 .import-table-scroll .admin-table td { max-width: 320px; min-width: 100px; overflow-wrap: anywhere; vertical-align: top; }

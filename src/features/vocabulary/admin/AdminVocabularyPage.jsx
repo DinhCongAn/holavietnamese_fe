@@ -10,6 +10,7 @@ import { ROUTES } from '@/constants/routes';
 import { Plus } from 'lucide-react';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { canImportVocabulary, canReviewVocabulary, canWriteVocabulary } from '@/utils/permissions/contentAccess';
+import { AdminActionButton, AdminActionGroup } from '@/shared/components/common/AdminTableActions';
 import '@/features/vocabulary/components/admin/admin-vocabulary.css';
 
 const emptyFilters = { keyword: '', status: '', partOfSpeech: '' };
@@ -96,13 +97,13 @@ export function AdminVocabularyPage() {
           <td><strong>{item.word}</strong>{item.pronunciation && <div className="muted">{item.pronunciation}</div>}</td>
           <td>{item.partOfSpeech}</td>
           <td><span className={`admin-badge ${item.status === 'PUBLISHED' ? 'admin-badge-success' : item.status === 'ARCHIVED' ? 'admin-badge-danger' : 'admin-badge-warning'}`}><BilingualText>{item.status}</BilingualText></span></td>
-          <td><div className="actions"><button type="button" className="secondary" onClick={() => setModal({ mode: 'view', id: item.id })}><BilingualText>{"Chi tiết"}</BilingualText></button>
-            {mayWrite && item.status === 'DRAFT' && <><button type="button" className="secondary" onClick={() => setModal({ mode: 'edit', id: item.id })}><BilingualText>{"Sửa"}</BilingualText></button><button type="button" onClick={() => transition(item, 'SUBMIT')}><BilingualText vi="Gửi duyệt" en="Submit for review" /></button></>}
-            {mayWrite && item.status === 'PUBLISHED' && <button type="button" onClick={async () => { await transition(item, 'REVISE'); setModal({ mode: 'edit', id: item.id }); }}><BilingualText vi="Chỉnh sửa lại" en="Revise" /></button>}
-            {mayWrite && ['DRAFT', 'PUBLISHED'].includes(item.status) && <button type="button" className="secondary" onClick={() => transition(item, 'ARCHIVE')}><BilingualText vi="Lưu trữ" en="Archive" /></button>}
-            {mayWrite && item.status === 'ARCHIVED' && <button type="button" className="secondary" onClick={() => transition(item, 'RESTORE')}><BilingualText vi="Khôi phục bản nháp" en="Restore draft" /></button>}
-            {mayReview && item.status === 'PENDING_REVIEW' && <><button type="button" onClick={() => transition(item, 'APPROVE')}><BilingualText vi="Phê duyệt & công khai" en="Approve & publish" /></button><button type="button" className="secondary" onClick={() => transition(item, 'REJECT')}><BilingualText vi="Trả về bản nháp" en="Return to draft" /></button></>}
-          </div></td>
+          <td><AdminActionGroup><AdminActionButton tone="detail" onClick={() => setModal({ mode: 'view', id: item.id })}><BilingualText>{"Chi tiết"}</BilingualText></AdminActionButton>
+            {mayWrite && item.status === 'DRAFT' && <><AdminActionButton tone="edit" onClick={() => setModal({ mode: 'edit', id: item.id })}><BilingualText vi="Sửa nháp" en="Edit draft" /></AdminActionButton><AdminActionButton tone="submit" onClick={() => transition(item, 'SUBMIT')}><BilingualText vi="Gửi duyệt" en="Submit" /></AdminActionButton></>}
+            {mayWrite && item.status === 'PUBLISHED' && <AdminActionButton tone="edit" onClick={async () => { await transition(item, 'REVISE'); setModal({ mode: 'edit', id: item.id }); }}><BilingualText vi="Sửa nháp" en="Revise" /></AdminActionButton>}
+            {mayWrite && ['DRAFT', 'PUBLISHED'].includes(item.status) && <AdminActionButton tone="delete" iconOnly title={label('Lưu trữ từ vựng', 'Archive vocabulary')} aria-label={label('Lưu trữ từ vựng', 'Archive vocabulary')} onClick={() => transition(item, 'ARCHIVE')} />}
+            {mayWrite && item.status === 'ARCHIVED' && <AdminActionButton tone="restore" onClick={() => transition(item, 'RESTORE')}><BilingualText vi="Khôi phục" en="Restore" /></AdminActionButton>}
+            {mayReview && item.status === 'PENDING_REVIEW' && <><AdminActionButton tone="approve" onClick={() => transition(item, 'APPROVE')}><BilingualText vi="Duyệt" en="Approve" /></AdminActionButton><AdminActionButton tone="edit" onClick={() => transition(item, 'REJECT')}><BilingualText vi="Trả nháp" en="Return" /></AdminActionButton></>}
+          </AdminActionGroup></td>
         </tr>)}</tbody>
       </table></div>}
     </ResourceState>

@@ -71,6 +71,7 @@ function ImportUpload({ types }) {
         <p><BilingualText>{"Sheet:"}</BilingualText> <strong>{type.sheet}</strong>. <BilingualText>{"Cột bắt buộc:"}</BilingualText> {type.requiredColumns.join(', ')}.</p>
         <p><BilingualText>{"Mỗi nghĩa cần definition_vi, translation_en hoặc definition_en. Bản dịch ví dụ là tùy chọn; hệ thống không tự dịch."}</BilingualText></p>
         <p><BilingualText>{"Ghi word và part_of_speech trên mỗi dòng. Các dòng cùng từ/từ loại được gom thành một mục. meaning_order phân biệt nghĩa; example_order sắp xếp ví dụ, bắt đầu từ 0. Nội dung lặp được để trống hoặc phải thống nhất."}</BilingualText></p>
+        <p><BilingualText vi="Muốn thêm biến thể vùng miền, điền region (NORTH/CENTRAL/SOUTH), regional_word và regional_meaning; các cột regional_* còn lại là tùy chọn. Từ hoặc biến thể đã tồn tại sẽ được liệt kê và bỏ qua; dữ liệu mới vẫn được nhập." en="To add a regional variant, fill region (NORTH/CENTRAL/SOUTH), regional_word and regional_meaning; the remaining regional_* columns are optional. Existing words or variants are listed and skipped while new data is still imported." /></p>
         <p><BilingualText>{"Trạng thái trống là DRAFT. labels: mỗi nhãn một dòng trong ô Excel."}</BilingualText></p>
         <button type="button" className="secondary" onClick={template} disabled={downloading}><BilingualText>{downloading ? 'Đang tải…' : 'Tải mẫu Excel'}</BilingualText></button>
       </div>
