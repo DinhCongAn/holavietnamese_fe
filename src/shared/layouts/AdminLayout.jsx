@@ -42,6 +42,7 @@ export function AdminLayout() {
   const vocabularyAllowed = canReadVocabulary(user);
   const exploreAllowed = canReadExplore(user);
   const cultureAllowed = canReadCulture(user);
+  const managerAuthoringPaths = [ROUTES.CONTENT_COURSES, ROUTES.CONTENT_LESSONS, ROUTES.CONTENT_QUESTIONS, ROUTES.CONTENT_QUIZZES];
 
   const visibleGroups = groups.map(group => {
     let groupTitle = group.title;
@@ -55,8 +56,8 @@ export function AdminLayout() {
         if (to === ROUTES.ADMIN_VOCABULARY) return vocabularyAllowed;
         if (to === ROUTES.ADMIN_DESTINATIONS) return exploreAllowed;
         if (to === ROUTES.CONTENT_CULTURE || to === ROUTES.CONTENT_CULTURE_CATEGORIES || to === ROUTES.ADMIN_CULTURE || to === ROUTES.ADMIN_CULTURE_CATEGORIES) return cultureAllowed;
-        if (isContentManager && !isAdmin) {
-          return to === ROUTES.CONTENT_COURSES || to === ROUTES.CONTENT_LESSONS || to === ROUTES.CONTENT_QUESTIONS || to === ROUTES.CONTENT_QUIZZES;
+        if (managerAuthoringPaths.includes(to)) {
+          return to === ROUTES.CONTENT_COURSES ? (isAdmin || isContentManager) : (isContentManager && !isAdmin);
         }
         return isAdmin;
       }).map(([to, label]) => {
@@ -65,12 +66,15 @@ export function AdminLayout() {
           if (to === ROUTES.ADMIN_CULTURE) finalTo = ROUTES.CONTENT_CULTURE;
           if (to === ROUTES.ADMIN_CULTURE_CATEGORIES) finalTo = ROUTES.CONTENT_CULTURE_CATEGORIES;
         }
-        return [
-          finalTo,
-            isContentManager && !isAdmin && to === ROUTES.CONTENT_COURSES
-            ? 'Biên soạn khóa học'
-            : (isAdmin && (to === ROUTES.ADMIN_CULTURE || to === ROUTES.CONTENT_CULTURE) ? 'Quản lý bài viết' : label),
-        ];
+        let resolvedLabel = label;
+        if (to === ROUTES.CONTENT_COURSES) {
+          resolvedLabel = isContentManager && !isAdmin ? 'Biên soạn khóa học' : (isAdmin ? 'Duyệt khóa học' : 'Khóa học');
+        } else if (to === ROUTES.ADMIN_VOCABULARY && isAdmin) {
+          resolvedLabel = 'Duyệt từ vựng';
+        } else if (isAdmin && (to === ROUTES.ADMIN_CULTURE || to === ROUTES.CONTENT_CULTURE)) {
+          resolvedLabel = 'Quản lý bài viết';
+        }
+        return [finalTo, resolvedLabel];
       }),
     };
   }).filter(group => group.links.length > 0);
