@@ -27,19 +27,28 @@
 
 .admin-sidebar-header {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-  color: var(--primary-orange, #F97316);
-  text-decoration: none;
-  font: 700 24px/1.2 'Plus Jakarta Sans', sans-serif;
-  padding: 0 10px 24px;
+  align-items: center;
+  padding: 0 10px 20px;
+  border-bottom: 1px solid var(--border-color, #E8E5DF);
+  margin-bottom: 16px;
 }
 
-.admin-sidebar-header span {
-  font: 600 9px/1.5 Inter, sans-serif;
-  letter-spacing: .14em;
-  color: var(--text-muted, #94A3B8);
+.admin-sidebar-header .site-brand {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.admin-sidebar-header .site-brand__logo {
+  display: block;
+  height: 38px;
+  width: auto;
+  max-width: 140px;
+  object-fit: contain;
+}
+
+.admin-sidebar-header .site-brand__icon {
+  display: none;
 }
 
 .admin-nav {

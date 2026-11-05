@@ -17,6 +17,7 @@ import { mediaSource } from '@/shared/components/common/mediaSource';
 import { MediaPlayer } from '@/features/learning/components/learning/MediaPlayer';
 import alphabetData from '@/features/alphabet/alphabet.json';
 import { MessageCircle, BookOpen, FileText, CheckSquare, Award, Layers, LayoutGrid, Languages, Bookmark, CheckCircle2, ArrowLeft, ArrowRight, RotateCcw, Headphones, Check, Pause, Play, Lightbulb, AlertCircle, ZoomIn, X } from 'lucide-react';
+import { getStoredAudioSpeed, isAutoTranslateEnabled, isPronunciationHintsEnabled } from '@/features/account/services/userSettingsService';
 
 const alphabetAudioBySymbol = new Map(
   alphabetData.letters.map(({ symbol, id }) => [symbol, `/media/alphabet/${id}.wav`])
@@ -835,7 +836,7 @@ function ActivityBody({ activity, lessonId, answer, setAnswer, busy, preview, le
  * =========================================================================
  */
 function DialogueRenderer({ content = {}, activity = {} }) {
-  const [translations, setTranslations] = useState(true);
+  const [translations, setTranslations] = useState(() => isAutoTranslateEnabled());
   const [activeLineIndex, setActiveLineIndex] = useState(null);
   const [isPlayingAll, setIsPlayingAll] = useState(false);
   const playAllRef = useRef(null);
@@ -893,6 +894,7 @@ function DialogueRenderer({ content = {}, activity = {} }) {
           const src = mediaSource(audioUrl, 'audio');
           if (src) {
             const player = new Audio(src);
+            player.playbackRate = getStoredAudioSpeed();
             playAllRef.current = player;
             player.onended = resolve;
             player.onerror = () => speakWithSpeechSynthesis(text, resolve);
@@ -916,6 +918,7 @@ function DialogueRenderer({ content = {}, activity = {} }) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'vi-VN';
+      utterance.rate = getStoredAudioSpeed();
       utterance.onend = callback;
       utterance.onerror = callback;
       window.speechSynthesis.speak(utterance);
@@ -1031,13 +1034,15 @@ function DialogueRenderer({ content = {}, activity = {} }) {
         })}
       </div>
 
-      {/* Mẹo Shadowing */}
-      <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-900">
-        <Lightbulb size={16} className="text-amber-600 shrink-0 mt-0.5" />
-        <span>
-          <strong><BilingualText vi="Mẹo học Shadowing:" en="Shadowing Tip:" /></strong> <BilingualText vi="Hãy bấm nghe từng câu thoại và lặp lại ngay theo giọng người bản xứ để luyện nhịp điệu và ngữ điệu tự nhiên." en="Listen to each dialogue line and repeat immediately after the native speaker to practice natural rhythm and intonation." />
-        </span>
-      </div>
+      {/* Mẹo Shadowing & phát âm */}
+      {isPronunciationHintsEnabled() && (
+        <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-900">
+          <Lightbulb size={16} className="text-amber-600 shrink-0 mt-0.5" />
+          <span>
+            <strong><BilingualText vi="Mẹo phát âm & Shadowing:" en="Pronunciation & Shadowing Tip:" /></strong> <BilingualText vi="Hãy bấm nghe từng câu thoại và lặp lại ngay theo giọng người bản xứ để luyện nhịp điệu và ngữ điệu tự nhiên." en="Listen to each dialogue line and repeat immediately after the native speaker to practice natural rhythm and intonation." />
+          </span>
+        </div>
+      )}
     </div>
   );
 }

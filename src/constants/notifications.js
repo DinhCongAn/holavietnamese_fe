@@ -1,137 +1,73 @@
-/**
- * Notification Categories, Utilities and Sample Seeds for Hola Vietnamese
- */
+export const NOTIFICATION_TYPES = [
+  'SYSTEM', 'WELCOME', 'COURSE', 'LESSON', 'QUIZ',
+  'ACHIEVEMENT', 'STREAK', 'CONTENT_REVIEW', 'SECURITY',
+];
 
 export const NOTIFICATION_CATEGORIES = [
   { id: 'all', label: 'Tất cả', labelEn: 'All' },
   { id: 'unread', label: 'Chưa đọc', labelEn: 'Unread' },
-  { id: 'lesson', label: 'Bài học & Lộ trình', labelEn: 'Lessons' },
-  { id: 'achievement', label: 'Thành tích & Điểm thưởng', labelEn: 'Achievements' },
-  { id: 'streak', label: 'Chuỗi học & Nhắc nhở', labelEn: 'Streak' },
-  { id: 'system', label: 'Hệ thống & Tin mới', labelEn: 'System' },
 ];
 
-/**
- * Format timestamp into relative Vietnamese time (e.g. "Vừa xong", "10 phút trước", "Hôm qua")
- */
-export function formatRelativeTime(dateString) {
-  if (!dateString) return 'Vừa xong';
-  try {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (isNaN(diffSeconds) || diffSeconds < 60) return 'Vừa xong';
-    if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)} phút trước`;
-    if (diffSeconds < 86400) return `${Math.floor(diffSeconds / 3600)} giờ trước`;
-    if (diffSeconds < 86400 * 2) return 'Hôm qua';
-    if (diffSeconds < 86400 * 7) return `${Math.floor(diffSeconds / 86400)} ngày trước`;
-    return date.toLocaleDateString('vi-VN');
-  } catch {
-    return dateString;
-  }
+export function formatRelativeTime(value, locale = 'vi') {
+  const date = new Date(value);
+  const elapsed = Date.now() - date.getTime();
+  if (!value || Number.isNaN(elapsed)) return locale === 'vi' ? 'Vừa xong' : 'Just now';
+  const formatter = new Intl.RelativeTimeFormat(locale === 'vi' ? 'vi' : 'en', { numeric: 'auto' });
+  const units = [
+    ['year', 365 * 24 * 60 * 60 * 1000], ['month', 30 * 24 * 60 * 60 * 1000],
+    ['week', 7 * 24 * 60 * 60 * 1000], ['day', 24 * 60 * 60 * 1000],
+    ['hour', 60 * 60 * 1000], ['minute', 60 * 1000],
+  ];
+  const [unit, milliseconds] = units.find(([, duration]) => elapsed >= duration) || ['second', 1000];
+  return formatter.format(-Math.max(0, Math.floor(elapsed / milliseconds)), unit);
 }
 
-/**
- * Normalize notification object from Backend REST or SSE payload
- */
 export function normalizeNotification(item) {
-  if (!item) return null;
-  const isRead = Boolean(item.isRead ?? item.read ?? false);
-  const link = item.linkUrl ?? item.link ?? null;
-  const rawType = String(item.type || 'SYSTEM').toLowerCase();
+  if (!item || item.id == null) return null;
+  const rawType = String(item.type || 'SYSTEM').toUpperCase();
+  const isRead = Boolean(item.isRead ?? item.read);
+  const linkUrl = item.linkUrl || null;
+  let targetType = item.targetType || null;
+  let targetId = item.targetId || null;
 
-  let type = 'system';
-  if (rawType.includes('lesson') || rawType.includes('course')) type = 'lesson';
-  else if (rawType.includes('achieve') || rawType.includes('badge')) type = 'achievement';
-  else if (rawType.includes('streak')) type = 'streak';
-  else type = 'system';
+  if (linkUrl) {
+    const badgeMatch = linkUrl.match(/[?&]badgeId=([^&#]+)/);
+    if (badgeMatch) {
+      targetType = targetType || 'BADGE';
+      targetId = targetId || badgeMatch[1];
+    } else {
+      const courseMatch = linkUrl.match(/\/courses\/([^/?&#]+)/);
+      if (courseMatch) {
+        targetType = targetType || 'COURSE';
+        targetId = targetId || courseMatch[1];
+      } else {
+        const lessonMatch = linkUrl.match(/\/lessons\/([^/?&#]+)/);
+        if (lessonMatch) {
+          targetType = targetType || 'LESSON';
+          targetId = targetId || lessonMatch[1];
+        }
+      }
+    }
+  }
+
+  if (!targetType && rawType === 'ACHIEVEMENT') {
+    targetType = 'BADGE';
+  }
 
   return {
-    ...item,
     id: item.id,
-    type,
-    title: item.title || item.titleVi || 'Thông báo mới',
-    titleVi: item.titleVi || item.title || 'Thông báo mới',
+    title: item.title || 'Thông báo mới',
     message: item.message || '',
-    link,
-    linkUrl: link,
-    read: isRead,
+    type: NOTIFICATION_TYPES.includes(rawType) ? rawType : 'SYSTEM',
+    linkUrl,
+    targetType,
+    targetId: targetId ? String(targetId) : null,
     isRead,
-    time: item.time || formatRelativeTime(item.createdAt),
+    read: isRead,
     createdAt: item.createdAt || new Date().toISOString(),
-    xpReward: item.xpReward || null,
   };
 }
 
-export const DEFAULT_NOTIFICATIONS = [
-  {
-    id: 1,
-    type: 'lesson',
-    title: 'Một bài học mới đang chờ bạn',
-    titleVi: 'Một bài học mới đang chờ bạn',
-    message: 'Tiếp tục hành trình tại quán phở Hà Nội - Luyện ghép câu và nhận diện thanh điệu.',
-    time: '10 phút trước',
-    createdAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-    read: false,
-    isRead: false,
-    link: '/courses/1/lessons/101',
-    linkUrl: '/courses/1/lessons/101',
-    xpReward: '+15 XP',
-  },
-  {
-    id: 2,
-    type: 'achievement',
-    title: 'Bạn đã mở khóa huy hiệu mới!',
-    titleVi: 'Bạn đã mở khóa huy hiệu mới!',
-    message: 'Lời chào đầu tiên - mỗi bước nhỏ đều đáng ghi nhận trên hành trình nói tiếng Việt.',
-    time: '2 giờ trước',
-    createdAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
-    read: false,
-    isRead: false,
-    link: '/achievements',
-    linkUrl: '/achievements',
-    xpReward: '+50 XP',
-  },
-  {
-    id: 3,
-    type: 'streak',
-    title: 'Bảo vệ chuỗi 7 ngày học liên tục',
-    titleVi: 'Bảo vệ chuỗi 7 ngày học liên tục',
-    message: 'Đừng quên hoàn thành ít nhất 1 bài học hôm nay để duy trì ngọn lửa học tập rực cháy!',
-    time: 'Hôm qua',
-    createdAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
-    read: true,
-    isRead: true,
-    link: '/edtech/dashboard',
-    linkUrl: '/edtech/dashboard',
-    xpReward: '+10 XP',
-  },
-  {
-    id: 4,
-    type: 'system',
-    title: 'Khám phá phòng đàm thoại AI Tutor',
-    titleVi: 'Khám phá phòng đàm thoại AI Tutor',
-    message: 'Trò chuyện tự nhiên với trợ lý AI bản xứ mọi lúc, sửa lỗi phát âm và phản xạ tức thì.',
-    time: '3 ngày trước',
-    createdAt: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(),
-    read: true,
-    isRead: true,
-    link: '/ai-tutor',
-    linkUrl: '/ai-tutor',
-  },
-  {
-    id: 5,
-    type: 'lesson',
-    title: 'Vườn từ vựng đã đến hạn tưới nước',
-    titleVi: 'Vườn từ vựng đã đến hạn tưới nước',
-    message: 'Thuật toán lặp lại ngắt quãng (SRS) nhắc bạn ôn lại 3 từ vựng để không bị quên.',
-    time: '5 ngày trước',
-    createdAt: new Date(Date.now() - 5 * 24 * 3600 * 1000).toISOString(),
-    read: true,
-    isRead: true,
-    link: '/edtech/vocabulary',
-    linkUrl: '/edtech/vocabulary',
-    xpReward: '+20 XP',
-  },
-];
+export function unwrapSseNotification(payload) {
+  return normalizeNotification(payload?.result ?? payload?.notification ?? payload);
+}

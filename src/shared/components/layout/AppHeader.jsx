@@ -9,8 +9,9 @@ import { Menu, X, Flame, Zap } from 'lucide-react';
 
 export function AppHeader({ isAuthenticated, user, loading, stats, onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const isAdmin = user?.roles?.includes('ADMIN') || user?.roles?.includes('ROLE_ADMIN');
-  const isContentManager = user?.roles?.includes('CONTENT_MANAGER') || user?.roles?.includes('ROLE_CONTENT_MANAGER');
+  const role = String(user?.role || '').replace(/^ROLE_/, '');
+  const isAdmin = role === 'ADMIN';
+  const isContentManager = role === 'CONTENT';
   return (
     <header className="site-header">
       <div className="site-header__inner">

@@ -3,7 +3,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Check, CircleAlert, Clock3, Play, RefreshCw, Target, Volume2 } from 'lucide-react';
+import {
+  ArrowRight, Award, BookOpen, Check, CircleAlert, Clock3, Flame, Play, RefreshCw, Sparkles, Target, Trophy, Volume2, Zap,
+} from 'lucide-react';
+import { formatRelativeTime } from '@/constants/notifications';
 import { learnerService } from '@/features/learning/api/learnerService';
 import { WORD_OF_THE_DAY } from '@/features/home/components/home/data/homeData';
 import { speakVietnamese } from '@/utils/speech';
@@ -14,6 +17,112 @@ import { BuffaloMascot, MascotOnboarding, MascotSpeechBubble } from '@/shared/co
 import { SpotlightCard } from '@/shared/components/common/animate/SpotlightCard';
 
 const clampPercent = (value) => Math.min(100, Math.max(0, Number(value) || 0));
+
+function getActivityMeta(activity) {
+  const eventType = String(activity.eventType || '').toUpperCase();
+  if (eventType.includes('LESSON')) {
+    return {
+      labelVi: 'Bài học',
+      labelEn: 'Lesson',
+      icon: BookOpen,
+      iconColor: 'text-blue-600',
+      iconBg: 'bg-blue-50 border-blue-200',
+      badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
+    };
+  }
+  if (eventType.includes('CHECKIN') || eventType.includes('LOGIN')) {
+    return {
+      labelVi: 'Điểm danh',
+      labelEn: 'Check-in',
+      icon: Flame,
+      iconColor: 'text-orange-600',
+      iconBg: 'bg-orange-50 border-orange-200',
+      badgeClass: 'bg-orange-50 text-orange-700 border-orange-200',
+    };
+  }
+  if (eventType.includes('QUIZ')) {
+    return {
+      labelVi: 'Kiểm tra',
+      labelEn: 'Quiz',
+      icon: Award,
+      iconColor: 'text-purple-600',
+      iconBg: 'bg-purple-50 border-purple-200',
+      badgeClass: 'bg-purple-50 text-purple-700 border-purple-200',
+    };
+  }
+  if (eventType.includes('VOCAB')) {
+    return {
+      labelVi: 'Từ vựng',
+      labelEn: 'Vocabulary',
+      icon: BookOpen,
+      iconColor: 'text-emerald-600',
+      iconBg: 'bg-emerald-50 border-emerald-200',
+      badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    };
+  }
+  if (eventType.includes('ROLEPLAY') || eventType.includes('AI')) {
+    return {
+      labelVi: 'Hội thoại AI',
+      labelEn: 'AI Conversation',
+      icon: Sparkles,
+      iconColor: 'text-amber-600',
+      iconBg: 'bg-amber-50 border-amber-200',
+      badgeClass: 'bg-amber-50 text-amber-700 border-amber-200',
+    };
+  }
+  if (eventType.includes('BADGE') || eventType.includes('ACHIEVEMENT')) {
+    return {
+      labelVi: 'Huy hiệu',
+      labelEn: 'Badge',
+      icon: Trophy,
+      iconColor: 'text-amber-600',
+      iconBg: 'bg-amber-50 border-amber-200',
+      badgeClass: 'bg-amber-50 text-amber-800 border-amber-200',
+    };
+  }
+  return {
+    labelVi: 'Hoạt động',
+    labelEn: 'Activity',
+    icon: Check,
+    iconColor: 'text-emerald-600',
+    iconBg: 'bg-emerald-50 border-emerald-200',
+    badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  };
+}
+
+function getActivityTitle(activity, isVi) {
+  if (isVi) {
+    if (activity.titleVi) return activity.titleVi;
+    if (activity.description) return activity.description;
+    if (activity.title) return activity.title;
+    if (activity.eventName) return activity.eventName;
+    const type = String(activity.eventType || '').toUpperCase();
+    if (type.includes('DAILY_CHECKIN') || type.includes('DAILY_LOGIN')) return 'Điểm danh học tập hàng ngày';
+    if (type.includes('LESSON')) return 'Hoàn thành bài học';
+    if (type.includes('QUIZ')) return 'Hoàn thành bài kiểm tra';
+    if (type.includes('VOCAB')) return 'Học và ghi nhớ từ vựng mới';
+    if (type.includes('AI_ROLEPLAY')) return 'Hoàn thành tình huống giao tiếp AI';
+    return 'Hoàn thành hoạt động học tập';
+  }
+  if (activity.titleEn) return activity.titleEn;
+  if (activity.descriptionEn) return activity.descriptionEn;
+  if (activity.description) return activity.description;
+  if (activity.title) return activity.title;
+  const type = String(activity.eventType || '').toUpperCase();
+  if (type.includes('DAILY_CHECKIN') || type.includes('DAILY_LOGIN')) return 'Daily learning check-in';
+  if (type.includes('LESSON')) return 'Completed a lesson';
+  if (type.includes('QUIZ')) return 'Completed a quiz';
+  if (type.includes('VOCAB')) return 'Learned new vocabulary';
+  if (type.includes('AI_ROLEPLAY')) return 'Completed an AI roleplay session';
+  return 'Completed learning activity';
+}
+
+function getActivityTime(activity, isVi) {
+  if (activity.time) return activity.time;
+  if (activity.createdAt) return formatRelativeTime(activity.createdAt, isVi ? 'vi' : 'en');
+  if (activity.transactionDate) return formatRelativeTime(activity.transactionDate, isVi ? 'vi' : 'en');
+  return isVi ? 'Gần đây' : 'Recently';
+}
 
 function DashboardSkeleton() {
   return (
@@ -118,11 +227,11 @@ export function LearnerDashboard({ user }) {
               <div className="ld-empty">
                 <h2><BilingualText vi="Lộ trình học tập cá nhân hóa" en="Personalized Learning Path" /></h2>
                 <p><BilingualText vi="Khám phá bản đồ học tập tiếng Việt theo từng chặng, tích lũy XP và mở khóa các bài học tương tác tiếp theo." en="Explore the Vietnamese learning roadmap station by station, collect XP, and unlock interactive lessons." /></p>
-                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.25rem' }}>
+                <div className="ld-empty__actions">
                   <Link to="/learning-path" className="ld-button ld-button--primary">
                     <BilingualText vi="Vào lộ trình học" en="Open learning roadmap" /><ArrowRight size={16} />
                   </Link>
-                  <Link to="/courses" className="ld-button" style={{ background: '#f5efe6', color: '#EA580C', border: '1px solid #ebdccb' }}>
+                  <Link to="/courses" className="ld-button ld-button--secondary">
                     {t('dashboard.exploreCourses')}<ArrowRight size={16} />
                   </Link>
                 </div>
@@ -136,8 +245,80 @@ export function LearnerDashboard({ user }) {
           </motion.section>
 
           <motion.section className="ld-card ld-activity" {...entrance} transition={{ delay: reduceMotion ? 0 : .2 }}>
-            <div className="ld-heading"><div><span>{t('dashboard.history')}</span><h2>{t('dashboard.recentActivity')}</h2></div></div>
-            {activities.length ? <div className="ld-activity__list">{activities.slice(0, 5).map((activity, index) => <div key={activity.id ?? index}><span className="ld-activity__dot"><Check size={12} /></span><div><strong>{isVi ? (activity.titleVi || activity.title) : (activity.titleEn || activity.titleVi || activity.title)}</strong><small>{activity.time}</small></div>{activity.xp != null && <b>+{activity.xp} XP</b>}</div>)}</div> : <div className="ld-empty ld-empty--compact"><Clock3 size={24} /><p>{t('dashboard.noActivity')}</p></div>}
+            <div className="ld-heading">
+              <div>
+                <span>{t('dashboard.history')}</span>
+                <h2>{t('dashboard.recentActivity')}</h2>
+              </div>
+              <Link to="/progress" className="ld-heading__link inline-flex items-center gap-1 text-xs font-bold text-[#EA580C] hover:text-[#C2410C] transition-colors">
+                <BilingualText vi="Xem tất cả" en="View all" />
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+            {activities.length ? (
+              <div className="ld-activity__modern-list space-y-2.5 mt-4">
+                {activities.slice(0, 5).map((activity, index) => {
+                  const meta = getActivityMeta(activity);
+                  const Icon = meta.icon;
+                  const title = getActivityTitle(activity, isVi);
+                  const time = getActivityTime(activity, isVi);
+                  const xpAmount = activity.xp ?? activity.amount ?? activity.xpReward;
+
+                  return (
+                    <div
+                      key={activity.id ?? index}
+                      className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-[#FFFDFB] border border-[#E8E5DF] hover:border-[#EA580C]/40 hover:bg-[#FFF9F2] transition-all text-left shadow-2xs"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${meta.iconBg} ${meta.iconColor}`}>
+                          <Icon size={18} />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${meta.badgeClass}`}>
+                              {isVi ? meta.labelVi : meta.labelEn}
+                            </span>
+                            <span className="text-[11px] text-[#94A3B8] flex items-center gap-1">
+                              <Clock3 size={11} />
+                              {time}
+                            </span>
+                          </div>
+                          <strong className="block text-sm font-bold text-[#253044] truncate" title={title}>
+                            {title}
+                          </strong>
+                        </div>
+                      </div>
+
+                      {xpAmount != null && (
+                        <span className="inline-flex shrink-0 items-center gap-1 px-2.5 py-1 rounded-xl bg-orange-50 border border-orange-200 text-[#EA580C] text-xs font-black shadow-2xs">
+                          <Zap size={12} fill="currentColor" />
+                          +{xpAmount} XP
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="ld-empty ld-empty--compact p-6 text-center">
+                <span className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-[#EA580C]">
+                  <Clock3 size={24} />
+                </span>
+                <strong className="block text-sm font-bold text-[#253044]">
+                  <BilingualText vi="Chưa có hoạt động gần đây" en="No recent activity yet" />
+                </strong>
+                <p className="text-xs text-[#64748B] mt-1 max-w-sm mx-auto">
+                  {t('dashboard.noActivity')}
+                </p>
+                <Link
+                  to={continueTo}
+                  className="inline-flex items-center gap-1.5 mt-3 px-3.5 py-1.5 rounded-xl bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold transition-all shadow-xs !border-0 cursor-pointer"
+                >
+                  <Play size={13} fill="currentColor" />
+                  <BilingualText vi="Bắt đầu học ngay" en="Start learning now" />
+                </Link>
+              </div>
+            )}
           </motion.section>
         </main>
 

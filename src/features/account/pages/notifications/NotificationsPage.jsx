@@ -1,434 +1,278 @@
-import React, { useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
-import { Bell, CheckCheck, Trash2, Settings, Search, BookOpen, Trophy, Flame, ArrowRight, Clock, CheckCircle2, Compass, Zap } from 'lucide-react';
-import { BilingualText, bilingualLabel } from '@/shared/components/common/BilingualText';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
+import {
+  Award,
+  Bell,
+  BookOpen,
+  Check,
+  CheckCheck,
+  ChevronLeft,
+  ChevronRight,
+  Flame,
+  LockKeyhole,
+  ShieldCheck,
+  Sparkles,
+  Trash2,
+  Trophy,
+} from 'lucide-react';
 import { useNotifications } from '@/features/account/hooks/useNotifications';
-import { NOTIFICATION_CATEGORIES } from '@/constants/notifications';
-import { FixedHeritageBackdrop, AmbientWatermark } from '@/features/home/components/home/common/HeritageWatermark';
+import { formatRelativeTime } from '@/constants/notifications';
 
-/**
- * Return category visual metadata
- */
-function getCategoryBadge(type) {
-  switch (type) {
-    case 'lesson':
-      return {
-        label: 'Bài học',
-        labelEn: 'Lesson',
-        icon: BookOpen,
-        badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-        cardAccent: 'hover:border-emerald-500',
-      };
-    case 'achievement':
-      return {
-        label: 'Thành tích',
-        labelEn: 'Achievement',
-        icon: Trophy,
-        badgeClass: 'bg-amber-100 text-amber-800 border-amber-200',
-        cardAccent: 'hover:border-amber-500',
-      };
-    case 'streak':
-      return {
-        label: 'Chuỗi học',
-        labelEn: 'Streak',
-        icon: Flame,
-        badgeClass: 'bg-orange-100 text-orange-800 border-orange-200',
-        cardAccent: 'hover:border-orange-500',
-      };
-    default:
-      return {
-        label: 'Hệ thống',
-        labelEn: 'System',
-        icon: Bell,
-        badgeClass: 'bg-[#FFF0DC] text-[#EA580C] border-[#E8E5DF]',
-        cardAccent: 'hover:border-[#EA580C]',
-      };
-  }
-}
+const PAGE_SIZE = 10;
+const TYPE_META = {
+  SYSTEM: ['Hệ thống', Bell],
+  WELCOME: ['Chào mừng', Sparkles],
+  COURSE: ['Khóa học', BookOpen],
+  LESSON: ['Bài học', BookOpen],
+  QUIZ: ['Kiểm tra', Award],
+  ACHIEVEMENT: ['Thành tích', Trophy],
+  STREAK: ['Chuỗi học', Flame],
+  CONTENT_REVIEW: ['Duyệt nội dung', ShieldCheck],
+  SECURITY: ['Bảo mật', LockKeyhole],
+};
 
-/**
- * Full-featured Notification Center Page
- */
 export function NotificationsPage() {
-  const [activeTab, setActiveTab] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [filter, setFilter] = useState('all');
+  const [page, setPage] = useState(1);
   const navigate = useNavigate();
+  const { pageData, unreadCount, loading, busy, error, loadPage, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
 
-  const {
-    notifications,
-    unreadCount,
-    loading,
-    busy,
-    error,
-    markAsRead,
-    markAllAsRead,
-    deleteNotification,
-    clearReadNotifications,
-    sendTestNotification,
-  } = useNotifications();
+  useEffect(() => {
+    loadPage({ page, size: PAGE_SIZE, isRead: filter === 'unread' ? false : undefined });
+  }, [page, filter, loadPage]);
 
-  // Filter and search
-  const filteredNotifications = useMemo(() => {
-    return notifications.filter((item) => {
-      // Category filter
-      if (activeTab === 'unread' && item.read) return false;
-      if (activeTab !== 'all' && activeTab !== 'unread' && item.type !== activeTab) {
-        return false;
+  useEffect(() => {
+    if (pageData.totalPages > 0 && page > pageData.totalPages) setPage(pageData.totalPages);
+  }, [page, pageData.totalPages]);
+
+  const selectFilter = (value) => {
+    setFilter(value);
+    setPage(1);
+  };
+
+  const openItem = async (item) => {
+    if (!item.isRead) await markAsRead(item.id);
+    if (item.targetType === 'BADGE' && item.targetId) {
+      navigate(`/achievements?badgeId=${encodeURIComponent(item.targetId)}`);
+    } else if (item.type === 'ACHIEVEMENT') {
+      navigate(item.linkUrl || '/achievements');
+    } else if (item.linkUrl) {
+      navigate(item.linkUrl);
+    }
+  };
+
+  const sortedNotifications = useMemo(() => {
+    return [...pageData.content].sort((a, b) => {
+      const timeA = new Date(a.createdAt).getTime();
+      const timeB = new Date(b.createdAt).getTime();
+      if (!Number.isNaN(timeA) && !Number.isNaN(timeB) && timeA !== timeB) {
+        return timeB - timeA;
       }
-      // Search query filter
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        const titleVi = (item.titleVi || item.title || '').toLowerCase();
-        const msg = (item.message || '').toLowerCase();
-        return titleVi.includes(query) || msg.includes(query);
-      }
-      return true;
+      return Number(b.id) - Number(a.id);
     });
-  }, [notifications, activeTab, searchQuery]);
-
-  const readCount = notifications.length - unreadCount;
+  }, [pageData.content]);
 
   return (
-    <div className="notifications-heritage-root relative w-full min-h-screen">
-      {/* Background Dong Son Watermarks */}
-      <FixedHeritageBackdrop />
-      <AmbientWatermark className="absolute -right-24 top-20 w-[540px] h-[540px] opacity-[0.04]" />
-      <AmbientWatermark className="absolute -left-28 bottom-20 w-[560px] h-[560px] opacity-[0.035]" />
-
-      <main className="relative z-10 w-full max-w-[1380px] 2xl:max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-8 sm:py-12 space-y-8 text-left">
-        {/* Page Top Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-[#E8E5DF]/60">
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFF0DC] border border-[#E7B59D] text-[#EA580C] text-xs font-bold uppercase tracking-wider">
-              <Bell size={13} />
-              <span><BilingualText vi="Trung tâm cập nhật • Notification Center" en="Notification Center" /></span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-[#253044] tracking-tight">
-              <BilingualText vi="Thông báo của bạn" en="Your Notifications" />
-            </h1>
-            <p className="text-xs sm:text-sm text-[#64748B]">
-              <BilingualText
-                vi="Theo dõi tiến độ, nhiệm vụ hôm nay và thành tích đạt được trên hành trình học tiếng Việt."
-                en="Track your progress, daily quests, and achievements on your Vietnamese learning journey."
-              />
-            </p>
+    <main className="notifications-page min-h-screen bg-[#FFFCF7] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl">
+        <header className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <span className="mb-2 inline-flex items-center gap-2 rounded-full bg-[#FFF0DC] px-3 py-1 text-xs font-bold text-[#C2410C]">
+              <Bell size={13} /> TRUNG TÂM THÔNG BÁO
+            </span>
+            <h1 className="text-3xl font-black tracking-tight text-[#253044]">Thông báo của bạn</h1>
+            <p className="mt-1 text-sm text-[#64748B]">Theo dõi bài học, thành tích và các cập nhật quan trọng.</p>
           </div>
+          <button
+            type="button"
+            disabled={busy || unreadCount === 0}
+            onClick={markAllAsRead}
+            className="inline-flex items-center justify-center gap-2 rounded-xl !bg-white hover:!bg-stone-50 active:!bg-white !text-[#EA580C] hover:!text-[#C2410C] border-2 border-[#EA580C] hover:border-[#C2410C] px-4 py-2.5 text-sm font-bold shadow-xs transition-all disabled:cursor-not-allowed disabled:opacity-40 disabled:border-stone-300 disabled:!text-stone-400 disabled:!bg-white !min-h-0"
+          >
+            <CheckCheck size={17} /> Đánh dấu tất cả đã đọc
+          </button>
+        </header>
 
-          {/* Quick Stats Ribbon */}
-          <div className="flex items-center gap-3">
-            <div className="px-4 py-2.5 rounded-2xl bg-white/92 backdrop-blur-xs border border-[#E8E5DF]/70 shadow-2xs text-center">
-              <span className="block text-base font-black text-[#253044] leading-tight">
-                {notifications.length}
-              </span>
-              <span className="text-[10px] text-[#64748B] font-semibold uppercase"><BilingualText vi="Tổng cộng" en="Total" /></span>
-            </div>
-            <div className="px-4 py-2.5 rounded-2xl bg-[#FFF7E8] border-2 border-[#EA580C] shadow-2xs text-center">
-              <span className="block text-base font-black text-[#EA580C] leading-tight">
-                {unreadCount}
-              </span>
-              <span className="text-[10px] text-[#EA580C] font-semibold uppercase"><BilingualText vi="Chưa đọc" en="Unread" /></span>
-            </div>
-            <div className="px-4 py-2.5 rounded-2xl bg-white/92 backdrop-blur-xs border border-[#E8E5DF]/70 shadow-2xs text-center">
-              <span className="block text-base font-black text-emerald-700 leading-tight">
-                {readCount}
-              </span>
-              <span className="text-[10px] text-[#64748B] font-semibold uppercase"><BilingualText vi="Đã xem" en="Read" /></span>
-            </div>
-          </div>
-        </div>
-
-        {/* Global Action Toolbar */}
-        <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-white/92 backdrop-blur-xs border border-[#E8E5DF]/70 shadow-[0_4px_20px_rgba(67,25,20,0.02)]">
-          {/* Search Box */}
-          <div className="relative flex-1 min-w-[240px]">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#64748B]" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={bilingualLabel("Tìm kiếm nội dung thông báo…", "Search notification content…")} aria-label={bilingualLabel("Tìm kiếm thông báo", "Search notifications")}
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-[#FFFCF7] border border-[#E8E5DF]/60 text-xs text-[#253044] placeholder-[#64748B]/70 focus:outline-none focus:border-[#EA580C] focus:ring-1 focus:ring-[#EA580C] transition-all"
-            />
-            {searchQuery && (
+        <section className="overflow-hidden rounded-3xl border border-[#E8E5DF] bg-white shadow-[0_12px_40px_rgba(67,25,20,0.06)]">
+          <div className="flex items-center justify-between gap-3 border-b border-[#E8E5DF] bg-[#FFFBF5] p-4">
+            <div className="flex gap-2" role="tablist" aria-label="Lọc thông báo">
               <button
                 type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#64748B] hover:text-[#EA580C]"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              type="button"
-              disabled={busy || unreadCount === 0}
-              onClick={markAllAsRead}
-              className={`px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
-                unreadCount > 0
-                  ? 'bg-[#EA580C] hover:bg-[#C2410C] text-white shadow-2xs active:translate-y-0.5'
-                  : 'bg-stone-100 text-stone-400 border border-stone-200 cursor-not-allowed'
-              }`}
-            >
-              <CheckCheck size={15} />
-              <span><BilingualText vi="Đọc tất cả" en="Mark all as read" /></span>
-            </button>
-
-            <button
-              type="button"
-              disabled={busy || readCount === 0}
-              onClick={clearReadNotifications}
-              className={`px-3 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
-                readCount > 0
-                  ? 'bg-[#FFFCF7] hover:bg-red-50 text-[#64748B] hover:text-red-700 border border-[#E8E5DF]/60 hover:border-red-200'
-                  : 'bg-stone-100 text-stone-400 border border-stone-200 cursor-not-allowed opacity-60'
-              }`}
-              title={bilingualLabel("Xóa tất cả thông báo đã đọc", "Clear all read notifications")}
-            >
-              <Trash2 size={15} />
-              <span><BilingualText vi="Dọn dẹp đã đọc" en="Clear read" /></span>
-            </button>
-
-            <button
-              type="button"
-              disabled={busy}
-              onClick={sendTestNotification}
-              className="px-3.5 py-2.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
-              title={bilingualLabel("Bắn thử 1 thông báo test từ Backend để kiểm tra chuông và Realtime SSE", "Send test notification from backend to verify SSE")}
-            >
-              <Zap size={14} className="text-purple-600 fill-purple-200" />
-              <span><BilingualText vi="Bắn test SSE" en="Send SSE test" /></span>
-            </button>
-
-            <Link
-              to="/settings"
-              className="px-3 py-2.5 rounded-xl bg-[#FFFCF7] hover:bg-[#FFF7E8] text-[#64748B] hover:text-[#253044] border border-[#E8E5DF]/60 font-bold text-xs flex items-center gap-1.5 transition-all"
-              title={bilingualLabel("Cài đặt thông báo", "Notification settings")}
-            >
-              <Settings size={15} />
-              <span><BilingualText vi="Cài đặt" en="Settings" /></span>
-            </Link>
-          </div>
-        </div>
-
-        {/* Category Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1">
-          {NOTIFICATION_CATEGORIES.map((cat) => {
-            const count =
-              cat.id === 'all'
-                ? notifications.length
-                : cat.id === 'unread'
-                ? unreadCount
-                : notifications.filter((n) => n.type === cat.id).length;
-
-            const isSelected = activeTab === cat.id;
-
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setActiveTab(cat.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-2 ${
-                  isSelected
-                    ? 'bg-[#EA580C] text-white shadow-2xs scale-102'
-                    : 'bg-white/92 hover:bg-[#FFF7E8] text-[#64748B] hover:text-[#253044] border border-[#E8E5DF]/60'
+                role="tab"
+                aria-selected={filter === 'all'}
+                onClick={() => selectFilter('all')}
+                className={`rounded-xl px-4 py-2 text-sm font-bold transition-all !min-h-0 ${
+                  filter === 'all'
+                    ? '!bg-white active:!bg-white !text-[#EA580C] border-2 border-[#EA580C] shadow-xs'
+                    : '!bg-white active:!bg-white !text-[#64748B] border border-[#E8E5DF] hover:!text-[#253044] hover:border-stone-300'
                 }`}
               >
-                <BilingualText vi={cat.label} en={cat.labelEn} />
-                <span
-                  className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
-                    isSelected
-                      ? 'bg-white/20 text-white'
-                      : 'bg-[#FFFCF7] text-[#64748B]'
-                  }`}
-                >
-                  {count}
+                Tất cả
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={filter === 'unread'}
+                onClick={() => selectFilter('unread')}
+                className={`rounded-xl px-4 py-2 text-sm font-bold transition-all !min-h-0 ${
+                  filter === 'unread'
+                    ? '!bg-white active:!bg-white !text-[#EA580C] border-2 border-[#EA580C] shadow-xs'
+                    : '!bg-white active:!bg-white !text-[#64748B] border border-[#E8E5DF] hover:!text-[#253044] hover:border-stone-300'
+                }`}
+              >
+                Chưa đọc
+                <span className="ml-1.5 rounded-full bg-orange-50 border border-orange-200 px-2 py-0.5 text-[10px] font-bold text-[#EA580C]">
+                  {unreadCount}
                 </span>
               </button>
-            );
-          })}
-        </div>
-
-        {error && (
-          <div className="p-4 rounded-2xl bg-red-50 text-red-700 text-xs font-medium border border-red-200" role="alert">
-            {error}
-          </div>
-        )}
-
-        {/* Notification Cards List */}
-        <div className="space-y-3">
-          {loading ? (
-            <div className="py-20 text-center space-y-3 bg-white/92 rounded-3xl border border-[#E8E5DF]/70">
-              <div className="w-10 h-10 rounded-full border-3 border-[#EA580C] border-t-transparent animate-spin mx-auto" />
-              <p className="text-xs text-[#64748B]"><BilingualText vi="Đang tải thông báo của bạn…" en="Loading your notifications…" /></p>
             </div>
-          ) : filteredNotifications.length === 0 ? (
-            /* Empty State */
-            <div className="py-16 sm:py-20 px-6 text-center space-y-4 bg-white/92 backdrop-blur-xs rounded-3xl border border-[#E8E5DF]/70 shadow-2xs">
-              <div className="w-16 h-16 rounded-3xl bg-[#FFF7E8] border border-[#E8E5DF] text-[#EA580C] flex items-center justify-center mx-auto shadow-xs">
-                {activeTab === 'unread' ? (
-                  <CheckCircle2 size={30} className="text-emerald-600" />
-                ) : (
-                  <Bell size={28} />
-                )}
-              </div>
-              <div className="space-y-1 max-w-md mx-auto">
-                <h3 className="text-base font-black text-[#253044]">
-                  {activeTab === 'unread' ? (
-                    <BilingualText vi="Bạn đã xem hết tất cả thông báo!" en="You're all caught up with your notifications!" />
-                  ) : searchQuery ? (
-                    <BilingualText vi={`Không tìm thấy thông báo nào chứa "${searchQuery}"`} en={`No notifications match "${searchQuery}"`} />
-                  ) : (
-                    <BilingualText vi="Chưa có thông báo nào trong mục này" en="No notifications in this tab" />
-                  )}
-                </h3>
-                <p className="text-xs text-[#64748B] leading-relaxed">
-                  {activeTab === 'unread' ? (
-                    <BilingualText
-                      vi="Tuyệt vời! Không còn lời nhắc nào chưa xem. Hãy tiếp tục học bài mới để duy trì phong độ."
-                      en="Great! No unread reminders. Keep learning new lessons to stay on track."
-                    />
-                  ) : (
-                    <BilingualText
-                      vi="Các thông báo mới về bài học, sự kiện hoặc huy hiệu đạt được sẽ xuất hiện tại đây."
-                      en="New notifications about lessons, events, or earned badges will appear here."
-                    />
-                  )}
-                </p>
-              </div>
-              <div className="pt-2 flex justify-center gap-3">
-                <Link
-                  to="/edtech/dashboard"
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-black shadow-2xs transition-all"
-                >
-                  <Compass size={15} />
-                  <span><BilingualText vi="Vào Lộ Trình Học Ngay" en="Go to Learning Path" /></span>
-                </Link>
-                {activeTab !== 'all' && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab('all');
-                      setSearchQuery('');
-                    }}
-                    className="px-4 py-2.5 rounded-xl bg-[#FFFCF7] hover:bg-[#FFF7E8] border border-[#E8E5DF]/60 text-xs font-bold text-[#253044] transition-all cursor-pointer"
-                  ><BilingualText vi="Xem tất cả thông báo" en="View all notifications" /></button>
-                )}
-              </div>
+            <span className="hidden text-xs text-[#64748B] sm:block">{pageData.totalElements} thông báo</span>
+          </div>
+
+          {error && <div className="border-b border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700" role="alert">{error}</div>}
+
+          {loading ? (
+            <div className="flex min-h-64 items-center justify-center" aria-label="Đang tải thông báo">
+              <span className="h-9 w-9 animate-spin rounded-full border-4 border-[#EA580C] border-t-transparent" />
+            </div>
+          ) : sortedNotifications.length === 0 ? (
+            <div className="px-6 py-20 text-center">
+              <span className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-[#FFF0DC] text-[#EA580C]">
+                {filter === 'unread' ? <Check size={30} /> : <Bell size={28} />}
+              </span>
+              <h2 className="font-black text-[#253044]">{filter === 'unread' ? 'Bạn đã đọc hết thông báo' : 'Chưa có thông báo nào'}</h2>
+              <p className="mt-1 text-sm text-[#64748B]">Thông báo mới sẽ xuất hiện tại đây.</p>
             </div>
           ) : (
-            <AnimatePresence mode="popLayout">
-              {filteredNotifications.map((item) => {
-                const { label: typeLabel, labelEn: typeLabelEn, icon: CatIcon, badgeClass, cardAccent } = getCategoryBadge(item.type);
+            <div className="divide-y divide-[#E8E5DF]">
+              <AnimatePresence initial={false}>
+                {sortedNotifications.map((item) => {
+                  const [metaLabel, MetaIcon] = TYPE_META[item.type] || TYPE_META.SYSTEM;
+                  const label = (item.targetType === 'BADGE' || item.type === 'ACHIEVEMENT') ? 'Thành tích' : metaLabel;
+                  const Icon = (item.targetType === 'BADGE' || item.type === 'ACHIEVEMENT') ? Trophy : MetaIcon;
+                  const isUnread = !item.isRead;
 
-                return (
-                  <motion.article
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.18 }}
-                    key={item.id}
-                    className={`p-5 rounded-2xl border transition-all flex flex-col sm:flex-row items-start justify-between gap-4 shadow-2xs ${cardAccent} ${
-                      item.read
-                        ? 'bg-white/92 border-[#E8E5DF]/60'
-                        : 'bg-[#FFF7E8]/90 border-2 border-[#EA580C]/60 shadow-xs ring-2 ring-[#EA580C]/5'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3.5 flex-1 min-w-0">
-                      {/* Category Icon Badge */}
-                      <div className={`w-10 h-10 rounded-2xl border flex items-center justify-center shrink-0 shadow-2xs ${badgeClass}`}>
-                        <CatIcon size={18} />
+                  return (
+                    <motion.article
+                      key={item.id}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      onClick={() => openItem(item)}
+                      style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', textAlign: 'left' }}
+                      className={`group relative flex items-start gap-4 p-5 transition-all text-left cursor-pointer ${
+                        isUnread
+                          ? '!bg-[#FFFDFB] border-l-4 border-l-[#EA580C] hover:!bg-[#FFF9F2]'
+                          : '!bg-white border-l-4 border-l-transparent hover:!bg-stone-50/80'
+                      }`}
+                    >
+                      {/* Left Icon */}
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-orange-100 bg-[#FFF0DC] text-[#EA580C] mt-0.5">
+                        <Icon size={20} />
                       </div>
 
                       {/* Content Details */}
-                      <div className="space-y-1.5 flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border ${badgeClass}`}>
-                            <BilingualText vi={typeLabel} en={typeLabelEn} />
+                      <div
+                        className="min-w-0 flex-1 flex flex-col items-start text-left"
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', width: '100%' }}
+                      >
+                        {/* Meta Line: Category Tag + MỚI badge + Relative Time */}
+                        <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                          <span className="inline-flex items-center rounded-md bg-orange-50 border border-orange-200/80 px-2.5 py-0.5 text-[11px] font-bold text-[#EA580C] uppercase tracking-wide">
+                            {label}
                           </span>
-                          {!item.read && (
-                            <span className="px-2 py-0.5 rounded-md bg-[#EA580C] text-white text-[10px] font-bold">
-                              <BilingualText vi="Mới" en="New" />
+                          {isUnread && (
+                            <span className="inline-flex items-center rounded-full bg-[#EA580C] px-2 py-0.5 text-[10px] font-black text-white shadow-2xs">
+                              MỚI
                             </span>
                           )}
-                          {item.xpReward && (
-                            <span className="px-2 py-0.5 rounded-md bg-[#FFF0DC] text-[#EA580C] text-[10px] font-black">
-                              {item.xpReward}
-                            </span>
-                          )}
-                          <small className="text-[11px] text-stone-400 flex items-center gap-1 ml-auto">
-                            <Clock size={11} />
-                            {item.time}
-                          </small>
+                          <span className="text-stone-300">·</span>
+                          <time className="text-xs font-medium text-[#94A3B8]">
+                            {formatRelativeTime(item.createdAt)}
+                          </time>
                         </div>
 
-                        <h3 className={`text-sm sm:text-base leading-snug ${item.read ? 'font-bold text-[#253044]' : 'font-black text-[#EA580C]'}`}>
-                          <BilingualText vi={item.titleVi || item.title} en={item.title} />
+                        {/* Title */}
+                        <h3 className={`w-full text-left text-base font-bold transition-colors group-hover:text-[#EA580C] m-0 ${
+                          isUnread ? 'text-[#0F172A]' : 'text-[#334155]'
+                        }`}>
+                          {item.title}
                         </h3>
 
-                        <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
+                        {/* Description */}
+                        <p className="w-full text-left mt-1 text-sm leading-relaxed text-[#64748B] m-0">
                           {item.message}
                         </p>
                       </div>
-                    </div>
 
-                    {/* Right Action Buttons */}
-                    <div className="flex items-center sm:flex-col sm:items-end justify-between w-full sm:w-auto gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#E8E5DF]/40 shrink-0">
-                      {(item.linkUrl || item.link) && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (!item.read) markAsRead(item.id);
-                            navigate(item.linkUrl || item.link);
-                          }}
-                          className="px-4 py-2 rounded-xl bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs active:translate-y-0.5 transition-all cursor-pointer"
-                        >
-                          <span><BilingualText vi="Xem chi tiết" en="View details" /></span>
-                          <ArrowRight size={13} />
-                        </button>
-                      )}
-
-                      <div className="flex items-center gap-1.5">
-                        {!item.read ? (
+                      {/* Right Action Buttons */}
+                      <div
+                        className="flex shrink-0 items-center gap-1.5 pt-0.5 ml-2"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {isUnread && (
                           <button
                             type="button"
                             disabled={busy}
-                            onClick={() => markAsRead(item.id)}
-                            className="px-3 py-1.5 rounded-lg bg-[#FFFCF7] hover:bg-[#FFF0DC] text-[#EA580C] font-bold text-xs transition-colors cursor-pointer"
-                            title={bilingualLabel("Đánh dấu đã đọc", "Mark as read")}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              markAsRead(item.id);
+                            }}
+                            title="Đánh dấu đã đọc"
+                            aria-label="Đánh dấu đã đọc"
+                            className="icon-action-btn read-btn"
                           >
-                            <BilingualText vi="Đã đọc" en="Read" />
+                            <Check size={16} />
                           </button>
-                        ) : (
-                          <span className="text-[11px] text-emerald-700 font-bold flex items-center gap-1 px-2 py-1">
-                            <CheckCircle2 size={13} />
-                            <span><BilingualText vi="Đã đọc" en="Read" /></span>
-                          </span>
                         )}
-
                         <button
                           type="button"
                           disabled={busy}
-                          onClick={() => deleteNotification(item.id)}
-                          className="p-1.5 rounded-lg text-[#64748B] hover:text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
-                          title={bilingualLabel("Xóa thông báo", "Delete notification")}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteNotification(item.id);
+                          }}
+                          title="Xóa thông báo"
+                          aria-label="Xóa thông báo"
+                          className="icon-action-btn delete-btn"
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={16} />
                         </button>
                       </div>
-                    </div>
-                  </motion.article>
-                );
-              })}
-            </AnimatePresence>
+                    </motion.article>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
           )}
-        </div>
-      </main>
-    </div>
+
+          {pageData.totalPages > 1 && (
+            <nav className="flex items-center justify-between border-t border-[#E8E5DF] bg-[#FFFBF5] p-4" aria-label="Phân trang thông báo">
+              <button
+                type="button"
+                disabled={page <= 1 || loading}
+                onClick={() => setPage((value) => value - 1)}
+                className="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold !bg-white hover:!bg-stone-50 active:!bg-white !text-[#253044] border border-[#E8E5DF] hover:border-[#EA580C] hover:!text-[#EA580C] disabled:opacity-40 disabled:hover:border-[#E8E5DF] disabled:hover:!text-[#253044] transition-colors !min-h-0 shadow-2xs"
+              >
+                <ChevronLeft size={15} /> Trước
+              </button>
+              <span className="text-xs font-bold text-[#64748B]">
+                Trang {pageData.page} / {pageData.totalPages}
+              </span>
+              <button
+                type="button"
+                disabled={page >= pageData.totalPages || loading}
+                onClick={() => setPage((value) => value + 1)}
+                className="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold !bg-white hover:!bg-stone-50 active:!bg-white !text-[#253044] border border-[#E8E5DF] hover:border-[#EA580C] hover:!text-[#EA580C] disabled:opacity-40 disabled:hover:border-[#E8E5DF] disabled:hover:!text-[#253044] transition-colors !min-h-0 shadow-2xs"
+              >
+                Sau <ChevronRight size={15} />
+              </button>
+            </nav>
+          )}
+        </section>
+      </div>
+    </main>
   );
 }
 

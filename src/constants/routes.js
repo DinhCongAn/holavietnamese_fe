@@ -68,6 +68,7 @@ export const ROUTES = {
   AI_SCENARIOS: '/ai-scenarios',
   AI_SCENARIO_DETAIL: '/ai-scenarios/:id',
   AI_ROLEPLAY: '/ai-roleplay/:id',
+  AI_ROLEPLAY_SESSION: '/ai/roleplay/sessions/:id',
   AI_SESSION_RESULT: '/ai-sessions/:id/result',
 
   // Admin 

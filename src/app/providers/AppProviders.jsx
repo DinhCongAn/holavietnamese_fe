@@ -5,6 +5,7 @@ import { ErrorBoundary } from '@/shared/components/common/ErrorBoundary';
 import { AuthProvider } from '@/features/auth/context/AuthContext';
 import { SiteContentProvider } from '@/features/admin/context/SiteContentContext';
 import { OnboardingProvider } from '@/features/onboarding/context/OnboardingContext';
+import { NotificationProvider } from '@/features/account/hooks/useNotifications';
 
 const AppToaster = lazy(() => import('@/shared/components/common/AppToaster'));
 
@@ -18,7 +19,9 @@ export function AppProviders({ children }) {
         <ErrorBoundary>
           <SiteContentProvider>
             <AuthProvider>
-              <OnboardingProvider>{children}</OnboardingProvider>
+              <NotificationProvider>
+                <OnboardingProvider>{children}</OnboardingProvider>
+              </NotificationProvider>
             </AuthProvider>
           </SiteContentProvider>
         </ErrorBoundary>

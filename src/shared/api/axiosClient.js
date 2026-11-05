@@ -47,7 +47,7 @@ axiosClient.interceptors.request.use(
 const clearAuthStorage = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
-  ['userId', 'username', 'fullName', 'roles'].forEach((key) => localStorage.removeItem(key));
+  ['userId', 'username', 'fullName', 'role', 'roles'].forEach((key) => localStorage.removeItem(key));
 };
 
 // RESPONSE interceptor: unwrap ApiResponse and centralize authentication failures
@@ -85,6 +85,7 @@ axiosClient.interceptors.response.use(
 
           if (refreshedToken) {
             localStorage.setItem('token', refreshedToken);
+            window.dispatchEvent(new CustomEvent('hola:auth-token-changed', { detail: { token: refreshedToken } }));
             originalRequest.headers = originalRequest.headers || {};
             originalRequest.headers.Authorization = `Bearer ${refreshedToken}`;
             return axiosClient(originalRequest);

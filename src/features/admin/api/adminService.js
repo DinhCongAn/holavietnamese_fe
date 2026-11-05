@@ -18,7 +18,7 @@ export const adminService = {
   async getUsers(params = {}) { return resultOf(await axiosClient.get('/api/admin/users', { params })); },
   async getUserById(id) { return resultOf(await axiosClient.get(`/api/admin/users/${id}`)); },
   updateUserStatus(id, status) { return axiosClient.patch(`/api/admin/users/${id}/status`, null, { params: { status } }); },
-  updateUserRole(id, value) { return axiosClient.put(`/api/admin/users/${id}/roles`, Array.isArray(value) ? value : [value]); },
+  updateUserRole(id, role) { return axiosClient.put(`/api/admin/users/${id}/roles`, { role }); },
   async getAchievements() { return listOf(await achievements.list()); },
   createAchievement(data) { return achievements.create(data); },
   updateAchievement(id, data) { return achievements.update(id, data); },

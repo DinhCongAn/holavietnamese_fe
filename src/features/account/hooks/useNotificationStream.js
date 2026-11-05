@@ -1,70 +1,67 @@
 import { useEffect, useRef } from 'react';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const INITIAL_RETRY_MS = 1000;
+const MAX_RETRY_MS = 30000;
 
-/**
- * Custom Hook to connect and stream real-time notifications via Server-Sent Events (SSE).
- *
- * @param {Function} onNewNotification - Callback fired when 'notification.created' event is received.
- * @param {Function} onNotificationRead - Callback fired when 'notification.read' event is received (e.g. from another tab).
- */
-export const useNotificationStream = (onNewNotification, onNotificationRead) => {
-  const onNewRef = useRef(onNewNotification);
-  const onReadRef = useRef(onNotificationRead);
+function tokenExpiresAt(token) {
+  try {
+    const raw = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const encoded = raw.padEnd(Math.ceil(raw.length / 4) * 4, '=');
+    const payload = JSON.parse(atob(encoded));
+    return typeof payload.exp === 'number' ? payload.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+}
 
-  // Keep callback refs updated to avoid reconnecting SSE on every render
+export function useNotificationStream({ token, onNotification, onRead, onReadAll, onDelete }) {
+  const callbacksRef = useRef({ onNotification, onRead, onReadAll, onDelete });
   useEffect(() => {
-    onNewRef.current = onNewNotification;
-  }, [onNewNotification]);
+    callbacksRef.current = { onNotification, onRead, onReadAll, onDelete };
+  }, [onNotification, onRead, onReadAll, onDelete]);
 
   useEffect(() => {
-    onReadRef.current = onNotificationRead;
-  }, [onNotificationRead]);
+    if (!token || typeof EventSource === 'undefined') return undefined;
+    let source;
+    let retryTimer;
+    let expiryTimer;
+    let stopped = false;
+    let retryDelay = INITIAL_RETRY_MS;
+    const expiresAt = tokenExpiresAt(token);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    // 1. Khởi tạo kết nối SSE
-    const streamUrl = `${API_BASE_URL}/api/notifications/stream?token=${encodeURIComponent(token)}`;
-    const eventSource = new EventSource(streamUrl);
-
-    // 2. Lắng nghe thông báo mới được tạo
-    eventSource.addEventListener('notification.created', (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log('🔔 Có thông báo mới qua SSE:', data);
-        if (onNewRef.current) {
-          onNewRef.current(data);
-        }
-      } catch (err) {
-        console.error('Lỗi phân tích cú pháp notification.created:', err);
-      }
-    });
-
-    // 3. Lắng nghe sự kiện đồng bộ khi đã đọc ở tab khác
-    eventSource.addEventListener('notification.read', (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        const notificationId = data?.notificationId ?? data?.id;
-        if (onReadRef.current && notificationId != null) {
-          onReadRef.current(notificationId);
-        }
-      } catch (err) {
-        console.error('Lỗi phân tích cú pháp notification.read:', err);
-      }
-    });
-
-    eventSource.onerror = (err) => {
-      // Browser will automatically attempt to reconnect
-      // console.warn('Lỗi kết nối SSE, trình duyệt sẽ tự động thử kết nối lại...');
+    const close = () => {
+      source?.close();
+      source = undefined;
+      window.clearTimeout(retryTimer);
+      window.clearTimeout(expiryTimer);
     };
-
-    // 4. Dọn dẹp khi unmount
-    return () => {
-      eventSource.close();
+    const parse = (event, callback) => {
+      try { callback?.(JSON.parse(event.data)); }
+      catch (error) { console.warn('[Notifications] Invalid SSE payload', error); }
     };
-  }, []);
-};
+    const connect = () => {
+      if (stopped || (expiresAt && Date.now() >= expiresAt)) return close();
+      source = new EventSource(`${API_BASE_URL}/api/notifications/stream?token=${encodeURIComponent(token)}`);
+      source.onopen = () => { retryDelay = INITIAL_RETRY_MS; };
+      source.onmessage = (event) => parse(event, callbacksRef.current.onNotification);
+      source.addEventListener('notification', (event) => parse(event, callbacksRef.current.onNotification));
+      source.addEventListener('notification.created', (event) => parse(event, callbacksRef.current.onNotification));
+      source.addEventListener('notification.read', (event) => parse(event, callbacksRef.current.onRead));
+      source.addEventListener('notification.read-all', (event) => parse(event, callbacksRef.current.onReadAll));
+      source.addEventListener('notification.deleted', (event) => parse(event, callbacksRef.current.onDelete));
+      source.onerror = () => {
+        source?.close();
+        source = undefined;
+        if (stopped || (expiresAt && Date.now() >= expiresAt)) return;
+        retryTimer = window.setTimeout(connect, retryDelay);
+        retryDelay = Math.min(retryDelay * 2, MAX_RETRY_MS);
+      };
+    };
+    if (expiresAt) expiryTimer = window.setTimeout(close, Math.max(0, expiresAt - Date.now()));
+    connect();
+    return () => { stopped = true; close(); };
+  }, [token]);
+}
 
 export default useNotificationStream;

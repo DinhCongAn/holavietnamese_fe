@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { getStoredAudioSpeed } from "@/features/account/services/userSettingsService";
 
 export const VIETSYLLABLES_ASSET_HOST = "https://assets.vietsyllables.com";
 export const VIETSYLLABLES_VOICE = "vb_northern_hn_female_nh";
@@ -135,6 +136,9 @@ export function usePronunciationPlayer() {
     window.speechSynthesis?.cancel();
     const entry = queue[index];
     const audio = entry.url ? new Audio(entry.url) : null;
+    if (audio) {
+      audio.playbackRate = getStoredAudioSpeed();
+    }
     audioRef.current = audio;
     setCurrent({ ...entry, index: index + 1, total: queue.length });
     setStatus("loading");
@@ -159,7 +163,7 @@ export function usePronunciationPlayer() {
       }
       const utterance = new SpeechSynthesisUtterance(entry.spoken || withTone(entry.syllable, entry.toneId));
       utterance.lang = "vi-VN";
-      utterance.rate = 0.8;
+      utterance.rate = getStoredAudioSpeed();
       const voice = window.speechSynthesis.getVoices().find((item) => item.lang.toLowerCase().startsWith("vi"));
       if (voice) utterance.voice = voice;
       utterance.onstart = () => {

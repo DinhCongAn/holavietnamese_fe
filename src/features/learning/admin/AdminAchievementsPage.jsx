@@ -1,262 +1,522 @@
+import { useState, useEffect, useMemo } from 'react';
 import { BilingualText, vietnameseLabel, bilingualLabel } from '@/shared/components/common/BilingualText';
 import { Modal } from '@/shared/components/common/Modal';
-import { useState, useEffect } from 'react';
 import { adminService } from '@/features/admin/api/adminService';
 import { useConfirmDialog } from '@/shared/components/common/ConfirmDialog';
+import { Trophy, Award, Flame, BookOpen, Sparkles, CheckCircle2, XCircle, Plus, Edit2, Trash2, Power } from 'lucide-react';
+
+const CATEGORIES = [
+  { value: 'LESSON', label: 'Bài học', icon: BookOpen, color: '#2563EB' },
+  { value: 'STREAK', label: 'Chuỗi học', icon: Flame, color: '#EA580C' },
+  { value: 'VOCABULARY', label: 'Từ vựng', icon: BookOpen, color: '#059669' },
+  { value: 'QUIZ', label: 'Kiểm tra', icon: Award, color: '#7C3AED' },
+  { value: 'AI_TUTOR', label: 'Hội thoại AI', icon: Sparkles, color: '#D97706' },
+  { value: 'GENERAL', label: 'Chung', icon: Trophy, color: '#4B5563' },
+];
+
+const CONDITION_TYPES = [
+  { value: 'LESSON_COMPLETED', label: 'Số bài học hoàn thành', unit: 'bài' },
+  { value: 'STREAK_DAYS', label: 'Chuỗi ngày học liên tục', unit: 'ngày' },
+  { value: 'VOCAB_LEARNED', label: 'Số từ vựng ghi nhớ', unit: 'từ' },
+  { value: 'QUIZ_PERFECT', label: 'Số bài quiz đạt điểm tối đa', unit: 'bài' },
+  { value: 'AI_ROLEPLAY_COMPLETED', label: 'Số lượt hội thoại AI hoàn thành', unit: 'lượt' },
+];
+
+const initialBadge = {
+  code: '',
+  name: '',
+  description: '',
+  iconUrl: '',
+  category: 'LESSON',
+  conditionType: 'LESSON_COMPLETED',
+  conditionValue: 1,
+  xpReward: 50,
+  status: 'ACTIVE',
+};
 
 export function AdminAchievementsPage() {
   const [achievements, setAchievements] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [newAch, setNewAch] = useState({
-    code: '',
-    title: '',
-    desc: '',
-    icon: '',
-    iconUrl: '',
-    conditionType: 'LESSON_COUNT',
-    criteria: '',
-    xpReward: 50,
-  });
+  const [form, setForm] = useState(initialBadge);
   const [msg, setMsg] = useState('');
-  const [error,setError]=useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
   const { confirm, confirmationDialog } = useConfirmDialog();
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = () => {
-    adminService.getAchievements().then(setAchievements).catch(err=>setError(err.message));
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const data = await adminService.getAchievements();
+      setAchievements(Array.isArray(data) ? data : []);
+      setError('');
+    } catch (err) {
+      setError(err.message || 'Không thể tải danh sách thành tích.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    setError('');
-    try {const res = editingId
-      ? await adminService.updateAchievement(editingId, newAch)
-      : await adminService.createAchievement(newAch);
-    setMsg(res.message);
-    setShowModal(false);
+  const handleOpenCreate = () => {
     setEditingId(null);
-    setNewAch({
-      code: '',
-      title: '',
-      desc: '',
-      icon: '',
-      iconUrl: '',
-      conditionType: 'LESSON_COUNT',
-      criteria: '',
-      xpReward: 50,
-    });
-    loadData();
-    setTimeout(() => setMsg(''), 3000);
-    }catch(err){setError(err.message);}
-  };
-
-  const handleEdit = (achievement) => {
-    setEditingId(achievement.id);
-    setNewAch({ ...newAch, ...achievement });
+    setForm(initialBadge);
     setShowModal(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!await confirm({
-      title: bilingualLabel('Xóa huy hiệu?', 'Delete badge?'),
-      description: bilingualLabel('Huy hiệu sẽ bị xóa khỏi hệ thống và không thể khôi phục.', 'The badge will be permanently deleted and cannot be restored.'),
-      confirmLabel: bilingualLabel('Xóa huy hiệu', 'Delete badge'),
-    })) return;
-    try { const res = await adminService.deleteAchievement(id); setMsg(res.message || 'Đã xóa huy hiệu.'); loadData(); }
-    catch (error) { setMsg(error.message); }
+  const handleOpenEdit = (badge) => {
+    setEditingId(badge.id);
+    setForm({
+      code: badge.code || '',
+      name: badge.name || badge.title || '',
+      description: badge.description || badge.desc || '',
+      iconUrl: badge.iconUrl || '',
+      category: badge.category || 'LESSON',
+      conditionType: badge.conditionType || 'LESSON_COMPLETED',
+      conditionValue: badge.conditionValue ?? 1,
+      xpReward: badge.xpReward ?? 50,
+      status: badge.status || (badge.active ? 'ACTIVE' : 'INACTIVE'),
+    });
+    setShowModal(true);
   };
 
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    const payload = {
+      code: form.code.trim().toUpperCase().replace(/\s+/g, '_'),
+      name: form.name.trim(),
+      description: form.description ? form.description.trim() : '',
+      iconUrl: form.iconUrl ? form.iconUrl.trim() : '',
+      category: form.category || 'GENERAL',
+      conditionType: form.conditionType,
+      conditionValue: parseInt(form.conditionValue, 10) || 1,
+      xpReward: parseInt(form.xpReward, 10) || 0,
+      status: form.status || 'ACTIVE',
+      active: form.status === 'ACTIVE',
+    };
+
+    try {
+      if (editingId) {
+        await adminService.updateAchievement(editingId, payload);
+        setMsg('Cập nhật huy hiệu thành công!');
+      } else {
+        await adminService.createAchievement(payload);
+        setMsg('Khởi tạo huy hiệu mới thành công!');
+      }
+      setShowModal(false);
+      setEditingId(null);
+      setForm(initialBadge);
+      await loadData();
+      setTimeout(() => setMsg(''), 3000);
+    } catch (err) {
+      setError(err.message || 'Lỗi lưu thông tin huy hiệu.');
+    }
+  };
+
+  const handleToggleStatus = async (badge) => {
+    const isCurrentlyActive = badge.status === 'ACTIVE' || badge.active === true;
+    const nextStatus = isCurrentlyActive ? 'INACTIVE' : 'ACTIVE';
+
+    try {
+      await adminService.updateAchievement(badge.id, {
+        code: badge.code,
+        name: badge.name || badge.title,
+        description: badge.description || badge.desc || '',
+        iconUrl: badge.iconUrl || '',
+        category: badge.category || 'GENERAL',
+        conditionType: badge.conditionType || 'LESSON_COMPLETED',
+        conditionValue: badge.conditionValue ?? 1,
+        xpReward: badge.xpReward ?? 50,
+        status: nextStatus,
+        active: nextStatus === 'ACTIVE',
+      });
+      setMsg(nextStatus === 'ACTIVE' ? 'Đã bật huy hiệu hoạt động.' : 'Đã tạm ẩn huy hiệu.');
+      await loadData();
+      setTimeout(() => setMsg(''), 3000);
+    } catch (err) {
+      setError(err.message || 'Lỗi cập nhật trạng thái huy hiệu.');
+    }
+  };
+
+  const handleDelete = async (id, name) => {
+    const ok = await confirm({
+      title: bilingualLabel('Xóa huy hiệu?', 'Delete badge?'),
+      description: bilingualLabel(
+        `Bạn có chắc muốn xóa huy hiệu "${name}"? Hành động này không thể hoàn tác.`,
+        `Are you sure you want to delete badge "${name}"? This action cannot be undone.`
+      ),
+      confirmLabel: bilingualLabel('Xóa huy hiệu', 'Delete badge'),
+      tone: 'danger',
+    });
+    if (!ok) return;
+
+    try {
+      await adminService.deleteAchievement(id);
+      setMsg('Đã xóa huy hiệu thành công.');
+      await loadData();
+      setTimeout(() => setMsg(''), 3000);
+    } catch (err) {
+      setError(err.message || 'Lỗi khi xóa huy hiệu.');
+    }
+  };
+
+  const stats = useMemo(() => {
+    const total = achievements.length;
+    const active = achievements.filter((a) => a.status === 'ACTIVE' || a.active === true).length;
+    const totalXp = achievements.reduce((acc, a) => acc + (a.xpReward || 0), 0);
+    return { total, active, totalXp };
+  }, [achievements]);
+
   return (
-    <div>
+    <div className="space-y-6">
       {confirmationDialog}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: '0 0 4px 0' }}><BilingualText>{"Quản lý Thành tích & Huy hiệu"}</BilingualText></h1>
-          <p style={{ color: 'var(--color-muted)', margin: 0, fontSize: '0.9rem' }}><BilingualText>{"Tạo huy hiệu, cấu hình điều kiện mở khóa và điểm thưởng XP cho người học."}</BilingualText></p>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold mb-1.5">
+            <Trophy size={13} /> QUẢN TRỊ HỆ THỐNG
+          </div>
+          <h1 className="text-2xl font-black text-[#253044] m-0">Quản lý Thành tích & Huy hiệu</h1>
+          <p className="text-sm text-[#64748B] mt-1 m-0">
+            Cấu hình danh mục huy hiệu, điều kiện mở khóa và điểm thưởng XP tự động cho học viên.
+          </p>
         </div>
         <button
           type="button"
-          onClick={() => setShowModal(true)}
-          style={{
-            padding: '10px 18px',
-            borderRadius: '8px',
-            border: 'none',
-            background: 'var(--color-red-hover)',
-            color: 'var(--color-surface)',
-            fontWeight: 700,
-            cursor: 'pointer',
-          }}
-        ><BilingualText>{"+ Thêm huy hiệu mới"}</BilingualText></button>
+          onClick={handleOpenCreate}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#EA580C] hover:bg-[#C2410C] text-white text-sm font-bold shadow-xs transition-all cursor-pointer !min-h-0 !border-0"
+        >
+          <Plus size={16} /> Thêm huy hiệu mới
+        </button>
       </div>
 
-      {error&&<div className="ui-notice ui-notice--error" role="alert"><BilingualText>{error}</BilingualText></div>}
+      {/* KPI Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-4 rounded-2xl bg-white border border-[#E8E5DF] shadow-2xs">
+          <div className="text-xs font-bold text-[#64748B] uppercase tracking-wide">Tổng số huy hiệu</div>
+          <div className="text-2xl font-black text-[#253044] mt-1">{stats.total}</div>
+        </div>
+        <div className="p-4 rounded-2xl bg-white border border-[#E8E5DF] shadow-2xs">
+          <div className="text-xs font-bold text-emerald-700 uppercase tracking-wide">Đang hoạt động (Bật)</div>
+          <div className="text-2xl font-black text-emerald-600 mt-1">{stats.active}</div>
+        </div>
+        <div className="p-4 rounded-2xl bg-white border border-[#E8E5DF] shadow-2xs">
+          <div className="text-xs font-bold text-amber-700 uppercase tracking-wide">Tổng điểm thưởng XP</div>
+          <div className="text-2xl font-black text-amber-600 mt-1">+{stats.totalXp} XP</div>
+        </div>
+      </div>
+
+      {/* Alert Notices */}
+      {error && (
+        <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center justify-between" role="alert">
+          <span>{error}</span>
+          <button type="button" onClick={() => setError('')} className="text-red-500 hover:text-red-700 font-bold ml-2">×</button>
+        </div>
+      )}
       {msg && (
-        <div style={{ padding: '10px 16px', background: 'var(--color-sage-soft)', color: 'var(--color-ink)', borderRadius: '8px', marginBottom: '16px' }}>
-          {msg}
+        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium flex items-center justify-between">
+          <span>{msg}</span>
+          <button type="button" onClick={() => setMsg('')} className="text-emerald-500 hover:text-emerald-700 font-bold ml-2">×</button>
         </div>
       )}
 
       {/* Achievements Table */}
-      <div className="admin-card" style={{ padding: 0, overflow: 'hidden' }}>
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th><BilingualText>{"Mã Code / Icon"}</BilingualText></th>
-              <th><BilingualText>{"Tên huy hiệu"}</BilingualText></th>
-              <th><BilingualText>{"Điều kiện mở khóa"}</BilingualText></th>
-              <th><BilingualText>{"Loại điều kiện"}</BilingualText></th>
-              <th><BilingualText>{"Thưởng XP"}</BilingualText></th>
-              <th><BilingualText>{"Trạng thái"}</BilingualText></th>
-              <th><BilingualText>{"Thao tác"}</BilingualText></th>
-            </tr>
-          </thead>
-          <tbody>
-            {achievements.map(ach => (
-              <tr key={ach.id}>
-                <td>
-                  <span style={{ fontSize: '1.4rem', marginRight: '8px' }}>{ach.icon}</span>
-                  <strong>{ach.code || ach.id}</strong>
-                </td>
-                <td><button className="secondary" onClick={() => handleEdit(ach)}><BilingualText>{"Sửa"}</BilingualText></button>{' '}<button className="danger" onClick={() => handleDelete(ach.id)}><BilingualText>{"Xóa"}</BilingualText></button></td>
-                <td><strong style={{ color: 'var(--color-ink)' }}><BilingualText vi={ach.titleVi || ach.title} en={ach.title} /></strong></td>
-                <td>{ach.criteria}</td>
-                <td>
-                  <span style={{ background: 'var(--color-cream)', padding: '3px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
-                    {ach.conditionType || 'GENERAL'}
-                  </span>
-                </td>
-                <td><span style={{ color: 'var(--color-forest)', fontWeight: 700 }}>+{ach.xpReward} XP</span></td>
-                <td>
-                  <span className={`admin-badge ${ach.active ? 'admin-badge-success' : 'admin-badge-danger'}`}>
-                    <BilingualText>{ach.active ? 'Hoạt động' : 'Tạm ẩn'}</BilingualText>
-                  </span>
-                </td>
+      <div className="overflow-hidden rounded-2xl border border-[#E8E5DF] bg-white shadow-2xs">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-[#E8E5DF] bg-[#FFFBF5] text-xs font-bold uppercase tracking-wider text-[#64748B]">
+                <th className="py-3 px-4">Mã Code & Biểu tượng</th>
+                <th className="py-3 px-4">Tên & Mô tả huy hiệu</th>
+                <th className="py-3 px-4">Danh mục</th>
+                <th className="py-3 px-4">Điều kiện mở khóa</th>
+                <th className="py-3 px-4">Thưởng XP</th>
+                <th className="py-3 px-4 text-center">Trạng thái</th>
+                <th className="py-3 px-4 text-right">Thao tác</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-[#E8E5DF]">
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-[#64748B]">
+                    <span className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-[#EA580C] border-t-transparent mr-2" />
+                    Đang tải danh sách huy hiệu…
+                  </td>
+                </tr>
+              ) : achievements.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-[#64748B]">
+                    Chưa có huy hiệu nào trong hệ thống. Hãy bấm <strong>+ Thêm huy hiệu mới</strong> để tạo.
+                  </td>
+                </tr>
+              ) : (
+                achievements.map((badge) => {
+                  const isActive = badge.status === 'ACTIVE' || badge.active === true;
+                  const categoryMeta = CATEGORIES.find((c) => c.value === badge.category) || CATEGORIES[5];
+                  const conditionMeta = CONDITION_TYPES.find((c) => c.value === badge.conditionType) || { label: badge.conditionType, unit: '' };
+
+                  return (
+                    <tr key={badge.id} className="hover:bg-stone-50/70 transition-colors">
+                      {/* Code & Icon */}
+                      <td className="py-3 px-4 font-mono text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-orange-50 border border-orange-200 text-[#EA580C] text-base">
+                            {badge.iconUrl && badge.iconUrl.startsWith('http') ? (
+                              <img src={badge.iconUrl} alt={badge.name} className="h-5 w-5 object-contain" />
+                            ) : (
+                              '🏆'
+                            )}
+                          </span>
+                          <span className="font-bold text-[#253044]">{badge.code}</span>
+                        </div>
+                      </td>
+
+                      {/* Name & Desc */}
+                      <td className="py-3 px-4 max-w-xs">
+                        <strong className="block text-[#253044]">{badge.name || badge.title}</strong>
+                        <span className="text-xs text-[#64748B] line-clamp-1">{badge.description || badge.desc || '—'}</span>
+                      </td>
+
+                      {/* Category */}
+                      <td className="py-3 px-4">
+                        <span className="inline-flex items-center gap-1 rounded-md bg-stone-100 px-2 py-0.5 text-xs font-semibold text-[#253044]">
+                          {categoryMeta.label}
+                        </span>
+                      </td>
+
+                      {/* Condition */}
+                      <td className="py-3 px-4">
+                        <div className="text-xs">
+                          <span className="text-[#64748B]">{conditionMeta.label}:</span>{' '}
+                          <strong className="text-[#253044]">{badge.conditionValue ?? 1} {conditionMeta.unit}</strong>
+                        </div>
+                      </td>
+
+                      {/* XP Reward */}
+                      <td className="py-3 px-4">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
+                          +{badge.xpReward ?? 0} XP
+                        </span>
+                      </td>
+
+                      {/* Status Toggle */}
+                      <td className="py-3 px-4 text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleStatus(badge)}
+                          title={isActive ? 'Nhấn để tạm ẩn' : 'Nhấn để kích hoạt'}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer !min-h-0 !border ${
+                            isActive
+                              ? 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100'
+                              : 'bg-stone-100 border-stone-300 text-stone-500 hover:bg-stone-200'
+                          }`}
+                        >
+                          <Power size={12} />
+                          {isActive ? 'Hoạt động' : 'Tạm ẩn'}
+                        </button>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-3 px-4 text-right">
+                        <div className="inline-flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEdit(badge)}
+                            className="p-1.5 rounded-lg text-stone-600 hover:text-[#EA580C] hover:bg-orange-50 border border-transparent hover:border-orange-200 transition-colors cursor-pointer !min-h-0"
+                            title="Sửa huy hiệu"
+                          >
+                            <Edit2 size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(badge.id, badge.name || badge.title)}
+                            className="p-1.5 rounded-lg text-stone-600 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors cursor-pointer !min-h-0"
+                            title="Xóa huy hiệu"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Modal Add Achievement */}
+      {/* Modal Create / Edit */}
       {showModal && (
-        <Modal title={editingId ? bilingualLabel("Cập nhật huy hiệu", "Update Badge") : bilingualLabel("Khởi tạo huy hiệu mới", "Create New Badge")} onClose={()=>setShowModal(false)}>
-<form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}><BilingualText>{"Biểu tượng"}</BilingualText></label>
-                  <input
-                    type="text"
-                    value={newAch.icon}
-                    onChange={e => setNewAch({ ...newAch, icon: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--color-border)' }}
-                    required
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}><BilingualText>{"Mã Code duy nhất"}</BilingualText></label>
-                  <input
-                    type="text"
-                    placeholder="VD: PHO_MASTER_01"
-                    value={newAch.code}
-                    onChange={e => setNewAch({ ...newAch, code: e.target.value.toUpperCase() })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--color-border)' }}
-                    required
-                  />
-                </div>
-              </div>
-
+        <Modal
+          title={editingId ? bilingualLabel("Cập nhật huy hiệu", "Update Badge") : bilingualLabel("Khởi tạo huy hiệu mới", "Create New Badge")}
+          onClose={() => setShowModal(false)}
+        >
+          <form onSubmit={handleSave} className="flex flex-col gap-4 text-left">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}><BilingualText>{"Tên huy hiệu"}</BilingualText></label>
+                <label className="block text-xs font-bold text-[#253044] mb-1">
+                  Mã Code duy nhất *
+                </label>
                 <input
                   type="text"
-                  placeholder={vietnameseLabel("Ví dụ: Bậc Thầy Phở Bò")}
-                  value={newAch.title}
-                  onChange={e => setNewAch({ ...newAch, title: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--color-border)' }}
+                  placeholder="VD: STREAK_30_DAYS"
+                  value={form.code}
+                  onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase().replace(/\s+/g, '_') })}
+                  className="w-full px-3 py-2 rounded-xl border border-[#E8E5DF] text-sm focus:outline-none focus:border-[#EA580C]"
                   required
                 />
               </div>
-
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}><BilingualText>{"Mô tả huy hiệu"}</BilingualText></label>
+                <label className="block text-xs font-bold text-[#253044] mb-1">
+                  Tên huy hiệu *
+                </label>
                 <input
                   type="text"
-                  placeholder={vietnameseLabel("Ví dụ: Hoàn thành chủ đề Gọi món Phở Hà Nội")}
-                  value={newAch.desc}
-                  onChange={e => setNewAch({ ...newAch, desc: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--color-border)' }}
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}><BilingualText>{"Loại điều kiện"}</BilingualText></label>
-                  <select
-                    value={newAch.conditionType}
-                    onChange={e => setNewAch({ ...newAch, conditionType: e.target.value })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--color-border)' }}
-                  >
-                    <option value="LESSON_COUNT">{vietnameseLabel("Số bài học hoàn thành")}</option>
-                    <option value="VOCAB_COUNT">{vietnameseLabel("Số từ vựng ghi nhớ")}</option>
-                    <option value="STREAK_DAYS">{vietnameseLabel("Chuỗi ngày liên tiếp")}</option>
-                    <option value="JOURNEY_CITY">{vietnameseLabel("Hoàn thành chặng Hành trình")}</option>
-                    <option value="QUIZ_SCORE">{vietnameseLabel("Điểm số bài kiểm tra")}</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}><BilingualText>{"Điểm XP thưởng"}</BilingualText></label>
-                  <input
-                    type="number"
-                    value={newAch.xpReward}
-                    onChange={e => setNewAch({ ...newAch, xpReward: parseInt(e.target.value) })}
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--color-border)' }}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}><BilingualText>{"Chi tiết điều kiện mở khóa"}</BilingualText></label>
-                <textarea
-                  placeholder={vietnameseLabel("Mô tả hành động cần đạt để mở khóa huy hiệu…")}
-                  value={newAch.criteria}
-                  onChange={e => setNewAch({ ...newAch, criteria: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--color-border)', height: '60px' }}
+                  placeholder="VD: Chiến Binh Kiên Trì"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-[#E8E5DF] text-sm focus:outline-none focus:border-[#EA580C]"
                   required
                 />
               </div>
+            </div>
 
+            <div>
+              <label className="block text-xs font-bold text-[#253044] mb-1">
+                Mô tả huy hiệu
+              </label>
+              <textarea
+                placeholder="Mô tả ý nghĩa và hướng dẫn học viên cách nhận huy hiệu này…"
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                rows={2}
+                className="w-full px-3 py-2 rounded-xl border border-[#E8E5DF] text-sm focus:outline-none focus:border-[#EA580C]"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}><BilingualText>{"Link Icon SVG/PNG (Tùy chọn)"}</BilingualText></label>
-                <input
-                  type="text"
-                  placeholder={bilingualLabel("https://... (để trống nếu dùng Emoji)", "https://... (leave blank for Emoji)")}
-                  value={newAch.iconUrl}
-                  onChange={e => setNewAch({ ...newAch, iconUrl: e.target.value })}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--color-border)' }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', cursor: 'pointer' }}
-                ><BilingualText>{"Hủy"}</BilingualText></button>
-                <button
-                  type="submit"
-                  style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: 'var(--color-red-hover)', color: 'var(--color-surface)', fontWeight: 700, cursor: 'pointer' }}
+                <label className="block text-xs font-bold text-[#253044] mb-1">
+                  Danh mục
+                </label>
+                <select
+                  value={form.category}
+                  onChange={(e) => setForm({ ...form, category: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-[#E8E5DF] text-sm focus:outline-none focus:border-[#EA580C]"
                 >
-                  <BilingualText>{editingId ? 'Lưu thay đổi' : 'Khởi tạo huy hiệu'}</BilingualText>
-                </button>
+                  {CATEGORIES.map((cat) => (
+                    <option key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </option>
+                  ))}
+                </select>
               </div>
-            </form>
+
+              <div>
+                <label className="block text-xs font-bold text-[#253044] mb-1">
+                  Trạng thái
+                </label>
+                <select
+                  value={form.status}
+                  onChange={(e) => setForm({ ...form, status: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-[#E8E5DF] text-sm focus:outline-none focus:border-[#EA580C]"
+                >
+                  <option value="ACTIVE">Hoạt động (Hiển thị cho học viên)</option>
+                  <option value="INACTIVE">Tạm ẩn (Không khả dụng)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-[#253044] mb-1">
+                  Loại điều kiện mở khóa *
+                </label>
+                <select
+                  value={form.conditionType}
+                  onChange={(e) => setForm({ ...form, conditionType: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-[#E8E5DF] text-sm focus:outline-none focus:border-[#EA580C]"
+                >
+                  {CONDITION_TYPES.map((cond) => (
+                    <option key={cond.value} value={cond.value}>
+                      {cond.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#253044] mb-1">
+                  Giá trị cần đạt *
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={form.conditionValue}
+                  onChange={(e) => setForm({ ...form, conditionValue: Math.max(1, parseInt(e.target.value, 10) || 1) })}
+                  className="w-full px-3 py-2 rounded-xl border border-[#E8E5DF] text-sm focus:outline-none focus:border-[#EA580C]"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-[#253044] mb-1">
+                  Điểm thưởng XP *
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="5"
+                  value={form.xpReward}
+                  onChange={(e) => setForm({ ...form, xpReward: Math.max(0, parseInt(e.target.value, 10) || 0) })}
+                  className="w-full px-3 py-2 rounded-xl border border-[#E8E5DF] text-sm focus:outline-none focus:border-[#EA580C]"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#253044] mb-1">
+                  Icon URL / Ảnh huy hiệu (Tùy chọn)
+                </label>
+                <input
+                  type="text"
+                  placeholder="https://... hoặc /badges/icon.png"
+                  value={form.iconUrl}
+                  onChange={(e) => setForm({ ...form, iconUrl: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-[#E8E5DF] text-sm focus:outline-none focus:border-[#EA580C]"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#E8E5DF] mt-2">
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 rounded-xl border border-[#E8E5DF] text-sm font-semibold text-[#64748B] hover:bg-stone-50 cursor-pointer !min-h-0"
+              >
+                Hủy
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2 rounded-xl bg-[#EA580C] hover:bg-[#C2410C] text-white text-sm font-bold shadow-xs cursor-pointer !min-h-0 !border-0"
+              >
+                {editingId ? 'Lưu thay đổi' : 'Tạo huy hiệu'}
+              </button>
+            </div>
+          </form>
         </Modal>
       )}
     </div>
   );
 }
+
+export default AdminAchievementsPage;

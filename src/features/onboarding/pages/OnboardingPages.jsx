@@ -109,7 +109,7 @@ export function ReasonPage() {
   const toggle = (id) => update({
     learningReasons: data.learningReasons.includes(id)
       ? data.learningReasons.filter((item) => item !== id)
-      : selectedCount < 2 ? [...data.learningReasons, id] : data.learningReasons,
+      : [...data.learningReasons, id],
   });
 
   return (
@@ -117,8 +117,8 @@ export function ReasonPage() {
       eyebrow={<BilingualText vi="CÁ NHÂN HÓA HÀNH TRÌNH CỦA BẠN" en="LET'S PERSONALIZE YOUR JOURNEY" />}
       title={<BilingualText vi="Điều gì quan trọng nhất với bạn khi học tiếng Việt?" en="What matters most to you when learning Vietnamese?" />}
       mascotMessage={data.learningReasons.length
-        ? <BilingualText vi="Mình sẽ dùng lựa chọn này để ưu tiên nội dung và khóa học phù hợp." en="I’ll use this to prioritize the right content and courses for you." />
-        : <BilingualText vi="Chọn một mục tiêu chính và tối đa một mục tiêu bổ sung nhé!" en="Choose one main goal and up to one supporting goal." />}
+        ? <BilingualText vi="Mình sẽ dùng các lựa chọn này để ưu tiên nội dung và khóa học phù hợp nhất." en="I’ll use these choices to prioritize the right content and courses for you." />
+        : <BilingualText vi="Bạn có thể chọn một hoặc nhiều mục tiêu phù hợp với bạn nhé!" en="Choose one or more goals that matter to you!" />}
       wide
     >
       <div className="ob-grid two">
@@ -129,7 +129,7 @@ export function ReasonPage() {
               key={item.id}
               {...item}
               selected={selected}
-              disabled={!selected && selectedCount >= 2}
+              disabled={false}
               onClick={() => toggle(item.id)}
             />
           );
@@ -137,8 +137,8 @@ export function ReasonPage() {
       </div>
       <p className="ob-note">
         <BilingualText
-          vi={`${selectedCount}/2 mục tiêu đã chọn · Lựa chọn đầu tiên là ưu tiên chính.`}
-          en={`${selectedCount}/2 goals selected · Your first choice is the primary priority.`}
+          vi={selectedCount ? `${selectedCount} mục tiêu đã chọn · Lựa chọn đầu tiên là ưu tiên chính.` : 'Bạn có thể chọn nhiều mục tiêu mong muốn.'}
+          en={selectedCount ? `${selectedCount} goals selected · Your first choice is the primary priority.` : 'You can select multiple goals.'}
         />
       </p>
       <div className="ob-actions">
@@ -432,7 +432,7 @@ function ExerciseRunner({ mode }) {
               </>
             ) : (
               <div className="ob-answer-grid">
-                {question.options.map((option, optionIndex) => {
+                {question.options.map((option) => {
                   const isSelected = selected === option;
                   const isCorrect = checked && option === question.answer;
                   const isWrong = checked && isSelected && !correct;
@@ -448,7 +448,6 @@ function ExerciseRunner({ mode }) {
                       data-state={isSelected ? 'checked' : 'unchecked'}
                       style={!isCorrect && !isWrong ? { backgroundColor: '#ffffff' } : undefined}
                     >
-                      <kbd>{optionIndex + 1}</kbd>
                       <span>{option}</span>
                       {isCorrect && <Check size={18} strokeWidth={2.8} />}
                       {isWrong && <X size={18} strokeWidth={2.8} />}

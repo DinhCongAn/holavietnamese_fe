@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useEffect, useId, useRef, useState } from 'react';
 import { mediaSource } from '@/shared/components/common/mediaSource';
 import { ArrowLeft, ArrowRight, Inbox, Volume2 } from 'lucide-react';
+import { getStoredAudioSpeed } from '@/features/account/services/userSettingsService';
 
 export function PageHeader({ eyebrow, title, description, actions }) {
   return <header className="page-header"><div>{eyebrow && <p className="eyebrow"><BilingualText>{eyebrow}</BilingualText></p>}<h1><BilingualText>{title}</BilingualText></h1>{description && <p className="lead"><BilingualText>{description}</BilingualText></p>}</div>{actions && <div className="actions">{actions}</div>}</header>;
@@ -51,6 +52,7 @@ function SpeechAttempt({ text, audioUrl, className, fallbackToSpeech }) {
       const youtubePage = source && /^(?:https?:)?\/\/(?:[\w-]+\.)*(?:youtube\.com|youtu\.be|youtube-nocookie\.com)(?:[/:?#]|$)/i.test(source);
       if (source && !(fallbackToSpeech && youtubePage)) {
         player.current = new Audio(source);
+        player.current.playbackRate = getStoredAudioSpeed();
         try { await player.current.play(); return; } catch (failure) {
           if (failure.name === 'AbortError' || currentAttempt !== attempt.current) return;
           if (!fallbackToSpeech || !text) { setError(label('Không phát được âm thanh. Vui lòng thử lại sau.', 'Could not play audio. Please try again later.')); return; }
@@ -60,7 +62,7 @@ function SpeechAttempt({ text, audioUrl, className, fallbackToSpeech }) {
     if (currentAttempt !== attempt.current) return;
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'vi-VN';
+      const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'vi-VN'; utterance.rate = getStoredAudioSpeed();
       utterance.onerror = event => { if (currentAttempt === attempt.current && !['canceled', 'interrupted'].includes(event.error)) setError(label('Không phát được giọng đọc trên trình duyệt này.', 'Text-to-speech failed on this browser.')); };
       window.speechSynthesis.speak(utterance);
     } else setError(label('Trình duyệt chưa hỗ trợ giọng đọc.', 'Speech synthesis is not supported on this browser.'));

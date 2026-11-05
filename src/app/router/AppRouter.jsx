@@ -68,10 +68,10 @@ const RoleplayResultPage = lazy(() => import('@/features/ai/pages/roleplay/Rolep
 const AdminDashboardPage = lazy(() => import('@/features/admin/pages/AdminDashboardPage').then(module => ({ default: module.AdminDashboardPage })));
 const AdminUsersPage = lazy(() => import('@/features/admin/pages/AdminUsersPage').then(module => ({ default: module.AdminUsersPage })));
 const AdminUserDetailPage = lazy(() => import('@/features/admin/pages/AdminUserDetailPage').then(module => ({ default: module.AdminUserDetailPage })));
-const AdminRolesPage = lazy(() => import('@/features/admin/pages/AdminRolesPage').then(module => ({ default: module.AdminRolesPage })));
+// (AdminRolesPage removed)
 const AdminAchievementsPage = lazy(() => import('@/features/learning/admin/AdminAchievementsPage').then(module => ({ default: module.AdminAchievementsPage })));
 const AdminXpRulesPage = lazy(() => import('@/features/learning/admin/AdminXpRulesPage').then(module => ({ default: module.AdminXpRulesPage })));
-const AdminAuditLogsPage = lazy(() => import('@/features/admin/pages/AdminAuditLogsPage').then(module => ({ default: module.AdminAuditLogsPage })));
+// (AdminAuditLogsPage removed)
 const AdminSettingsPage = lazy(() => import('@/features/admin/pages/AdminSettingsPage').then(module => ({ default: module.AdminSettingsPage })));
 const AdminSiteContentPage = lazy(() => import('@/features/admin/pages/AdminSiteContentPage').then(module => ({ default: module.AdminSiteContentPage })));
 const AdminVocabularyPage = lazy(() => import('@/features/vocabulary/admin/AdminVocabularyPage').then(module => ({ default: module.AdminVocabularyPage })));
@@ -182,6 +182,11 @@ export function AppRouter() {
                 <Route path={ROUTES.AI_SCENARIO_DETAIL} element={<ScenarioDetailPage />} />
                 <Route path={ROUTES.AI_ROLEPLAY} element={<RoleplaySessionPage />} />
                 <Route path={ROUTES.AI_SESSION_RESULT} element={<RoleplayResultPage />} />
+                <Route path={ROUTES.AI_ROLEPLAY_SESSION} element={<RoleplayResultPage />} />
+                <Route path="/ai/roleplay/sessions/:id" element={<RoleplayResultPage />} />
+                <Route path="/ai/roleplay/sessions/:id/result" element={<RoleplayResultPage />} />
+                <Route path="/ai/roleplay/:id" element={<RoleplaySessionPage />} />
+                <Route path="/ai-sessions/:id" element={<RoleplayResultPage />} />
 
                 {/* Protected Learner Routes */}
                 <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
@@ -250,10 +255,10 @@ export function AppRouter() {
                 <Route path={ROUTES.ADMIN} element={<AdminDashboardPage />} />
                 <Route path={ROUTES.ADMIN_USERS} element={<AdminUsersPage />} />
                 <Route path={ROUTES.ADMIN_USER_DETAIL} element={<AdminUserDetailPage />} />
-                <Route path={ROUTES.ADMIN_ROLES} element={<AdminRolesPage />} />
+                <Route path={ROUTES.ADMIN_ROLES} element={<Navigate to={ROUTES.ADMIN_USERS} replace />} />
                 <Route path={ROUTES.ADMIN_ACHIEVEMENTS} element={<AdminAchievementsPage />} />
                 <Route path={ROUTES.ADMIN_XP_RULES} element={<AdminXpRulesPage />} />
-                <Route path={ROUTES.ADMIN_AUDIT_LOGS} element={<AdminAuditLogsPage />} />
+                <Route path={ROUTES.ADMIN_AUDIT_LOGS} element={<Navigate to={ROUTES.ADMIN} replace />} />
                 <Route path={ROUTES.ADMIN_SETTINGS} element={<AdminSettingsPage />} />
                 <Route path={ROUTES.ADMIN_SITE_CONTENT} element={<AdminSiteContentPage />} />
 

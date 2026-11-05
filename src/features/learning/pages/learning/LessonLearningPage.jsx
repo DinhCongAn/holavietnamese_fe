@@ -197,7 +197,7 @@ function LessonScreen({ courseId, lessonId }) {
         return (
           <>
             <LessonContextSyncer lesson={lesson} course={course} contentLesson={contentLesson} courseId={courseId} />
-          <div className="lesson-learning-screen max-w-7xl mx-auto space-y-4 transition-all duration-300">
+          <div className="lesson-learning-screen w-full max-w-none space-y-4 transition-all duration-300">
             {/* ===================== TOP HEADER BAR ===================== */}
             <header className="bg-white/95 backdrop-blur-md rounded-2xl border border-[#E8E5DF] p-3 sm:p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs sticky top-2 z-30 transition-all">
               {/* Cụm trái: Nút quay lại & Tiêu đề bài học */}

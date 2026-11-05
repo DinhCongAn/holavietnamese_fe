@@ -27,7 +27,7 @@ test('learner header exposes Manage Courses to content managers', () => {
   const shell = read('src/shared/components/learner/LearnerShell.jsx');
   const menu = read('src/shared/components/layout/UserMenu.jsx');
 
-  assert.match(shell, /const isContentManager = user\?\.roles\?\.includes\('CONTENT_MANAGER'\)/);
+  assert.match(shell, /const isContentManager = role === 'CONTENT'/);
   assert.match(shell, /<UserMenu user=\{user\} isAdmin=\{isAdmin\} isContentManager=\{isContentManager\}/);
   assert.match(menu, /isContentManager && !isAdmin/);
   assert.match(menu, /to=\{ROUTES\.CONTENT_COURSES\}/);

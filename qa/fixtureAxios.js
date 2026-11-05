@@ -4,7 +4,7 @@ const response=result=>({code:1000,result,message:'Đã lưu trong dữ liệu k
 const adminWords=words.map(word=>({...word,status:'PUBLISHED',meanings:[{id:1,translationEn:word.meaning,definitionEn:'',usageNote:'',displayOrder:0,examples:[{id:1,exampleVi:word.example,translationEn:'An illustrative Vietnamese phrase.',displayOrder:0}]}]}));
 const catalogWords=adminWords.map(word=>({...word,id:word.id+1000}));
 catalogWords.push({id:1009,word:'tạm biệt',pronunciation:'/taːm ɓiət/',partOfSpeech:'PHRASE',status:'PUBLISHED',meanings:[{id:10091,translationEn:'goodbye',definitionEn:'A phrase used when leaving.',usageNote:'Dùng khi kết thúc một cuộc trò chuyện.',displayOrder:0,examples:[{id:100911,exampleVi:'Tạm biệt, hẹn gặp lại!',translationEn:'Goodbye, see you again!',displayOrder:0},{id:100912,exampleVi:'Tạm biệt bạn nhé.',translationEn:'Goodbye, my friend.',displayOrder:1}]},{id:10092,translationEn:'farewell',definitionEn:'An expression of parting.',usageNote:'Cũng có thể dùng khi chia tay trong thời gian dài.',displayOrder:1,examples:[{id:100921,exampleVi:'Tôi đến để nói lời tạm biệt.',translationEn:'I came to say farewell.',displayOrder:0}]}]},{id:1010,word:'QA unpublished vocabulary',status:'DRAFT',meanings:[]});
-const fixtureMode=new URLSearchParams(location.search).get('fixture');
+const fixtureMode=new URLSearchParams(globalThis.location?.search ?? '').get('fixture');
 const reviewSession={sessionId:'qa-vocabulary-review',notebookCount:words.length,entries:words.slice(0,3),results:[]};
 async function request(path,body,options={}){
  options.signal?.throwIfAborted();
@@ -66,7 +66,7 @@ async function request(path,body,options={}){
  if(path==='/api/admin/achievements')return response(badges);
  if(path==='/api/admin/roles')return response([{id:1,name:'LEARNER',description:'Người học',permissions:['COURSE_READ','VOCABULARY_SAVE']},{id:2,name:'ADMIN',description:'Quản trị hệ thống',permissions:['CONTENT_WRITE']}]);
  if(path==='/api/admin/xp-rules')return response([{id:1,event:'LESSON_COMPLETED',points:20,limitPerDay:10,antiSpam:'Mỗi bài học một lần'}]);
- if(path==='/api/admin/audit-logs')return response([{id:1,actor:'admin.qa',username:'admin.qa',action:'COURSE_UPDATED',entityType:'COURSE',entityId:1,createdAt:'2026-10-08T09:00:00',ipAddress:'127.0.0.1'}]);
+ if(path==='/api/admin/audit-logs')return response([{id:1,adminUsername:'admin.qa',action:'UPDATE_COURSE',target:'/api/admin/courses/1',details:'PUT /api/admin/courses/1 completed with HTTP 200',status:'SUCCESS',createdAt:'2026-10-08T09:00:00',ipAddress:'127.0.0.1'}]);
  if(path==='/api/admin/settings')return response(body?Object.assign(systemSettings,body):systemSettings);
  return response(body||{});
 }
