@@ -39,30 +39,34 @@ export function AdminLayout() {
   }, [open]);
   const vocabularyAllowed = canReadVocabulary(user);
   const exploreAllowed = canReadExplore(user);
+  const managerAuthoringPaths = [ROUTES.CONTENT_COURSES, ROUTES.CONTENT_LESSONS, ROUTES.CONTENT_QUESTIONS, ROUTES.CONTENT_QUIZZES];
   const visibleGroups = groups.map(group => ({
     ...group,
     links: group.links.filter(([to]) => {
       if (to === ROUTES.ADMIN_VOCABULARY) return vocabularyAllowed;
       if (to === ROUTES.ADMIN_DESTINATIONS) return exploreAllowed;
-      return isAdmin || (isContentManager && to === ROUTES.CONTENT_COURSES);
-    }).map(([to, label]) => [to, isContentManager && !isAdmin && to === ROUTES.CONTENT_COURSES ? 'Biên soạn khóa học' : label]),
+      if (managerAuthoringPaths.includes(to)) {
+        return to === ROUTES.CONTENT_COURSES ? (isAdmin || isContentManager) : (isContentManager && !isAdmin);
+      }
+      return isAdmin;
+    }).map(([to, label]) => {
+      if (to === ROUTES.CONTENT_COURSES) return [to, isAdmin ? 'Duyệt khóa học' : 'Khóa học'];
+      if (to === ROUTES.ADMIN_VOCABULARY && isAdmin) return [to, 'Duyệt từ vựng'];
+      return [to, label];
+    }),
   })).filter(group => group.links.length > 0);
   const location = useLocation();
-  const contentFlowPrefixes = [ROUTES.CONTENT_COURSES, ROUTES.CONTENT_LESSONS, ROUTES.CONTENT_QUESTIONS, ROUTES.CONTENT_QUIZZES];
-  const inContentFlow = contentFlowPrefixes.some(prefix => location.pathname === prefix || location.pathname.startsWith(prefix + '/'));
-  const current = isContentManager && !isAdmin && inContentFlow
-    ? 'Biên soạn khóa học'
-    : visibleGroups.flatMap(group => group.links).find(([to]) => location.pathname === to || (to !== '/admin' && location.pathname.startsWith(to + '/')))?.[1] || 'Quản trị nội dung';
+  const current = visibleGroups.flatMap(group => group.links).find(([to]) => location.pathname === to || (to !== '/admin' && location.pathname.startsWith(to + '/')))?.[1] || 'Quản trị nội dung';
   return <div className={`admin-wrapper ${open ? 'admin-menu-open' : ''}`}>
     <a className="skip-link" href="#admin-content"><BilingualText>{"Chuyển đến nội dung chính"}</BilingualText></a>
     <aside ref={sidebar} id="admin-navigation" className="admin-sidebar">
       <div className="admin-sidebar-header">
         <Brand to={isAdmin ? '/admin' : (visibleGroups[0]?.links[0]?.[0] || '/')} />
       </div>
-      <nav className="admin-nav" aria-label={bilingualLabel("Điều hướng quản lý nội dung", "Content management navigation")}>{visibleGroups.map(group => <div className="admin-nav-group" key={group.title}><p><BilingualText>{group.title}</BilingualText></p>{group.links.map(([to, label]) => <NavLink key={to} to={to} end={to === '/admin'} onClick={() => setOpen(false)} className={({ isActive }) => `admin-nav-item ${isActive || (isContentManager && !isAdmin && to === ROUTES.CONTENT_COURSES && inContentFlow) ? 'active' : ''}`}><BilingualText vi={label} en={label === 'Biên soạn khóa học' ? 'Course authoring' : undefined} /></NavLink>)}</div>)}</nav>
+      <nav className="admin-nav" aria-label={bilingualLabel("Điều hướng quản lý nội dung", "Content management navigation")}>{visibleGroups.map(group => <div className="admin-nav-group" key={group.title}><p><BilingualText>{group.title}</BilingualText></p>{group.links.map(([to, label]) => <NavLink key={to} to={to} end={to === '/admin'} onClick={() => setOpen(false)} className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}><BilingualText vi={label} en={label === 'Duyệt khóa học' ? 'Course review' : label === 'Duyệt từ vựng' ? 'Vocabulary review' : undefined} /></NavLink>)}</div>)}</nav>
       <div className="admin-sidebar-footer"><Link to="/"><ArrowLeft size={16} aria-hidden="true"/><BilingualText>{"Giao diện học viên"}</BilingualText></Link><button className="admin-logout" onClick={logout}><LogOut size={16} aria-hidden="true"/><BilingualText>{"Đăng xuất"}</BilingualText></button></div>
     </aside>
     {open && <button className="admin-menu-backdrop" aria-label={bilingualLabel("Đóng menu", "Close menu")} onClick={() => setOpen(false)} />}
-    <div className="admin-main-area"><header className="admin-topbar"><button className="mobile-menu-button secondary" aria-label={bilingualLabel("Mở menu quản lý", "Open management menu")} aria-controls="admin-navigation" aria-expanded={open} onClick={() => setOpen(value => !value)}>{open ? <X size={20}/> : <Menu size={20}/>}</button><span><BilingualText>{isAdmin ? "Quản trị /" : "Nội dung /"}</BilingualText><strong><BilingualText vi={current} en={current === 'Biên soạn khóa học' ? 'Course authoring' : undefined} /></strong></span><LanguageSwitcher compact /><span className="admin-identity"><BilingualText>{user?.fullName || user?.username || (isAdmin ? 'Quản trị viên' : 'Người quản lý nội dung')}</BilingualText> <span className="badge"><BilingualText>{isAdmin ? 'ADMIN' : 'CONTENT MANAGER'}</BilingualText></span></span></header><main className="admin-content" id="admin-content"><PageTransition key={location.pathname}><Outlet /></PageTransition></main></div>
+    <div className="admin-main-area"><header className="admin-topbar"><button className="mobile-menu-button secondary" aria-label={bilingualLabel("Mở menu quản lý", "Open management menu")} aria-controls="admin-navigation" aria-expanded={open} onClick={() => setOpen(value => !value)}>{open ? <X size={20}/> : <Menu size={20}/>}</button><span><BilingualText>{isAdmin ? "Quản trị /" : "Nội dung /"}</BilingualText><strong><BilingualText>{current}</BilingualText></strong></span><LanguageSwitcher compact /><span className="admin-identity"><BilingualText>{user?.fullName || user?.username || (isAdmin ? 'Quản trị viên' : 'Người quản lý nội dung')}</BilingualText> <span className="badge"><BilingualText>{isAdmin ? 'ADMIN' : 'CONTENT MANAGER'}</BilingualText></span></span></header><main className="admin-content" id="admin-content"><PageTransition key={location.pathname}><Outlet /></PageTransition></main></div>
   </div>;
 }

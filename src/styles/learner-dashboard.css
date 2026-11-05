@@ -179,6 +179,19 @@
   box-shadow: 0 12px 24px rgba(194, 65, 12, 0.28);
 }
 
+.ld-button--secondary {
+  color: #EA580C;
+  border: 1px solid #EBDCCB;
+  background: #F5EFE6;
+}
+
+.ld-button--secondary:hover {
+  color: #C2410C;
+  border-color: #E1C8AE;
+  background: #EFE4D6;
+  transform: translateY(-2px);
+}
+
 .ld-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -714,6 +727,19 @@
 .ld-empty p {
   margin: 0 0 15px;
   font-size: 12px;
+}
+
+.ld-empty__actions {
+  display: flex;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.ld-empty__actions .ld-button {
+  border-radius: 0;
 }
 
 .ld-empty--compact {

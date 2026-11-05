@@ -227,11 +227,11 @@ export function LearnerDashboard({ user }) {
               <div className="ld-empty">
                 <h2><BilingualText vi="Lộ trình học tập cá nhân hóa" en="Personalized Learning Path" /></h2>
                 <p><BilingualText vi="Khám phá bản đồ học tập tiếng Việt theo từng chặng, tích lũy XP và mở khóa các bài học tương tác tiếp theo." en="Explore the Vietnamese learning roadmap station by station, collect XP, and unlock interactive lessons." /></p>
-                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.25rem' }}>
+                <div className="ld-empty__actions">
                   <Link to="/learning-path" className="ld-button ld-button--primary">
                     <BilingualText vi="Vào lộ trình học" en="Open learning roadmap" /><ArrowRight size={16} />
                   </Link>
-                  <Link to="/courses" className="ld-button" style={{ background: '#f5efe6', color: '#EA580C', border: '1px solid #ebdccb' }}>
+                  <Link to="/courses" className="ld-button ld-button--secondary">
                     {t('dashboard.exploreCourses')}<ArrowRight size={16} />
                   </Link>
                 </div>
