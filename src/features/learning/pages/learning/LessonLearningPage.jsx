@@ -10,7 +10,7 @@ import { LessonNavigation } from '@/features/learning/components/learning/Lesson
 import { vocabularyService } from '@/features/vocabulary/api/vocabularyService';
 import { LessonActivities } from '@/features/learning/components/learning/LessonActivities';
 import { useAiSidebar } from '@/features/ai/context/AiSidebarContext';
-import { ArrowLeft, CheckCircle2, Bookmark, PanelLeftClose, PanelLeft, Check, AlertCircle, Lock } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Bookmark, ChevronLeft, ChevronRight, Check, AlertCircle, Lock } from 'lucide-react';
 
 function LessonContextSyncer({ lesson, course, contentLesson, courseId }) {
   const { setLearningContext } = useAiSidebar();
@@ -141,6 +141,16 @@ function LessonScreen({ courseId, lessonId }) {
     }
   }
 
+  function saveSelectionFromPointer(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    void saveSelectedVocabulary(selectionAction);
+  }
+
+  function saveSelectionFromKeyboard(event) {
+    if (event.detail === 0) void saveSelectedVocabulary(selectionAction);
+  }
+
   async function complete() {
     setPending(true);
     setError('');
@@ -250,21 +260,16 @@ function LessonScreen({ courseId, lessonId }) {
                   </div>
                 </div>
 
-                {/* Nút ẩn/hiện thanh bên danh sách bài */}
+                {/* Trên màn hình nhỏ, nút này mở drawer danh sách bài. Desktop dùng nút trong Course Roadmap. */}
                 <button
                   type="button"
                   onClick={() => setSidebarOpen((v) => !v)}
-                  className={`inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${
-                    sidebarOpen
-                      ? 'bg-[#24382B] text-white border-[#24382B]'
-                      : 'bg-white hover:bg-stone-50 text-stone-700 border-[#E8E5DF]'
-                  }`}
+                  className="lg:hidden ml-auto inline-flex h-9 w-9 min-h-0 items-center justify-center rounded-full border border-[#E8E5DF] !bg-white !p-0 text-[#24382B] shadow-xs transition-all hover:!border-[#24382B] hover:!bg-[#24382B] hover:!text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24382B] cursor-pointer"
                   title={sidebarOpen ? bilingualLabel('Ẩn danh sách bài', 'Hide lesson list') : bilingualLabel('Hiện danh sách bài', 'Show lesson list')}
+                  aria-label={sidebarOpen ? bilingualLabel('Ẩn danh sách bài', 'Hide lesson list') : bilingualLabel('Hiện danh sách bài', 'Show lesson list')}
+                  aria-expanded={sidebarOpen}
                 >
-                  {sidebarOpen ? <PanelLeftClose size={14} /> : <PanelLeft size={14} />}
-                  <span className="hidden sm:inline">
-                    {sidebarOpen ? <BilingualText vi="Thu gọn" en="Collapse" /> : <BilingualText vi="Bài học" en="Lessons" />}
-                  </span>
+                  {sidebarOpen ? <ChevronLeft size={18} aria-hidden="true" /> : <ChevronRight size={18} aria-hidden="true" />}
                 </button>
               </div>
             </header>
@@ -304,8 +309,24 @@ function LessonScreen({ courseId, lessonId }) {
                       lessons={lessons}
                       courseId={courseId}
                       currentId={lesson.id}
+                      onClose={() => setSidebarOpen(false)}
                       courseTitle={course?.titleVi || course?.title}
                     />
+                  </aside>
+                )}
+
+                {!sidebarOpen && (
+                  <aside className="hidden lg:flex w-10 shrink-0 sticky top-20 self-start justify-center pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setSidebarOpen(true)}
+                      className="inline-flex h-9 w-9 min-h-0 items-center justify-center rounded-full border border-[#E8E5DF] !bg-white !p-0 text-[#24382B] shadow-sm transition-all hover:!border-[#24382B] hover:!bg-[#24382B] hover:!text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#24382B] cursor-pointer"
+                      title={bilingualLabel('Mở lộ trình khóa học', 'Show course roadmap')}
+                      aria-label={bilingualLabel('Mở lộ trình khóa học', 'Show course roadmap')}
+                      aria-expanded="false"
+                    >
+                      <ChevronRight size={18} aria-hidden="true" />
+                    </button>
                   </aside>
                 )}
 
@@ -377,7 +398,8 @@ function LessonScreen({ courseId, lessonId }) {
                 type="button"
                 className="fixed z-[70] -translate-x-1/2 -translate-y-full inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-white px-3 py-2 text-xs font-bold text-stone-800 shadow-xl hover:bg-amber-50"
                 style={{ left: selectionAction.left, top: selectionAction.top }}
-                onClick={() => saveSelectedVocabulary(selectionAction)}
+                onPointerDown={saveSelectionFromPointer}
+                onClick={saveSelectionFromKeyboard}
                 disabled={savingSelection}
                 aria-label={bilingualLabel(`Lưu “${selectionAction.word}” vào sổ tay`, `Save “${selectionAction.word}” to notebook`)}
               >

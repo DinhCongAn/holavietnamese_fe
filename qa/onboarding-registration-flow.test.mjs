@@ -22,6 +22,17 @@ test('authenticated existing learners can open the placement test directly', asy
   assert.doesNotMatch(pages, /PlacementTestPage[^\n]*data\.learningPath !== 'placement'/);
 });
 
+test('back-office accounts are redirected before entering learner onboarding', async () => {
+  const [app, guard] = await Promise.all([
+    read('../src/app/router/AppRouter.jsx'),
+    read('../src/shared/components/common/RequireLearnerOnboarding.jsx'),
+  ]);
+  assert.match(app, /<Route element=\{<RequireLearnerOnboarding \/>\}>[\s\S]*path="\/onboarding\/placement-test"/);
+  assert.match(guard, /role === 'ADMIN'[\s\S]*ROUTES\.ADMIN/);
+  assert.match(guard, /role === 'CONTENT'[\s\S]*ROUTES\.CONTENT_COURSES/);
+  assert.match(guard, /role !== 'LEARNER'[\s\S]*\/forbidden/);
+});
+
 test('learning path offers only the placement test', async () => {
   const pages = await read('../src/features/onboarding/pages/OnboardingPages.jsx');
   assert.doesNotMatch(pages, /Start from Scratch/);
