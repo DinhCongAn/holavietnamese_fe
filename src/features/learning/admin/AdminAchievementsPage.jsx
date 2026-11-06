@@ -5,6 +5,9 @@ import { adminService } from '@/features/admin/api/adminService';
 import { useConfirmDialog } from '@/shared/components/common/ConfirmDialog';
 import { Trophy, Award, Flame, BookOpen, Sparkles, Plus, Power } from 'lucide-react';
 import { AdminActionButton, AdminActionGroup } from '@/shared/components/common/AdminTableActions';
+import { AdminPagination } from '@/shared/components/common/AdminPagination';
+
+const PAGE_SIZE = 10;
 
 const CATEGORIES = [
   { value: 'LESSON', label: 'Bài học', icon: BookOpen, color: '#2563EB' },
@@ -38,6 +41,7 @@ const initialBadge = {
 export function AdminAchievementsPage() {
   useTextLanguage();
   const [achievements, setAchievements] = useState([]);
+  const [page, setPage] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(initialBadge);
@@ -174,6 +178,14 @@ export function AdminAchievementsPage() {
     return { total, active, totalXp };
   }, [achievements]);
 
+  const totalPages = Math.max(1, Math.ceil(achievements.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages - 1);
+
+  const paginatedAchievements = useMemo(() => {
+    const start = currentPage * PAGE_SIZE;
+    return achievements.slice(start, start + PAGE_SIZE);
+  }, [achievements, currentPage]);
+
   return (
     <div className="space-y-6">
       {confirmationDialog}
@@ -258,7 +270,7 @@ export function AdminAchievementsPage() {
                   </td>
                 </tr>
               ) : (
-                achievements.map((badge) => {
+                paginatedAchievements.map((badge) => {
                   const isActive = badge.status === 'ACTIVE' || badge.active === true;
                   const categoryMeta = CATEGORIES.find((c) => c.value === badge.category) || CATEGORIES[5];
                   const conditionMeta = CONDITION_TYPES.find((c) => c.value === badge.conditionType) || { label: badge.conditionType, unit: '' };
@@ -338,6 +350,14 @@ export function AdminAchievementsPage() {
             </tbody>
           </table>
         </div>
+        {achievements.length > 0 && (
+          <AdminPagination
+            currentPage={currentPage + 1}
+            pageSize={PAGE_SIZE}
+            totalItems={achievements.length}
+            onPageChange={(nextPage) => setPage(nextPage - 1)}
+          />
+        )}
       </div>
 
       {/* Modal Create / Edit */}

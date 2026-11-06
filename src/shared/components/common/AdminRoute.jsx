@@ -46,13 +46,49 @@ export function AdminRoute() {
     );
   }
 
-  // Phân rõ đường dẫn theo vai trò cho văn hóa:
-  // Admin luôn dùng /admin/culture*, Content Manager luôn dùng /content/culture*
-  if (isAdmin && location.pathname.startsWith('/content/culture')) {
-    return <Navigate to={location.pathname.replace('/content/culture', '/admin/culture')} replace />;
+  // Phân rõ đường dẫn theo vai trò:
+  // Admin luôn dùng /admin/*, Content Manager luôn dùng /content/*
+  const contentManagerPrefixes = [
+    '/content/culture',
+    '/content/culture-categories',
+    '/content/courses',
+    '/content/lessons',
+    '/content/questions',
+    '/content/quizzes',
+    '/content/vocabulary',
+    '/content/regional-language',
+    '/content/import',
+    '/content/imports',
+    '/content/destinations',
+  ];
+  const adminPrefixes = [
+    '/admin/culture',
+    '/admin/culture-categories',
+    '/admin/courses',
+    '/admin/lessons',
+    '/admin/questions',
+    '/admin/quizzes',
+    '/admin/vocabulary',
+    '/admin/regional-language',
+    '/admin/import',
+    '/admin/imports',
+    '/admin/destinations',
+  ];
+
+  if (isAdmin) {
+    for (const prefix of contentManagerPrefixes) {
+      if (location.pathname === prefix || location.pathname.startsWith(`${prefix}/`)) {
+        return <Navigate to={location.pathname.replace(/^\/content\//, '/admin/') + location.search} replace />;
+      }
+    }
   }
-  if (isContentManager && !isAdmin && location.pathname.startsWith('/admin/culture')) {
-    return <Navigate to={location.pathname.replace('/admin/culture', '/content/culture')} replace />;
+
+  if (isContentManager && !isAdmin) {
+    for (const prefix of adminPrefixes) {
+      if (location.pathname === prefix || location.pathname.startsWith(`${prefix}/`)) {
+        return <Navigate to={location.pathname.replace(/^\/admin\//, '/content/') + location.search} replace />;
+      }
+    }
   }
 
   return <Outlet />;

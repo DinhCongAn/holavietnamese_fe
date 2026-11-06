@@ -4,6 +4,9 @@ import { adminService } from '@/features/admin/api/adminService';
 import { useConfirmDialog } from '@/shared/components/common/ConfirmDialog';
 import { Zap, Power, Sparkles, BookOpen, Flame, Award, CheckCircle2 } from 'lucide-react';
 import { AdminActionButton, AdminActionGroup } from '@/shared/components/common/AdminTableActions';
+import { AdminPagination } from '@/shared/components/common/AdminPagination';
+
+const PAGE_SIZE = 10;
 
 const PRESETS = [
   { eventType: 'LESSON_COMPLETE', eventName: 'Hoàn thành 1 bài học', xpReward: 20, dailyCap: 200, icon: BookOpen },
@@ -27,6 +30,7 @@ export function AdminXpRulesPage() {
   useTextLanguage();
   const { confirm, confirmationDialog } = useConfirmDialog();
   const [items, setItems] = useState([]);
+  const [page, setPage] = useState(0);
   const [draft, setDraft] = useState(emptyDraft);
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
@@ -154,6 +158,14 @@ export function AdminXpRulesPage() {
       .reduce((acc, i) => acc + (i.dailyCap || 0), 0);
     return { total, active, maxDailyPotential };
   }, [items]);
+
+  const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages - 1);
+
+  const paginatedItems = useMemo(() => {
+    const start = currentPage * PAGE_SIZE;
+    return items.slice(start, start + PAGE_SIZE);
+  }, [items, currentPage]);
 
   return (
     <div className="space-y-6">
@@ -348,7 +360,7 @@ export function AdminXpRulesPage() {
                   </td>
                 </tr>
               ) : (
-                items.map((item) => {
+                paginatedItems.map((item) => {
                   const isActive = item.active !== false;
 
                   return (
@@ -412,6 +424,14 @@ export function AdminXpRulesPage() {
             </tbody>
           </table>
         </div>
+        {items.length > 0 && (
+          <AdminPagination
+            currentPage={currentPage + 1}
+            pageSize={PAGE_SIZE}
+            totalItems={items.length}
+            onPageChange={(nextPage) => setPage(nextPage - 1)}
+          />
+        )}
       </div>
     </div>
   );

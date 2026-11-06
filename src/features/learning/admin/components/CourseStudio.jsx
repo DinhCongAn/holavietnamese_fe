@@ -40,7 +40,7 @@ const slugify = value => String(value || '').normalize('NFD').replace(/[\u0300-\
 
 export function AdminCourseCreatePage() {
   const { isContentManager, isAdmin } = useAuth();
-  if (!isContentManager || isAdmin) return <Notice><BilingualText vi="Bạn cần tài khoản Content Manager để tạo khóa học." en="You need a Content Manager account to create courses." /> <Link to="/content/courses"><BilingualText vi="Về danh sách" en="Back to list" /></Link></Notice>;
+  if (!isContentManager || isAdmin) return <Notice><BilingualText vi="Bạn cần tài khoản Content Manager để tạo khóa học." en="You need a Content Manager account to create courses." /> <Link to={isAdmin ? "/admin/courses" : "/content/courses"}><BilingualText vi="Về danh sách" en="Back to list" /></Link></Notice>;
   return <CourseStudio />;
 }
 
@@ -116,7 +116,7 @@ export function CourseStudio({ course, reload = () => {} }) {
       setModal({ kind: 'linkFinalQuiz', quiz });
       await contentService.setFinalAssessment(course.id, quiz.id);
       setModal(null);
-      navigate(`/content/quizzes/${quiz.id}?newQuestion=1`);
+      navigate(`${isAdmin ? '/admin' : '/content'}/quizzes/${quiz.id}?newQuestion=1`);
       return;
     }
     setModal(null); reload(); readiness.reload(); setMessage(label('Đã lưu nội dung.'));
@@ -130,7 +130,7 @@ export function CourseStudio({ course, reload = () => {} }) {
   }
 
   return <section className="course-studio">
-    <Link className="studio-back" to="/content/courses" onClick={event => { if (dirty.current && !window.confirm(label('Bỏ những thay đổi chưa lưu?'))) event.preventDefault(); }}><ArrowLeft size={16} /> <BilingualText>{"Tất cả khóa học"}</BilingualText></Link>
+    <Link className="studio-back" to={isAdmin ? "/admin/courses" : "/content/courses"} onClick={event => { if (dirty.current && !window.confirm(label('Bỏ những thay đổi chưa lưu?'))) event.preventDefault(); }}><ArrowLeft size={16} /> <BilingualText>{"Tất cả khóa học"}</BilingualText></Link>
     <header className="studio-header">
       <div>
         <p className="studio-eyebrow"><BilingualText>{"KHÔNG GIAN BIÊN SOẠN"}</BilingualText></p>
@@ -239,16 +239,16 @@ export function CourseStudio({ course, reload = () => {} }) {
             <div className="studio-lessons">{(module.lessons || []).map((lesson, lessonIndex) => <div className="studio-lesson" key={lesson.id}>
               <span className="studio-lesson-number">{String(lessonIndex + 1).padStart(2, '0')}</span>
               <div className="studio-lesson-title">
-                <Link to={canEdit ? `/content/lessons/${lesson.id}` : `/content/lessons/${lesson.id}/preview`}>
+                <Link to={canEdit ? `${isAdmin ? '/admin' : '/content'}/lessons/${lesson.id}` : `${isAdmin ? '/admin' : '/content'}/lessons/${lesson.id}/preview`}>
                   <BilingualText vi={lesson.titleVi || lesson.title} en={lesson.title} />
                 </Link>
                 <small><Clock size={12} /> {lesson.estimatedMinutes || 0} <BilingualText vi="phút" en="min" /> <span className={`studio-status studio-status--${lesson.status}`}><BilingualText>{statusNames[lesson.status] || lesson.status}</BilingualText></span></small>
               </div>
               <div className="studio-lesson-actions">
-                <Link className="studio-icon-link" aria-label={label(`Xem trước ${lesson.titleVi || lesson.title}`)} to={`/content/lessons/${lesson.id}/preview`}><Eye size={17} /></Link>
+                <Link className="studio-icon-link" aria-label={label(`Xem trước ${lesson.titleVi || lesson.title}`)} to={`${isAdmin ? '/admin' : '/content'}/lessons/${lesson.id}/preview`}><Eye size={17} /></Link>
                 {canEdit && <>
                   <button className="secondary" disabled={busy} onClick={() => editLesson(lesson)}><BilingualText>{"Sửa"}</BilingualText></button>
-                  <Link className="button secondary" to={`/content/lessons/${lesson.id}`}><BilingualText>{"Nội dung"}</BilingualText> <ArrowRight size={14} /></Link>
+                  <Link className="button secondary" to={`${isAdmin ? '/admin' : '/content'}/lessons/${lesson.id}`}><BilingualText>{"Nội dung"}</BilingualText> <ArrowRight size={14} /></Link>
                   {module.id !== 0 && <>
                     <button className="secondary studio-icon-button" aria-label={label(`Đưa bài ${lessonIndex + 1} lên`)} disabled={busy || lessonIndex === 0} onClick={() => mutate(() => contentService.reorder(`modules/${module.id}/lessons`, moveItem(module.lessons.map(l => l.id), lessonIndex, -1)))}><ChevronUp size={15} /></button>
                     <button className="secondary studio-icon-button" aria-label={label(`Đưa bài ${lessonIndex + 1} xuống`)} disabled={busy || lessonIndex === module.lessons.length - 1} onClick={() => mutate(() => contentService.reorder(`modules/${module.id}/lessons`, moveItem(module.lessons.map(l => l.id), lessonIndex, 1)))}><ChevronDown size={15} /></button>
@@ -266,7 +266,7 @@ export function CourseStudio({ course, reload = () => {} }) {
               </div>
               {canEdit && !course.finalAssessmentQuizId && <button className="secondary" disabled={busy || !lessons.length} onClick={() => setModal({ kind: 'finalQuiz' })}><Plus size={16} /> <BilingualText>{"Tạo quiz cuối khóa"}</BilingualText></button>}
             </div>
-            {course.finalAssessmentQuizId ? <Link className="text-link" to={`/content/quizzes/${course.finalAssessmentQuizId}`}><BilingualText>{"Quản lý câu hỏi và đáp án của quiz cuối khóa"}</BilingualText> <ArrowRight size={15} /></Link> : <small><BilingualText>{"Thêm ít nhất một bài học để tạo quiz tổng kết."}</BilingualText></small>}
+            {course.finalAssessmentQuizId ? <Link className="text-link" to={`${isAdmin ? '/admin' : '/content'}/quizzes/${course.finalAssessmentQuizId}`}><BilingualText>{"Quản lý câu hỏi và đáp án của quiz cuối khóa"}</BilingualText> <ArrowRight size={15} /></Link> : <small><BilingualText>{"Thêm ít nhất một bài học để tạo quiz tổng kết."}</BilingualText></small>}
           </section>
         </>}
         {step === 'preview' && <CoursePreview course={course} />}
