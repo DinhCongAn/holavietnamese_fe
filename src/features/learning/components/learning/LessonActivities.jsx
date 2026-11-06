@@ -71,11 +71,30 @@ function getActivityTypeIcon(type) {
   return BookOpen;
 }
 
+function activityContent(activity) {
+  if (typeof activity?.contentJson !== 'string') return activity?.contentJson || {};
+  try {
+    return JSON.parse(activity.contentJson);
+  } catch {
+    return {};
+  }
+}
+
+function activityHasImage(activity) {
+  const content = activityContent(activity);
+  return Boolean(
+    content.imageUrl ||
+    content.illustrations?.some((item) => item?.imageUrl) ||
+    content.items?.some((item) => item?.imageUrl || item?.image)
+  );
+}
+
 export function LessonActivities({
   lessonId,
   fallback,
   onProgress,
   previewLesson,
+  previewAll = false,
   courseId,
   nextLessonId,
   onNextLesson,
@@ -101,20 +120,78 @@ export function LessonActivities({
     <ResourceState resource={resource}>
       {(lesson) =>
         lesson.activities?.length ? (
-          <ActivityWorkspace
-            key={lesson.id}
-            lesson={lesson}
-            preview={!!previewLesson}
-            onProgress={onProgress}
-            courseId={courseId}
-            nextLessonId={nextLessonId || lesson.nextLessonId}
-            onNextLesson={onNextLesson}
-          />
+          previewAll ? (
+            <LessonAllActivitiesPreview key={lesson.id} lesson={lesson} />
+          ) : (
+            <ActivityWorkspace
+              key={lesson.id}
+              lesson={lesson}
+              preview={!!previewLesson}
+              onProgress={onProgress}
+              courseId={courseId}
+              nextLessonId={nextLessonId || lesson.nextLessonId}
+              onNextLesson={onNextLesson}
+            />
+          )
         ) : (
           fallback
         )
       }
     </ResourceState>
+  );
+}
+
+function LessonAllActivitiesPreview({ lesson }) {
+  return (
+    <div className="activity-workspace space-y-6">
+      <Notice>
+        <BilingualText vi="Bản xem trước hiển thị toàn bộ hoạt động theo đúng thứ tự của bài học." en="This preview shows every activity in lesson order." />
+      </Notice>
+      {lesson.activities.map((activity, index) => (
+        <PreviewActivityCard
+          key={activity.id}
+          activity={activity}
+          index={index}
+          lesson={lesson}
+        />
+      ))}
+    </div>
+  );
+}
+
+function PreviewActivityCard({ activity, index, lesson }) {
+  const [answer, setAnswer] = useState({});
+  const hasImage = activityHasImage(activity);
+  return (
+    <article className={`activity-card bg-white rounded-3xl border border-[#E8E5DF] p-6 sm:p-8 shadow-sm space-y-6 activity-${activity.activityType.toLowerCase()} ${hasImage ? 'activity-has-image' : 'activity-no-image'}`}>
+      <div className="border-b border-[#E8E5DF]/40 pb-5 space-y-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="px-3 py-1 rounded-full bg-[#FFF2D6] text-[#EA580C] font-black text-xs uppercase tracking-wider border border-[#FFCD00]/50">
+            <BilingualText vi={`Hoạt động ${index + 1} · ${activity.activityType.replaceAll('_', ' ')}`} en={`Activity ${index + 1} · ${activity.activityType.replaceAll('_', ' ')}`} />
+          </span>
+          <span className="px-2.5 py-0.5 rounded-full bg-stone-100 text-stone-600 text-[11px] font-bold">
+            <BilingualText>{activity.status}</BilingualText>
+          </span>
+        </div>
+        <h2 className="text-xl sm:text-2xl font-black text-[#253044] tracking-tight">
+          <BilingualText vi={activity.titleVi || activity.title} en={activity.title} />
+        </h2>
+        {(activity.instructionVi || activity.instruction) && (
+          <p className="lead text-sm sm:text-base text-[#64748B] leading-relaxed">
+            <BilingualText vi={activity.instructionVi || activity.instruction} en={activity.instruction} />
+          </p>
+        )}
+      </div>
+      <ActivityBody
+        activity={activity}
+        lesson={lesson}
+        lessonId={lesson.id}
+        answer={answer}
+        setAnswer={setAnswer}
+        busy={false}
+        preview
+      />
+    </article>
   );
 }
 
@@ -154,6 +231,7 @@ function ActivityWorkspace({
   const activity = activities[index] || activities[0];
   const exercise = practiceTypes.includes(activity?.activityType);
   const external = externalTypes.includes(activity?.activityType);
+  const hasImage = activityHasImage(activity);
 
   // Do not expose the floating AI helper while the learner is on a quiz gate.
   useEffect(() => {
@@ -333,7 +411,7 @@ function ActivityWorkspace({
       </div>
 
       {/* Khung nội dung chính của hoạt động */}
-      <article key={activity.id} className={`activity-card bg-white rounded-3xl border border-[#E8E5DF] p-6 sm:p-8 shadow-sm space-y-6 activity-${activity.activityType.toLowerCase()} transition-all duration-300 ease-out animate-fade-in`}>
+      <article key={activity.id} className={`activity-card bg-white rounded-3xl border border-[#E8E5DF] p-6 sm:p-8 shadow-sm space-y-6 activity-${activity.activityType.toLowerCase()} ${hasImage ? 'activity-has-image' : 'activity-no-image'} transition-all duration-300 ease-out animate-fade-in`}>
         {/* Header hoạt động */}
         <div className="border-b border-[#E8E5DF]/40 pb-5 space-y-2">
           <div className="flex flex-wrap items-center gap-2">
@@ -497,10 +575,7 @@ function ActivityWorkspace({
  */
 function ActivityBody({ activity, lessonId, answer, setAnswer, busy, preview, lesson }) {
   useTextLanguage();
-  const content =
-    typeof activity.contentJson === 'string'
-      ? JSON.parse(activity.contentJson)
-      : activity.contentJson || {};
+  const content = activityContent(activity);
 
   const type = activity.activityType;
 

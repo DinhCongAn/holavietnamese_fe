@@ -183,10 +183,14 @@
 .studio-preview-module { border-bottom: 1px solid var(--studio-line); padding: 8px 0 15px; }
 .studio-preview-module:last-child { border: 0; padding-bottom: 0; }
 .studio-preview-module h4 { font-size: 14px; }
+.studio-preview-lesson-block { width: 100%; }
 .admin-content .studio-preview-lesson { display: flex; width: 100%; padding: 12px; gap: 10px; margin-top: 8px; text-align: left; }
 .studio-preview-lesson > span { flex: 1; font-size: 12px; }
 .studio-preview-lesson > small { font-size: 10px; color: var(--studio-muted); }
 .admin-content .studio-preview-lesson.is-selected { border-color: #b75b45; background: #fcf0e8; }
+.studio-lesson-preview-inline { margin: 10px 0 14px; padding: 20px; border: 1px solid #e5d3c4; border-radius: 12px; background: #fffaf5; box-shadow: inset 3px 0 0 #b75b45; }
+.studio-lesson-preview-inline > .studio-section-heading { margin-bottom: 16px; }
+.studio-lesson-preview-inline > .studio-section-heading h3 { margin: 0; }
 .studio-publish > p { font-size: 13px; color: var(--studio-muted); }
 .studio-publish-check { display: flex; align-items: center; gap: 13px; padding: 20px 0; border-top: 1px solid var(--studio-line); border-bottom: 1px solid var(--studio-line); margin: 24px 0 18px; }
 .studio-publish-check > svg { color: #a88c73; flex-shrink: 0; }

@@ -1145,3 +1145,4 @@ summary:focus,
   min-height: unset !important;
   text-align: left !important;
 }
+.activity-card.activity-no-image .activity-intro{grid-template-columns:minmax(0,760px);justify-content:center;text-align:justify;text-justify:inter-word}.activity-card.activity-no-image .activity-intro>div{width:100%;margin-inline:auto}.activity-card.activity-no-image .rich-text{margin-inline:auto}.activity-card.activity-has-image .activity-intro{text-align:left}

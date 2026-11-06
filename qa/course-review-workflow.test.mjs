@@ -33,3 +33,21 @@ test('learner header exposes Manage Courses to content managers', () => {
   assert.match(menu, /to=\{ROUTES\.CONTENT_COURSES\}/);
   assert.match(menu, /en="Manage Courses"/);
 });
+
+test('course preview expands lesson content directly below the selected lesson', () => {
+  const studio = read('src/features/learning/admin/components/CourseStudio.jsx');
+  const lessonActivities = read('src/features/learning/components/learning/LessonActivities.jsx');
+  const designSystem = read('src/styles/design-system.css');
+
+  assert.match(studio, /studio-preview-lesson-block/);
+  assert.match(studio, /lessonId === lesson\.id && <section className="studio-lesson-preview-inline">/);
+  assert.match(studio, /setLessonId\(current => current === lesson\.id \? null : lesson\.id\)/);
+  assert.match(studio, /previewLesson=\{lesson\} previewAll/);
+  assert.match(lessonActivities, /previewAll \? \(/);
+  assert.match(lessonActivities, /<LessonAllActivitiesPreview key=\{lesson\.id\} lesson=\{lesson\}/);
+  assert.match(lessonActivities, /hasImage \? 'activity-has-image' : 'activity-no-image'/);
+  assert.match(lessonActivities, /const hasImage = activityHasImage\(activity\);/);
+  assert.match(designSystem, /activity-no-image \.activity-intro\{[^}]*text-align:justify/);
+  assert.match(designSystem, /activity-has-image \.activity-intro\{text-align:left/);
+  assert.doesNotMatch(studio, /lessonId && <section className="studio-panel">/);
+});

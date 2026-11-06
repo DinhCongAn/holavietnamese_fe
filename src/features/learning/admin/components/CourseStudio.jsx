@@ -46,16 +46,20 @@ export function AdminCourseCreatePage() {
 
 export function CourseStudio({ course, reload = () => {} }) {
   const label = useBilingualLabel();
-  const { isAdmin, isContentManager } = useAuth();
+  const { isAdmin, isContentManager, user } = useAuth();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const selectedStep = params.get('step');
   const step = steps.some(s => s.id === selectedStep) && course ? selectedStep : 'info';
   const canEdit = isContentManager && !isAdmin && (!course || ['DRAFT', 'REJECTED'].includes(course.status));
   const canReview = isAdmin && course?.status === 'REVIEW';
+  const ownsCourse = Boolean(course && String(course.createdBy) === String(user?.userId ?? user?.id));
+  const canRequestEdit = isContentManager && !isAdmin && ownsCourse && course?.status === 'PUBLISHED' && course?.editRequestStatus !== 'PENDING';
+  const canReviewEditRequest = isAdmin && course?.status === 'PUBLISHED' && course?.editRequestStatus === 'PENDING';
   const [modal, setModal] = useState(null), [busy, setBusy] = useState(false);
   const [error, setError] = useState(''), [message, setMessage] = useState('');
   const [reviewNote, setReviewNote] = useState('');
+  const [editRequestReason, setEditRequestReason] = useState('');
   const [hasUnsaved, setHasUnsaved] = useState(false);
   const [importedCourseId, setImportedCourseId] = useState(null);
   const [infoEditorOpen, setInfoEditorOpen] = useState(true);
@@ -155,6 +159,16 @@ export function CourseStudio({ course, reload = () => {} }) {
     </nav>}
     {error && <Notice kind="error"><BilingualText>{error}</BilingualText></Notice>}{message && <Notice kind="success"><BilingualText>{message}</BilingualText></Notice>}
     {course?.status === 'REJECTED' && <Notice kind="error"><strong><BilingualText vi="Yêu cầu chỉnh sửa: " en="Revision requested: " /></strong>{course.reviewNote || label('Vui lòng kiểm tra lại nội dung.')}</Notice>}
+    {course?.editRequestStatus === 'PENDING' && <Notice><strong><BilingualText vi="Yêu cầu mở chỉnh sửa đang chờ Admin duyệt. " en="The edit request is awaiting Admin approval. " /></strong>{course.editRequestReason}</Notice>}
+    {course?.editRequestStatus === 'REJECTED' && ownsCourse && <Notice kind="error"><strong><BilingualText vi="Yêu cầu mở chỉnh sửa đã bị từ chối: " en="The edit request was rejected: " /></strong>{course.editRequestReviewNote || label('Không có phản hồi.')}</Notice>}
+    {canRequestEdit && <section className="studio-panel">
+      <div className="studio-review">
+        <h2><BilingualText vi="Yêu cầu chỉnh sửa khóa học đã xuất bản" en="Request changes to a published course" /></h2>
+        <p><BilingualText vi="Nêu rõ lý do và phạm vi cần cập nhật. Khóa học vẫn hiển thị cho học viên cho đến khi Admin phê duyệt yêu cầu." en="Describe why and what you need to update. The course remains available to learners until Admin approves the request." /></p>
+        <label><BilingualText vi="Lý do chỉnh sửa" en="Reason for editing" /><textarea rows={4} maxLength={2000} value={editRequestReason} onChange={event => setEditRequestReason(event.target.value)} placeholder={label('Ví dụ: cập nhật nội dung bài 3 và thay quiz cuối khóa…')} disabled={busy} /></label>
+        <div className="studio-actions"><button disabled={busy || !editRequestReason.trim()} onClick={() => mutate(() => contentService.requestCourseEdit(course.id, editRequestReason), 'Đã gửi yêu cầu chỉnh sửa cho Admin.')}><Send size={16} /> <BilingualText vi="Gửi yêu cầu chỉnh sửa" en="Submit edit request" /></button></div>
+      </div>
+    </section>}
     {course && !canEdit && <Notice>{canReview ? <BilingualText vi="Xem nội dung và bản xem trước trước khi quyết định phê duyệt." en="Review content and preview before deciding on approval." /> : <BilingualText vi="Khóa học đang ở chế độ chỉ đọc. Bạn vẫn có thể xem cấu trúc và trải nghiệm học." en="Course is in read-only mode. You can still inspect structure and learning flow." />}</Notice>}
     {course && <section className="studio-step-intro">
       <div>
@@ -286,6 +300,15 @@ export function CourseStudio({ course, reload = () => {} }) {
             <div className="studio-actions">
               <button disabled={busy || !ready} onClick={() => mutate(() => contentService.reviewCourse(course.id, 'APPROVE', reviewNote), 'Khóa học đã được phê duyệt và xuất bản.')}><Globe size={17} /> <BilingualText>{"Phê duyệt & xuất bản"}</BilingualText></button>
               <button className="secondary" disabled={busy || !reviewNote.trim()} onClick={() => mutate(() => contentService.reviewCourse(course.id, 'REJECT', reviewNote), 'Đã gửi yêu cầu chỉnh sửa.')} ><BilingualText>{"Yêu cầu chỉnh sửa"}</BilingualText></button>
+            </div>
+          </div>}
+          {canReviewEditRequest && <div className="studio-review">
+            <h3><BilingualText vi="Duyệt yêu cầu chỉnh sửa khóa học" en="Review course edit request" /></h3>
+            <p><strong><BilingualText vi="Lý do của Content Manager: " en="Content Manager's reason: " /></strong>{course.editRequestReason}</p>
+            <label><BilingualText vi="Phản hồi của Admin" en="Admin response" /><textarea rows={4} value={reviewNote} onChange={event => setReviewNote(event.target.value)} placeholder={label('Ghi chú cho Content Manager…')} disabled={busy} /></label>
+            <div className="studio-actions">
+              <button disabled={busy} onClick={() => mutate(() => contentService.reviewCourseEditRequest(course.id, 'APPROVE', reviewNote), 'Đã duyệt. Khóa học được chuyển về bản nháp để chỉnh sửa.')}><CheckCircle2 size={17} /> <BilingualText vi="Duyệt & mở quyền chỉnh sửa" en="Approve & unlock editing" /></button>
+              <button className="secondary" disabled={busy || !reviewNote.trim()} onClick={() => mutate(() => contentService.reviewCourseEditRequest(course.id, 'REJECT', reviewNote), 'Đã từ chối yêu cầu chỉnh sửa.')}><BilingualText vi="Từ chối yêu cầu" en="Reject request" /></button>
             </div>
           </div>}
           {course.status === 'PUBLISHED' && <Notice kind="success"><BilingualText>{"Khóa học đã xuất bản."}</BilingualText> <Link to={`/courses/${course.id}`}><BilingualText>{"Mở trang khóa học dành cho học viên →"}</BilingualText></Link></Notice>}
@@ -422,28 +445,34 @@ function CoursePreview({ course }) {
       <h3><BilingualText vi="Nội dung khóa học" en="Course Curriculum" /></h3>
       {course.modules?.map((module, index) => <div className="studio-preview-module" key={module.id}>
         <h4>{index + 1}. <BilingualText vi={module.titleVi || module.title} en={module.title} /></h4>
-        {module.lessons?.map(lesson => <button key={lesson.id} className={`secondary studio-preview-lesson ${lessonId === lesson.id ? 'is-selected' : ''}`} onClick={() => setLessonId(lesson.id)}>
-          <BookOpen size={17} />
-          <span><BilingualText vi={lesson.titleVi || lesson.title} en={lesson.title} /></span>
-          <small><BilingualText>{statusNames[lesson.status] || lesson.status}</BilingualText> · {lesson.estimatedMinutes || 0} <BilingualText vi="phút" en="min" /></small>
-          <Eye size={16} />
-        </button>)}
+        {module.lessons?.map(lesson => <div className="studio-preview-lesson-block" key={lesson.id}>
+          <button
+            className={`secondary studio-preview-lesson ${lessonId === lesson.id ? 'is-selected' : ''}`}
+            aria-expanded={lessonId === lesson.id}
+            onClick={() => setLessonId(current => current === lesson.id ? null : lesson.id)}
+          >
+            <BookOpen size={17} />
+            <span><BilingualText vi={lesson.titleVi || lesson.title} en={lesson.title} /></span>
+            <small><BilingualText>{statusNames[lesson.status] || lesson.status}</BilingualText> · {lesson.estimatedMinutes || 0} <BilingualText vi="phút" en="min" /></small>
+            <Eye size={16} />
+          </button>
+          {lessonId === lesson.id && <section className="studio-lesson-preview-inline">
+            <div className="studio-section-heading">
+              <h3><BilingualText vi="Nội dung bài học" en="Lesson Content" /></h3>
+              <button className="secondary" onClick={() => setLessonId(null)}><BilingualText vi="Đóng xem trước" en="Close preview" /></button>
+            </div>
+            <StudioLessonPreview lessonId={lesson.id} />
+          </section>}
+        </div>)}
       </div>)}
       {!lessons.length && <p><BilingualText vi="Thêm bài học tại bước Cấu trúc để xem trước." en="Add lessons in Curriculum step to preview." /></p>}
     </section>
-    {lessonId && <section className="studio-panel">
-      <div className="studio-section-heading">
-        <h3><BilingualText vi="Nội dung bài học" en="Lesson Content" /></h3>
-        <button className="secondary" onClick={() => setLessonId(null)}><BilingualText vi="Đóng xem trước" en="Close preview" /></button>
-      </div>
-      <StudioLessonPreview lessonId={lessonId} />
-    </section>}
   </section>;
 }
 
 function StudioLessonPreview({ lessonId }) {
   return <ResourceState resource={useAsyncResource(useCallback(signal => contentService.preview('lessons', lessonId, signal), [lessonId]))}>
-    {lesson => <LessonActivities key={lesson.id} lessonId={lesson.id} previewLesson={lesson} fallback={<p><BilingualText vi="Bài học chưa có hoạt động." en="Lesson has no activities." /></p>} />}
+    {lesson => <LessonActivities key={lesson.id} lessonId={lesson.id} previewLesson={lesson} previewAll fallback={<p><BilingualText vi="Bài học chưa có hoạt động." en="Lesson has no activities." /></p>} />}
   </ResourceState>;
 }
 

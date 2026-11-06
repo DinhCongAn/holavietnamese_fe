@@ -48,6 +48,8 @@ export const contentService = {
   update(kind, id, body) { return request(`/admin/${kind}/${id}`, 'PUT', body); },
   status(kind, id, status) { return request(`/admin/${kind}/${id}/status`, 'PATCH', { status }); },
   submitCourse(id) { return request(`/admin/courses/${id}/submit`, 'POST'); },
+  requestCourseEdit(id, reason) { return request(`/admin/courses/${id}/edit-request`, 'POST', { reason }); },
+  reviewCourseEditRequest(id, decision, note) { return request(`/admin/courses/${id}/edit-request/review`, 'POST', { decision, note }); },
   courseReadiness(id, signal) { return request(`/admin/courses/${id}/readiness`, 'GET', undefined, signal); },
   setFinalAssessment(id, quizId) { return request(`/admin/courses/${id}/final-assessment`, 'PATCH', { quizId }); },
   reviewCourse(id, decision, note) { return request(`/admin/courses/${id}/review`, 'POST', { decision, note }); },
