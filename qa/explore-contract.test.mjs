@@ -58,3 +58,10 @@ test('Scenario links trust ACTIVE records returned by the Backend',() => {
   const rows=[first,second,{id:'draft-scenario',status:'DRAFT'}];
   assert.deepEqual(openableExploreScenarios(rows),[first,second]);
 });
+test('Explore opens vocabulary details in-place instead of navigating to the dictionary page', async () => {
+  const source = await fs.readFile(new URL('../src/features/explore/components/DestinationExploreContent.jsx', import.meta.url), 'utf8');
+  assert.ok(source.includes('VocabularyEntryModal'));
+  assert.ok(source.includes('setSelectedVocabularyId'));
+  assert.ok(source.includes('destination-vocabulary-link'));
+  assert.ok(!source.includes('ROUTES.VOCABULARY_CATALOG_DETAIL'));
+});

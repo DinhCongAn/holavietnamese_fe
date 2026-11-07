@@ -1,28 +1,34 @@
-import { useId, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 import { BilingualText, useBilingualLabel } from '@/shared/components/common/BilingualText';
 import { ContentImage } from '@/shared/components/common/ContentImage';
 import { Notice } from '@/shared/components/common/Ui';
 import { destinationDraft, destinationPayload, DESTINATION_REGIONS } from '@/features/explore/models/Destination';
 import { adminDestinationService } from '@/features/explore/api/destinationService';
+import { DestinationContentEditor } from '@/features/explore/components/DestinationContentEditor';
 
 export function DestinationForm({ entry, onSaved, onCancel, onBusyChange }) {
   const label = useBilingualLabel();
   const [draft, setDraft] = useState(() => destinationDraft(entry));
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(null);
+  const [exploreContent, setExploreContent] = useState(null);
   const formId = useId();
   const change = (field, value) => setDraft(current => ({ ...current, [field]: value }));
 
   async function submit(event) {
     event.preventDefault();
     if (pending) return;
+    if (entry && !exploreContent) {
+      setError(new Error(label('Nội dung liên kết vẫn đang được tải. Vui lòng chờ rồi lưu lại.', 'Linked content is still loading. Please wait before saving.')));
+      return;
+    }
     setError(null);
     try {
       const payload = destinationPayload(draft);
       setPending(true);
       onBusyChange?.(true);
       const saved = entry
-        ? await adminDestinationService.update(entry.id, payload)
+        ? (await adminDestinationService.updateManagement(entry.id, payload, exploreContent)).destination
         : await adminDestinationService.create(payload);
       onSaved(saved);
     } catch (failure) {
@@ -32,6 +38,7 @@ export function DestinationForm({ entry, onSaved, onCancel, onBusyChange }) {
       onBusyChange?.(false);
     }
   }
+  const linkedContentChanged = useCallback(value => setExploreContent(value), []);
 
   const fields = [
     { key: 'nameVi', vi: 'Tên tiếng Việt', en: 'Vietnamese name', required: true, max: 150, lang: 'vi' },
@@ -60,11 +67,12 @@ export function DestinationForm({ entry, onSaved, onCancel, onBusyChange }) {
       </label>
       <p><strong><BilingualText>Trạng thái:</BilingualText></strong> <BilingualText>DRAFT</BilingualText></p>
       {draft.imageUrl && <ContentImage src={draft.imageUrl} alt={draft.nameVi || 'Ảnh điểm đến'} className="figma-art" style={{ maxHeight: 180, objectFit: 'cover', borderRadius: 8 }} />}
+      {entry && <DestinationContentEditor destinationId={entry.id} editable embedded onChange={linkedContentChanged} />}
     </fieldset>
     {error && <Notice kind="error">{error.status === 409 ? <BilingualText vi="Slug đã tồn tại. Vui lòng nhập slug khác." en="This slug already exists. Please enter another slug." /> : <BilingualText>{error.message}</BilingualText>}</Notice>}
     <div className="actions" style={{ marginTop: 20 }}>
       <button type="button" className="secondary" disabled={pending} onClick={onCancel}><BilingualText>Hủy</BilingualText></button>
-      <button type="submit" disabled={pending}><BilingualText vi={pending ? 'Đang lưu…' : 'Lưu điểm đến'} en={pending ? 'Saving…' : 'Save destination'} /></button>
+      <button type="submit" disabled={pending || (entry && !exploreContent)}><BilingualText vi={pending ? 'Đang lưu…' : entry ? 'Lưu điểm đến và toàn bộ liên kết' : 'Lưu điểm đến'} en={pending ? 'Saving…' : entry ? 'Save destination and all links' : 'Save destination'} /></button>
     </div>
   </form>;
 }

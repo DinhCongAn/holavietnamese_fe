@@ -357,29 +357,16 @@ export function AdminDestinationsPage() {
 
                         <td className="admin-destination-actions" style={{ ...tdStyle, textAlign: 'right', paddingRight: '20px', whiteSpace: 'nowrap' }}>
                           <AdminActionGroup>
-                            <AdminActionLink to={detailPath} tone="detail" title={label('Xem chi tiết điểm đến', 'View destination detail')}>
-                              {label('Chi tiết', 'Detail')}
-                            </AdminActionLink>
-
                             {mayWrite && item.status === 'DRAFT' && (
-                              <>
-                                <AdminActionLink to={`${detailPath}?edit=1`} tone="edit" title={label('Chỉnh sửa điểm đến', 'Edit destination')}>
-                                  {label('Sửa nháp', 'Edit draft')}
-                                </AdminActionLink>
-                                <AdminActionButton tone="submit" title={label('Gửi điểm đến đi duyệt', 'Submit destination for review')} onClick={() => transition(item, 'SUBMIT')}>
-                                  {label('Gửi duyệt', 'Submit')}
-                                </AdminActionButton>
-                              </>
+                              <AdminActionButton tone="submit" title={label('Gửi điểm đến đi duyệt', 'Submit destination for review')} onClick={() => transition(item, 'SUBMIT')}>
+                                {label('Gửi duyệt', 'Submit')}
+                              </AdminActionButton>
                             )}
 
                             {mayWrite && item.status === 'PUBLISHED' && (
                               <AdminActionButton tone="edit" title={label('Chuyển về nháp để sửa', 'Return to draft to revise')} onClick={() => transition(item, 'REVISE')}>
                                 {label('Sửa nháp', 'Revise')}
                               </AdminActionButton>
-                            )}
-
-                            {mayWrite && ['DRAFT', 'PUBLISHED'].includes(item.status) && (
-                              <AdminActionButton tone="delete" iconOnly aria-label={label('Lưu trữ điểm đến', 'Archive destination')} title={label('Lưu trữ điểm đến', 'Archive destination')} onClick={() => transition(item, 'ARCHIVE')} />
                             )}
 
                             {mayWrite && item.status === 'ARCHIVED' && (
@@ -393,10 +380,24 @@ export function AdminDestinationsPage() {
                                 <AdminActionButton tone="approve" title={label('Phê duyệt & công khai', 'Approve & publish')} onClick={() => transition(item, 'APPROVE')}>
                                   {label('Duyệt', 'Approve')}
                                 </AdminActionButton>
-                                <AdminActionButton tone="edit" title={label('Trả về bản nháp', 'Return to draft')} onClick={() => transition(item, 'REJECT')}>
+                                <AdminActionButton tone="warning" title={label('Trả về bản nháp', 'Return to draft')} onClick={() => transition(item, 'REJECT')}>
                                   {label('Từ chối', 'Reject')}
                                 </AdminActionButton>
                               </>
+                            )}
+
+                            {mayWrite && item.status === 'DRAFT' && (
+                              <AdminActionLink to={`${detailPath}?edit=1`} tone="neutral" title={label('Chỉnh sửa điểm đến', 'Edit destination')}>
+                                {label('Sửa', 'Edit')}
+                              </AdminActionLink>
+                            )}
+
+                            <AdminActionLink to={detailPath} tone="detail" title={label('Xem chi tiết điểm đến', 'View destination detail')}>
+                              {label('Xem', 'View')}
+                            </AdminActionLink>
+
+                            {mayWrite && ['DRAFT', 'PUBLISHED'].includes(item.status) && (
+                              <AdminActionButton tone="delete" iconOnly aria-label={label('Lưu trữ điểm đến', 'Archive destination')} title={label('Lưu trữ điểm đến', 'Archive destination')} onClick={() => transition(item, 'ARCHIVE')} />
                             )}
                           </AdminActionGroup>
                         </td>

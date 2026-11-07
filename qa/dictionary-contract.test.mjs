@@ -65,9 +65,11 @@ test('Dictionary uses keyword and pagination; content import accepts Excel only'
     cefrLevel: 'A1', topicId: 4, source: 'retired-source', exact: true }, { signal });
   assert.deepEqual(calls[2], ['/api/admin/vocabulary/search', { signal,
     params: { keyword: 'coffee', status: 'PUBLISHED', partOfSpeech: 'noun', page: 0, size: 20 } }]);
+  await adminVocabularyService.approveAllPending();
+  assert.deepEqual(calls[3], ['/api/admin/vocabulary/review/approve-all', null]);
   const { contentImportService }=await load('contentImportService');
   await contentImportService.preview('VOCABULARY',new File(['excel'],'vocabulary.xlsx'));
-  assert.equal(calls[3][0], '/api/admin/imports/preview');
-  assert.equal(calls[3][1].get('module'), 'VOCABULARY');
+  assert.equal(calls[4][0], '/api/admin/imports/preview');
+  assert.equal(calls[4][1].get('module'), 'VOCABULARY');
   await assert.rejects(() => contentImportService.preview('VOCABULARY',new File(['x'],'wrong.jsonl')));
 });

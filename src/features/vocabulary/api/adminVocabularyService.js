@@ -48,6 +48,9 @@ export const adminVocabularyService = {
   async review(id, decision, options = {}) {
     return resultOf(await axiosClient.post(`/api/admin/vocabulary/${id}/review`, { decision }, options));
   },
+  async approveAllPending(options = {}) {
+    return resultOf(await axiosClient.post('/api/admin/vocabulary/review/approve-all', null, options));
+  },
   async archive(id, options = {}) {
     return resultOf(await axiosClient.post(`/api/admin/vocabulary/${id}/archive`, null, options));
   },

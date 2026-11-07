@@ -37,7 +37,7 @@ export function VocabularyDetailPage() {
   </section></>;
 }
 
-function DictionaryEntry({ entry, links, regional, onNotebookChanged }) {
+export function DictionaryEntry({ entry, links, regional, onNotebookChanged = () => {} }) {
   const { i18n } = useTranslation();
   const language = (i18n.resolvedLanguage || i18n.language || 'en').startsWith('vi') ? 'vi' : 'en';
   const notebook = useVocabulary({ search: '', courseId: '', lessonId: '' });

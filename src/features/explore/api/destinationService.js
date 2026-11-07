@@ -52,6 +52,9 @@ export const adminDestinationService = {
   async update(id, payload, options = {}) {
     return resultOf(await axiosClient.put(`/api/admin/destinations/${encodeURIComponent(id)}`, payload, options));
   },
+  async updateManagement(id, destination, exploreContent, options = {}) {
+    return resultOf(await axiosClient.put(`/api/admin/destinations/${encodeURIComponent(id)}/management`, { destination, exploreContent }, options));
+  },
   async submitReview(id, options = {}) {
     return resultOf(await axiosClient.post(`/api/admin/destinations/${encodeURIComponent(id)}/submit-review`, null, options));
   },

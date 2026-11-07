@@ -63,6 +63,8 @@ export function AdminLayout() {
       }).map(([to, label]) => {
         let finalTo = to;
         if (isContentManager && !isAdmin) {
+          if (to === ROUTES.ADMIN_VOCABULARY) finalTo = ROUTES.CONTENT_VOCABULARY;
+          if (to === ROUTES.ADMIN_DESTINATIONS) finalTo = ROUTES.CONTENT_DESTINATIONS;
           if (to === ROUTES.ADMIN_CULTURE) finalTo = ROUTES.CONTENT_CULTURE;
           if (to === ROUTES.ADMIN_CULTURE_CATEGORIES) finalTo = ROUTES.CONTENT_CULTURE_CATEGORIES;
         }

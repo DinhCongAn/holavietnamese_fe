@@ -61,6 +61,8 @@ test('content authoring navigation belongs to Content Manager and Admin receives
   assert.match(layout, /isContentManager && !isAdmin/);
   assert.match(layout, /isAdmin \? 'Duyệt khóa học' : 'Khóa học'/);
   assert.match(layout, /Duyệt từ vựng/);
+  assert.match(layout, /to === ROUTES\.ADMIN_VOCABULARY\) finalTo = ROUTES\.CONTENT_VOCABULARY/);
+  assert.match(layout, /to === ROUTES\.ADMIN_DESTINATIONS\) finalTo = ROUTES\.CONTENT_DESTINATIONS/);
 
   assert.match(contentPages, /const canCreate = isContentManager && !isAdmin && kind === 'courses'/);
   assert.doesNotMatch(contentPages, /isAdmin && kind === 'quizzes'/);
@@ -68,4 +70,21 @@ test('content authoring navigation belongs to Content Manager and Admin receives
   assert.doesNotMatch(quizPages, /<Navigate to="\/content\/courses" replace\/>/);
   assert.match(quizPages, /const canEdit=isContentManager&&!isAdmin/);
   assert.match(quizPages, /Tạo và quản lý câu hỏi dùng trong các bài học và quiz của bạn/);
+});
+
+test('Vocabulary and Destination actions keep the Culture management button treatment', () => {
+  const actions = readFileSync(new URL('../src/shared/components/common/AdminTableActions.jsx', import.meta.url), 'utf8');
+  const styles = readFileSync(new URL('../src/styles/admin.css', import.meta.url), 'utf8');
+  const vocabulary = readFileSync(new URL('../src/features/vocabulary/admin/AdminVocabularyPage.jsx', import.meta.url), 'utf8');
+  const destinations = readFileSync(new URL('../src/features/explore/admin/AdminDestinationsPage.jsx', import.meta.url), 'utf8');
+
+  assert.match(actions, /warning: RotateCcw/);
+  assert.match(styles, /\.admin-content \.admin-row-action--detail/);
+  assert.match(styles, /background: #f0fdfa; border-color: #99f6e4/);
+  assert.match(styles, /\.admin-content \.admin-row-action--delete/);
+  assert.match(styles, /width: 32px; min-width: 32px; padding: 0/);
+  assert.match(vocabulary, /tone="warning"/);
+  assert.match(vocabulary, /vi="Xem" en="View"/);
+  assert.match(destinations, /tone="neutral"/);
+  assert.match(destinations, /label\('Xem', 'View'\)/);
 });

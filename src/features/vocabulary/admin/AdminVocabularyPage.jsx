@@ -7,11 +7,12 @@ import { VOCABULARY_STATUSES } from '@/features/vocabulary/models/AdminVocabular
 import { Breadcrumb, PageHeader } from '@/shared/components/common/Ui';
 import { Link, useLocation } from 'react-router-dom';
 import { getBackOfficeRoutes, ROUTES } from '@/constants/routes';
-import { Plus } from 'lucide-react';
+import { CheckCheck, Plus } from 'lucide-react';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { canImportVocabulary, canReviewVocabulary, canWriteVocabulary } from '@/utils/permissions/contentAccess';
 import { AdminActionButton, AdminActionGroup } from '@/shared/components/common/AdminTableActions';
 import { AdminPagination } from '@/shared/components/common/AdminPagination';
+import { useConfirmDialog } from '@/shared/components/common/ConfirmDialog';
 import '@/features/vocabulary/components/admin/admin-vocabulary.css';
 
 const emptyFilters = { keyword: '', status: '', partOfSpeech: '' };
@@ -32,6 +33,9 @@ export function AdminVocabularyPage() {
   const [resource, setResource] = useState({ data: [], loading: true, error: null });
   const [modal, setModal] = useState(null);
   const [message, setMessage] = useState('');
+  const [actionError, setActionError] = useState(null);
+  const [bulkApproving, setBulkApproving] = useState(false);
+  const { confirm, confirmationDialog } = useConfirmDialog();
   const reload = () => setRevision((value) => value + 1);
 
   useEffect(() => {
@@ -77,13 +81,41 @@ export function AdminVocabularyPage() {
     return result;
   }
 
+  async function approveAllPending() {
+    if (bulkApproving || !await confirm({
+      title: label('Duyệt toàn bộ từ đang chờ?', 'Approve all pending vocabulary?'),
+      description: label(
+        'Tất cả từ vựng đang ở trạng thái Chờ duyệt trong hệ thống sẽ được chuyển sang Đã xuất bản. Thao tác áp dụng cho toàn bộ dữ liệu, không chỉ trang hoặc bộ lọc hiện tại.',
+        'Every vocabulary entry awaiting review will be published. This applies to all matching records, not only the current page or filter.',
+      ),
+      confirmLabel: label('Duyệt toàn bộ', 'Approve all'),
+      tone: 'warning',
+    })) return;
+    setBulkApproving(true);
+    setActionError(null);
+    try {
+      const approved = await adminVocabularyService.approveAllPending();
+      setMessage(approved > 0
+        ? label(`Đã duyệt và xuất bản ${approved} từ vựng.`, `Approved and published ${approved} vocabulary entries.`)
+        : label('Không có từ vựng nào đang chờ duyệt.', 'No vocabulary entries are awaiting review.'));
+      setPage(0);
+      reload();
+    } catch (error) {
+      setActionError(error);
+    } finally {
+      setBulkApproving(false);
+    }
+  }
+
   return <div className="admin-vocabulary-page">
     <Breadcrumb items={[{ label: adminArea ? label('Quản trị', 'Administration') : label('Nội dung', 'Content'), to: adminArea ? ROUTES.ADMIN : ROUTES.CONTENT_COURSES }, { label: label('Từ vựng', 'Vocabulary') }]} />
     <PageHeader eyebrow={<BilingualText vi="Từ vựng tiếng Việt" en="Vietnamese Vocabulary" />} title={<BilingualText vi="Quản lý từ vựng" en="Vocabulary Management" />} description={<BilingualText vi="Quản lý mục từ, nghĩa Việt–Anh và ví dụ song ngữ." en="Manage entries, Vietnamese–English definitions, and bilingual examples." />} actions={<>
+      {mayReview && <button type="button" disabled={bulkApproving} onClick={approveAllPending}><CheckCheck size={16} aria-hidden="true" /><BilingualText vi={bulkApproving ? 'Đang duyệt…' : 'Duyệt toàn bộ'} en={bulkApproving ? 'Approving…' : 'Approve all'} /></button>}
       <Link className="button secondary" to={managementRoutes.regionalLanguage}><BilingualText vi="Từ ngữ vùng miền" en="Regional language" /></Link>
       {mayImport && <Link className="button secondary" to={managementRoutes.importData}><BilingualText vi="Nhập dữ liệu" en="Import data" /></Link>}
       {mayWrite && <button type="button" onClick={() => setModal({ mode: 'create' })}><Plus size={16} aria-hidden="true" /><BilingualText vi="Thêm từ vựng" en="Add vocabulary" /></button>}
     </>} />
+    {actionError && <div className="error state" role="alert"><BilingualText>{actionError.message}</BilingualText></div>}
     {message && <div className="success state" role="status"><BilingualText>{message}</BilingualText></div>}
     <form className="admin-card admin-vocabulary-filters" onSubmit={(event) => { event.preventDefault(); filter('keyword', keyword.trim()); }}>
       <div className="actions">
@@ -102,16 +134,19 @@ export function AdminVocabularyPage() {
           <td><strong>{item.word}</strong>{item.pronunciation && <div className="muted">{item.pronunciation}</div>}</td>
           <td>{item.partOfSpeech}</td>
           <td><span className={`admin-badge ${item.status === 'PUBLISHED' ? 'admin-badge-success' : item.status === 'ARCHIVED' ? 'admin-badge-danger' : 'admin-badge-warning'}`}><BilingualText>{item.status}</BilingualText></span></td>
-          <td><AdminActionGroup><AdminActionButton tone="detail" onClick={() => setModal({ mode: 'view', id: item.id })}><BilingualText>{"Chi tiết"}</BilingualText></AdminActionButton>
-            {mayWrite && item.status === 'DRAFT' && <><AdminActionButton tone="edit" onClick={() => setModal({ mode: 'edit', id: item.id })}><BilingualText vi="Sửa nháp" en="Edit draft" /></AdminActionButton><AdminActionButton tone="submit" onClick={() => transition(item, 'SUBMIT')}><BilingualText vi="Gửi duyệt" en="Submit" /></AdminActionButton></>}
+          <td><AdminActionGroup>
+            {mayWrite && item.status === 'DRAFT' && <AdminActionButton tone="submit" onClick={() => transition(item, 'SUBMIT')}><BilingualText vi="Gửi duyệt" en="Submit" /></AdminActionButton>}
             {mayWrite && item.status === 'PUBLISHED' && <AdminActionButton tone="edit" onClick={async () => { await transition(item, 'REVISE'); setModal({ mode: 'edit', id: item.id }); }}><BilingualText vi="Sửa nháp" en="Revise" /></AdminActionButton>}
-            {mayWrite && ['DRAFT', 'PUBLISHED'].includes(item.status) && <AdminActionButton tone="delete" iconOnly title={label('Lưu trữ từ vựng', 'Archive vocabulary')} aria-label={label('Lưu trữ từ vựng', 'Archive vocabulary')} onClick={() => transition(item, 'ARCHIVE')} />}
+            {mayReview && item.status === 'PENDING_REVIEW' && <><AdminActionButton tone="approve" onClick={() => transition(item, 'APPROVE')}><BilingualText vi="Duyệt" en="Approve" /></AdminActionButton><AdminActionButton tone="warning" onClick={() => transition(item, 'REJECT')}><BilingualText vi="Từ chối" en="Reject" /></AdminActionButton></>}
             {mayWrite && item.status === 'ARCHIVED' && <AdminActionButton tone="restore" onClick={() => transition(item, 'RESTORE')}><BilingualText vi="Khôi phục" en="Restore" /></AdminActionButton>}
-            {mayReview && item.status === 'PENDING_REVIEW' && <><AdminActionButton tone="approve" onClick={() => transition(item, 'APPROVE')}><BilingualText vi="Duyệt" en="Approve" /></AdminActionButton><AdminActionButton tone="edit" onClick={() => transition(item, 'REJECT')}><BilingualText vi="Trả nháp" en="Return" /></AdminActionButton></>}
+            {mayWrite && item.status === 'DRAFT' && <AdminActionButton tone="neutral" onClick={() => setModal({ mode: 'edit', id: item.id })}><BilingualText vi="Sửa" en="Edit" /></AdminActionButton>}
+            <AdminActionButton tone="detail" title={label('Xem chi tiết từ vựng', 'View vocabulary details')} onClick={() => setModal({ mode: 'view', id: item.id })}><BilingualText vi="Xem" en="View" /></AdminActionButton>
+            {mayWrite && ['DRAFT', 'PUBLISHED'].includes(item.status) && <AdminActionButton tone="delete" iconOnly title={label('Lưu trữ từ vựng', 'Archive vocabulary')} aria-label={label('Lưu trữ từ vựng', 'Archive vocabulary')} onClick={() => transition(item, 'ARCHIVE')} />}
           </AdminActionGroup></td>
         </tr>)}</tbody>
       </table><AdminPagination currentPage={page + 1} pageSize={20} totalItems={pageInfo.totalElements} onPageChange={(nextPage) => setPage(nextPage - 1)} /></div>}
     </ResourceState>
     {modal && <AdminVocabularyModal key={`${modal.mode}-${modal.id ?? 'new'}`} {...modal} canEdit={mayWrite} onClose={() => setModal(null)} onSaved={saved} onEdit={() => setModal({ mode: 'edit', id: modal.id })} />}
+    {confirmationDialog}
   </div>;
 }

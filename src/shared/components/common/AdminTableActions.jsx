@@ -7,6 +7,7 @@ const DEFAULT_ICONS = {
   delete: Trash2,
   approve: Check,
   submit: Send,
+  warning: RotateCcw,
   restore: RotateCcw,
   neutral: Pencil,
 };

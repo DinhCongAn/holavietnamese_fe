@@ -27,6 +27,9 @@ client.defaults.adapter = async config => {
   calls.push({ method: config.method, url: config.url, params: config.params, body, signal: config.signal, token: config.headers.Authorization });
   if (failureStatus) reject(config, failureStatus, 'Destination request rejected.');
   const admin = config.url.startsWith('/api/admin/');
+  if (config.url.endsWith('/management')) {
+    return { config, status: 200, statusText: 'OK', headers: {}, data: { code: 1000, success: true, result: { destination: { id: 1, ...body.destination }, exploreContent: body.exploreContent } } };
+  }
   const id = config.url.match(/\/(\d+)$/)?.[1];
   let result;
   if (config.method === 'post' || config.method === 'put') {
@@ -72,6 +75,17 @@ test('Admin combines filters, preserves cancellation, and uses the current Beare
   await destinationService.list({ keyword: '', region: null, status: 'DRAFT' });
   assert.equal(calls[1].url, '/api/destinations');
   assert.deepEqual(calls[1].params, {});
+});
+
+test('Destination management submits fields and every linked content ID in one request', async () => {
+  calls.length = 0;
+  const destination = destinationPayload(draft);
+  const exploreContent = { vocabularyIds: [3], cultureIds: ['culture-hue'], scenarioIds: ['scenario-hue'] };
+  const response = await adminDestinationService.updateManagement(1, destination, exploreContent);
+  assert.equal(calls[0].method, 'put');
+  assert.equal(calls[0].url, '/api/admin/destinations/1/management');
+  assert.deepEqual(calls[0].body, { destination, exploreContent });
+  assert.deepEqual(response.exploreContent, exploreContent);
 });
 
 test('Create and all four status updates use POST/PUT and keep unpublished entries out of Learner', async () => {
