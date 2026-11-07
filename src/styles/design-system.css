@@ -27,8 +27,21 @@
   font-family: 'Be Vietnam Pro', 'Nunito Sans', system-ui, sans-serif !important;
 }
 
-[data-sonner-toast],
-.hola-toast {
+/* Custom unstyled toast wrapper reset (for toast.custom / HolaNotificationToast) */
+[data-sonner-toast][data-styled='false'] {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  display: block !important;
+  min-height: 0 !important;
+  width: auto !important;
+}
+
+[data-sonner-toast]:not([data-styled='false']),
+.hola-toast:not([data-styled='false']) {
   position: relative !important;
   font-family: 'Be Vietnam Pro', 'Nunito Sans', system-ui, sans-serif !important;
   border-radius: 14px !important;
@@ -70,10 +83,62 @@
   line-height: 1.4 !important;
 }
 
+/* Sonner action button override - brand orange gradient instead of default black */
+[data-sonner-toast] [data-button],
+[data-sonner-toast] [data-action],
+[data-sonner-toast] button[data-action] {
+  background: linear-gradient(135deg, #FF7A00 0%, #EA580C 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 9px !important;
+  font-family: 'Be Vietnam Pro', 'Nunito Sans', system-ui, sans-serif !important;
+  font-size: 12.5px !important;
+  font-weight: 650 !important;
+  padding: 6px 14px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.28) !important;
+  transition: all 0.18s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  margin-left: auto !important;
+  flex-shrink: 0 !important;
+}
+
+[data-sonner-toast] [data-button]:hover,
+[data-sonner-toast] [data-action]:hover,
+[data-sonner-toast] button[data-action]:hover {
+  background: linear-gradient(135deg, #FF8A1E 0%, #C2410C 100%) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.38) !important;
+}
+
+[data-sonner-toast] [data-cancel] {
+  background: #f8fafc !important;
+  color: #64748b !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 9px !important;
+  font-family: 'Be Vietnam Pro', 'Nunito Sans', system-ui, sans-serif !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  padding: 6px 12px !important;
+  height: 32px !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+}
+
+[data-sonner-toast] [data-cancel]:hover {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+}
+
 /* Hard reset for Sonner close button to prevent being corrupted by global button CSS */
 [data-sonner-toaster] button[data-close-button],
-[data-sonner-toast] button[data-close-button],
-[data-sonner-toast] [data-close-button],
+[data-sonner-toast]:not([data-styled='false']) button[data-close-button],
+[data-sonner-toast]:not([data-styled='false']) [data-close-button],
 button[data-close-button] {
   position: absolute !important;
   top: 50% !important;
@@ -104,8 +169,8 @@ button[data-close-button] {
 }
 
 [data-sonner-toaster] button[data-close-button]:hover,
-[data-sonner-toast] button[data-close-button]:hover,
-[data-sonner-toast] [data-close-button]:hover,
+[data-sonner-toast]:not([data-styled='false']) button[data-close-button]:hover,
+[data-sonner-toast]:not([data-styled='false']) [data-close-button]:hover,
 button[data-close-button]:hover {
   opacity: 1 !important;
   background: #ffffff !important;
@@ -183,6 +248,82 @@ button[data-close-button]:hover {
 }
 [data-sonner-toast][data-type='info'] [data-icon] {
   color: #2563eb !important;
+}
+
+/* Scoped overrides for HolaNotificationToast to protect against global button styles */
+.hola-notification-card {
+  font-family: 'Be Vietnam Pro', 'Nunito Sans', system-ui, sans-serif !important;
+}
+
+.hola-notification-card button.hola-notification-close {
+  position: absolute !important;
+  top: 10px !important;
+  right: 10px !important;
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  max-width: 24px !important;
+  max-height: 24px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 50% !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+  color: #64748b !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+  transition: all 0.16s ease !important;
+  outline: none !important;
+}
+
+.hola-notification-card button.hola-notification-close:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+  transform: scale(1.08) !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
+}
+
+.hola-notification-card button.hola-notification-close svg {
+  width: 13px !important;
+  height: 13px !important;
+  stroke: currentColor !important;
+}
+
+.hola-notification-card button.hola-notification-action {
+  min-height: 32px !important;
+  height: 32px !important;
+  max-height: 32px !important;
+  padding: 0 14px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  background: linear-gradient(135deg, #FF7A00 0%, #EA580C 100%) !important;
+  color: #ffffff !important;
+  font-family: 'Be Vietnam Pro', 'Nunito Sans', system-ui, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.28) !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+  white-space: nowrap !important;
+}
+
+.hola-notification-card button.hola-notification-action:hover {
+  background: linear-gradient(135deg, #FF8A1E 0%, #C2410C 100%) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 10px rgba(234, 88, 12, 0.38) !important;
+}
+
+.hola-notification-card button.hola-notification-action:active {
+  transform: translateY(0) scale(0.98) !important;
 }
 @media(max-width:480px){.resource-skeleton{padding:20px}.confirm-dialog{grid-template-columns:1fr;padding:22px}.confirm-dialog__actions{display:grid;grid-template-columns:1fr 1fr}.confirm-dialog__actions button{width:100%}}
 .fatal-error{display:flex;min-height:100svh;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;background:radial-gradient(circle at 50% 30%,var(--color-surface),var(--color-cream) 58%)}.fatal-error__icon{display:grid;place-items:center;width:58px;height:58px;margin-bottom:20px;border-radius:18px;color:var(--color-red);background:var(--color-red-soft);box-shadow:0 14px 36px rgba(166,42,36,.13)}.fatal-error .eyebrow{margin-bottom:8px}.fatal-error h1{margin-bottom:10px}.fatal-error>p:not(.eyebrow){max-width:520px;margin:0 0 26px;color:var(--color-muted)}
@@ -741,408 +882,6 @@ summary:focus,
   border-color: #EA580C !important;
 }
 
-/* ==========================================================================
-   Clean Notifications System - Pure White Minimalist Palette
-   ========================================================================== */
-.notification-menu,
-.notification-dropdown,
-.notifications-page,
-.notification-item {
-  -webkit-tap-highlight-color: transparent !important;
-}
 
-/* Ensure no colored borders, rings, or outlines on any interaction state */
-.notification-menu *:focus,
-.notification-menu *:focus-visible,
-.notification-menu *:active,
-.notification-menu__trigger:focus,
-.notification-menu__trigger:focus-visible,
-.notification-menu__trigger:active,
-.notification-dropdown *:focus,
-.notification-dropdown *:focus-visible,
-.notification-dropdown *:active,
-.notification-item:focus,
-.notification-item:focus-visible,
-.notification-item:active,
-.notification-item:visited,
-.notification-item.selected,
-.notification-item.active,
-.notifications-page *:focus,
-.notifications-page *:focus-visible,
-.notifications-page *:active,
-.notifications-page article:focus,
-.notifications-page article:focus-visible,
-.notifications-page article:active {
-  outline: none !important;
-  outline-offset: 0 !important;
-  box-shadow: none !important;
-  -webkit-tap-highlight-color: transparent !important;
-}
 
-/* Base background for notifications is pure white */
-.notification-dropdown,
-.notification-dropdown header,
-.notification-dropdown footer,
-.notification-item,
-.notifications-page section,
-.notifications-page article {
-  background-color: #FFFFFF !important;
-  border-color: #E5E7EB !important;
-}
-
-/* Hover state: extremely subtle gray #F8FAFC */
-.notification-item:hover,
-.notifications-page article:hover {
-  background-color: #F8FAFC !important;
-  border-color: #E5E7EB !important;
-}
-
-/* Active / Focus / Selected / Pressed: strictly white #FFFFFF, never orange/red/blue */
-.notification-item:active,
-.notification-item:focus,
-.notification-item:focus-visible,
-.notification-item.selected,
-.notification-item.active,
-.notifications-page article:active,
-.notifications-page article:focus,
-.notifications-page article:focus-visible,
-.notifications-page article.selected {
-  background-color: #FFFFFF !important;
-  border-color: #E5E7EB !important;
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-/* Tabs: strictly white background */
-.notification-dropdown button[role="tab"],
-.notifications-page button[role="tab"] {
-  background-color: #FFFFFF !important;
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-.notification-dropdown button[role="tab"]:hover,
-.notifications-page button[role="tab"]:hover {
-  background-color: #F8FAFC !important;
-}
-
-.notification-dropdown button[role="tab"]:active,
-.notification-dropdown button[role="tab"]:focus,
-.notifications-page button[role="tab"]:active,
-.notifications-page button[role="tab"]:focus {
-  background-color: #FFFFFF !important;
-  outline: none !important;
-  box-shadow: none !important;
-}
-\n
-/* ==========================================================================
-   Clean Notifications System - SaaS Minimalist Clean Palette
-   ========================================================================== */
-.notification-menu,
-.notification-dropdown,
-.notifications-page,
-.notification-item {
-  -webkit-tap-highlight-color: transparent !important;
-}
-
-/* Custom Thin Elegant Scrollbar for Notification Dropdown */
-.notification-scroll::-webkit-scrollbar {
-  width: 5px;
-}
-.notification-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-.notification-scroll::-webkit-scrollbar-thumb {
-  background: #E2E8F0;
-  border-radius: 9999px;
-}
-.notification-scroll::-webkit-scrollbar-thumb:hover {
-  background: #CBD5E1;
-}
-.notification-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: #E2E8F0 transparent;
-}
-
-/* Ensure bilingual-text does not cause inline-grid line-height collisions */
-.notification-dropdown .bilingual-text,
-.notifications-page .bilingual-text {
-  display: inline !important;
-  text-align: inherit !important;
-  line-height: inherit !important;
-  max-width: 100% !important;
-}
-.notification-dropdown button:has(.bilingual-text),
-.notifications-page button:has(.bilingual-text) {
-  min-height: unset !important;
-  text-align: left !important;
-}
-
-/* Ensure no colored borders, rings, or outlines on any interaction state */
-.notification-menu *:focus,
-.notification-menu *:focus-visible,
-.notification-menu *:active,
-.notification-menu__trigger:focus,
-.notification-menu__trigger:focus-visible,
-.notification-menu__trigger:active,
-.notification-dropdown *:focus,
-.notification-dropdown *:focus-visible,
-.notification-dropdown *:active,
-.notification-item:focus,
-.notification-item:focus-visible,
-.notification-item:active,
-.notification-item:visited,
-.notification-item.selected,
-.notification-item.active,
-.notifications-page *:focus,
-.notifications-page *:focus-visible,
-.notifications-page *:active,
-.notifications-page article:focus,
-.notifications-page article:focus-visible,
-.notifications-page article:active {
-  outline: none !important;
-  outline-offset: 0 !important;
-  box-shadow: none !important;
-  -webkit-tap-highlight-color: transparent !important;
-}
-
-/* Base background for notifications is pure white */
-.notification-dropdown,
-.notification-dropdown header,
-.notification-dropdown footer,
-.notification-item,
-.notifications-page section,
-.notifications-page article {
-  background-color: #FFFFFF !important;
-  border-color: #E5E7EB !important;
-}
-
-/* Hover state: extremely subtle gray #F8FAFC */
-.notification-item:hover,
-.notifications-page article:hover {
-  background-color: #F8FAFC !important;
-  border-color: #E5E7EB !important;
-}
-
-/* Active / Focus / Selected / Pressed: strictly white #FFFFFF, never orange/red/blue */
-.notification-item:active,
-.notification-item:focus,
-.notification-item:focus-visible,
-.notification-item.active,
-.notification-item.selected,
-.notifications-page article:active,
-.notifications-page article:focus,
-.notifications-page article:focus-visible {
-  background-color: #FFFFFF !important;
-  border-color: #E5E7EB !important;
-}
-\n
-/* ==========================================================================
-   Clean Notifications System - SaaS Minimalist Clean Palette
-   ========================================================================== */
-.notification-menu,
-.notification-dropdown,
-.notifications-page,
-.notification-item {
-  -webkit-tap-highlight-color: transparent !important;
-}
-
-/* Custom Thin Elegant Scrollbar for Notification Dropdown */
-.notification-scroll::-webkit-scrollbar {
-  width: 5px;
-}
-.notification-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-.notification-scroll::-webkit-scrollbar-thumb {
-  background: #E2E8F0;
-  border-radius: 9999px;
-}
-.notification-scroll::-webkit-scrollbar-thumb:hover {
-  background: #CBD5E1;
-}
-.notification-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: #E2E8F0 transparent;
-}
-
-/* Ensure bilingual-text does not cause inline-grid line-height collisions */
-.notification-dropdown .bilingual-text,
-.notifications-page .bilingual-text {
-  display: inline !important;
-  text-align: inherit !important;
-  line-height: inherit !important;
-  max-width: 100% !important;
-}
-.notification-dropdown button:has(.bilingual-text),
-.notifications-page button:has(.bilingual-text) {
-  min-height: unset !important;
-  text-align: left !important;
-}
-
-/* Reset buttons and interactive elements in notifications to prevent framework overrides */
-.notification-dropdown button,
-.notifications-page button {
-  text-align: inherit;
-}
-
-/* Ensure no colored borders, rings, or outlines on any interaction state */
-.notification-menu *:focus,
-.notification-menu *:focus-visible,
-.notification-menu *:active,
-.notification-menu__trigger:focus,
-.notification-menu__trigger:focus-visible,
-.notification-menu__trigger:active,
-.notification-dropdown *:focus,
-.notification-dropdown *:focus-visible,
-.notification-dropdown *:active,
-.notification-item:focus,
-.notification-item:focus-visible,
-.notification-item:active,
-.notification-item:visited,
-.notification-item.selected,
-.notification-item.active,
-.notifications-page *:focus,
-.notifications-page *:focus-visible,
-.notifications-page *:active,
-.notifications-page article:focus,
-.notifications-page article:focus-visible,
-.notifications-page article:active {
-  outline: none !important;
-  outline-offset: 0 !important;
-  box-shadow: none !important;
-  -webkit-tap-highlight-color: transparent !important;
-}
-
-/* Base background for notifications is pure white, border is #E2E8F0 */
-.notification-dropdown,
-.notification-dropdown header,
-.notification-dropdown footer,
-.notification-item,
-.notifications-page section,
-.notifications-page article {
-  background-color: #FFFFFF !important;
-  border-color: #E2E8F0 !important;
-}
-
-/* Hover state: subtle light slate #F8FAFC */
-.notification-item:hover,
-.notifications-page article:hover {
-  background-color: #F8FAFC !important;
-  border-color: #E2E8F0 !important;
-}
-
-/* Active / Focus / Selected / Pressed: strictly white #FFFFFF, never orange/red/blue */
-.notification-item:active,
-.notification-item:focus,
-.notification-item:focus-visible,
-.notification-item.active,
-.notification-item.selected,
-.notifications-page article:active,
-.notifications-page article:focus,
-.notifications-page article:focus-visible {
-  background-color: #FFFFFF !important;
-  border-color: #E2E8F0 !important;
-}
-\n
-/* ==========================================================================
-   Clean Notifications System - Pure White Minimalist Palette
-   Explicit Override: Prevent heritage.css button selector from turning notifications orange
-   ========================================================================== */
-.notifications-page,
-.notifications-page button,
-.notifications-page .button,
-.notifications-page article,
-.notifications-page .notification-card,
-.notifications-page .notification-item,
-.notification-dropdown,
-.notification-dropdown button,
-.notification-dropdown .button,
-.notification-dropdown .notification-item,
-.notification-menu,
-.notification-menu__trigger,
-.notification-item {
-  background-color: #FFFFFF !important;
-  background: #FFFFFF !important;
-  border-color: #E2E8F0 !important;
-  color: #1E293B !important;
-  min-height: unset !important;
-  box-shadow: none !important;
-  outline: none !important;
-  -webkit-tap-highlight-color: transparent !important;
-}
-
-.notifications-page button:hover,
-.notifications-page .button:hover,
-.notifications-page article:hover,
-.notifications-page .notification-card:hover,
-.notifications-page .notification-item:hover,
-.notification-dropdown button:hover,
-.notification-dropdown .button:hover,
-.notification-dropdown .notification-item:hover,
-.notification-menu__trigger:hover,
-.notification-item:hover {
-  background-color: #F8FAFC !important;
-  background: #F8FAFC !important;
-  border-color: #E2E8F0 !important;
-  color: #1E293B !important;
-}
-
-.notifications-page button:active,
-.notifications-page article:active,
-.notifications-page .notification-card:active,
-.notification-dropdown button:active,
-.notification-dropdown .notification-item:active,
-.notification-item:active {
-  background-color: #FFFFFF !important;
-  background: #FFFFFF !important;
-  border-color: #E2E8F0 !important;
-}
-
-/* Ensure unread accent dot is orange, but NEVER background of card or item */
-.notification-unread-dot {
-  background-color: #F97316 !important;
-  background: #F97316 !important;
-}
-
-/* Icon container */
-.notification-icon-box {
-  background-color: #F8FAFC !important;
-  background: #F8FAFC !important;
-  border-color: #E2E8F0 !important;
-  color: #64748B !important;
-}
-
-/* Custom Thin Elegant Scrollbar for Notification Dropdown */
-.notification-scroll::-webkit-scrollbar {
-  width: 5px;
-}
-.notification-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-.notification-scroll::-webkit-scrollbar-thumb {
-  background: #E2E8F0;
-  border-radius: 9999px;
-}
-.notification-scroll::-webkit-scrollbar-thumb:hover {
-  background: #CBD5E1;
-}
-.notification-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: #E2E8F0 transparent;
-}
-
-/* Ensure bilingual-text does not cause inline-grid line-height collisions */
-.notification-dropdown .bilingual-text,
-.notifications-page .bilingual-text {
-  display: inline !important;
-  text-align: inherit !important;
-  line-height: inherit !important;
-  max-width: 100% !important;
-}
-.notification-dropdown button:has(.bilingual-text),
-.notifications-page button:has(.bilingual-text) {
-  min-height: unset !important;
-  text-align: left !important;
-}
 .activity-card.activity-no-image .activity-intro{grid-template-columns:minmax(0,760px);justify-content:center;text-align:justify;text-justify:inter-word}.activity-card.activity-no-image .activity-intro>div{width:100%;margin-inline:auto}.activity-card.activity-no-image .rich-text{margin-inline:auto}.activity-card.activity-has-image .activity-intro{text-align:left}

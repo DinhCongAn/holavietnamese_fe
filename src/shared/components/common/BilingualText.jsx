@@ -102,8 +102,23 @@ const patterns = [
   [/^Cột lựa chọn (\d+)$/, match => `Column for option ${match[1]}`],
   [/^Đưa từ (\d+) lên$/, match => `Move word ${match[1]} up`],
   [/^Đưa từ (\d+) xuống$/, match => `Move word ${match[1]} down`],
-  [/^Mục tiêu (\d+)\.\.\.$/, match => `Objective ${match[1]}...`],
+  [/^Mục tiêu (\d+)\.\.\.$/, match => `Objective ${match[1]}`],
   [/^Bỏ liên kết (.+)$/, match => `Unlink ${match[1]}`],
+];
+
+const englishPatterns = [
+  [
+    /^Ready for today(?:'s|’s) Vietnamese lesson\??$/i,
+    () => ['Sẵn sàng cho bài học tiếng Việt hôm nay?', "Ready for today's Vietnamese lesson?"],
+  ],
+  [
+    /^Continue ["“](.+)["”] and keep your learning streak going\.?$/i,
+    match => [`Tiếp tục khóa học "${match[1]}" để duy trì chuỗi học tập của bạn.`, `Continue "${match[1]}" and keep your learning streak going.`],
+  ],
+  [
+    /^Keep your learning streak burning every day\.?$/i,
+    () => ['Duy trì ngọn lửa học tập mỗi ngày.', 'Keep your learning streak burning every day.'],
+  ],
 ];
 
 const REVERSE_TRANSLATIONS = {};
@@ -117,8 +132,15 @@ for (const key of Object.keys(UI_TRANSLATIONS)) {
 export function bilingualPair(value) {
   if (typeof value !== 'string') return null;
   const text = value.replace(/\s+/g, ' ').trim();
+  const normalizedApos = text.replace(/’/g, "'");
   if (UI_TRANSLATIONS[text]) return UI_TRANSLATIONS[text];
+  if (UI_TRANSLATIONS[normalizedApos]) return UI_TRANSLATIONS[normalizedApos];
   if (REVERSE_TRANSLATIONS[text]) return REVERSE_TRANSLATIONS[text];
+  if (REVERSE_TRANSLATIONS[normalizedApos]) return REVERSE_TRANSLATIONS[normalizedApos];
+  for (const [pattern, getPair] of englishPatterns) {
+    const match = text.match(pattern);
+    if (match) return getPair(match);
+  }
   for (const [pattern, translate] of patterns) {
     const match = text.match(pattern);
     if (match) return [/^\d+ min$/.test(text) ? text.replace(' min', ' phút') : text, translate(match)];

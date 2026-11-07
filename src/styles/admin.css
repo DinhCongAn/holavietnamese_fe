@@ -296,6 +296,12 @@
   margin-bottom: 24px;
 }
 
+/* Ensure filter toolbars always sit above tables and empty state cards */
+form.admin-card {
+  position: relative;
+  z-index: 40;
+}
+
 .admin-card {
   padding: 24px;
   border-radius: 14px;
@@ -361,31 +367,93 @@
   background: #FFFFFF;
 }
 
+/* Review queue navigation tabs */
+.review-tabs-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #E2E8F0;
+  margin: 8px 0 20px;
+  flex-wrap: wrap;
+}
+
+.review-tabs-group {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.admin-content button.review-tab-btn,
+button.review-tab-btn {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 2.5px solid transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: #64748B !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  padding: 12px 2px !important;
+  min-height: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  margin-bottom: -1px !important;
+  transition: all 0.15s ease !important;
+  white-space: nowrap !important;
+}
+
+.admin-content button.review-tab-btn:hover,
+button.review-tab-btn:hover {
+  background: transparent !important;
+  color: #1E293B !important;
+  border-color: transparent !important;
+  border-bottom: 2.5px solid #CBD5E1 !important;
+}
+
+.admin-content button.review-tab-btn.is-active,
+button.review-tab-btn.is-active {
+  background: transparent !important;
+  color: #EA580C !important;
+  border-color: transparent !important;
+  border-bottom: 2.5px solid #EA580C !important;
+  font-weight: 700 !important;
+}
+
+.review-tabs-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #94A3B8;
+  padding-bottom: 6px;
+}
+
 .course-review-tabs {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 10px;
-  margin: 22px 0 0;
-  padding: 16px;
+  gap: 16px;
+  margin: 18px 0 16px;
+  padding: 12px 18px;
   border: 1px solid var(--border-color, #E8E5DF);
-  border-radius: 12px;
-  background: var(--bg-neutral, #F8FAFC);
+  border-radius: 14px;
+  background: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 .course-review-tabs p {
-  flex: 1 1 280px;
-  margin: 0 0 0 6px;
+  margin: 0;
   color: var(--text-secondary, #64748B);
-  font-size: 12px;
-}
-
-.admin-content .course-review-tabs button.is-active {
-  background: #FFFFFF;
-  font-weight: 700;
-  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.1);
-  border-color: var(--primary-orange, #F97316);
-  color: var(--primary-orange, #F97316);
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .course-review-row td {
@@ -746,22 +814,294 @@
   box-shadow: 0 1px 2px rgb(15 23 42 / 5%);
 }
 
-.admin-content .admin-row-action:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 3px 8px rgb(15 23 42 / 10%); }
+.admin-row-action:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 3px 8px rgb(15 23 42 / 10%); }
+.admin-row-action--detail { color: #0f766e; background: #f0fdfa; border-color: #99f6e4; }
+.admin-row-action--edit { color: #c2410c; background: #fff7ed; border-color: #fed7aa; }
+.admin-row-action--delete { color: #dc2626; background: #fef2f2; border-color: #fecaca; }
+.admin-row-action--approve { color: #15803d; background: #f0fdf4; border-color: #bbf7d0; }
+.admin-row-action--submit { color: #1d4ed8; background: #eff6ff; border-color: #bfdbfe; }
+.admin-row-action--warning { color: #b45309; background: #fffbeb; border-color: #fde68a; }
+.admin-row-action--restore { color: #047857; background: #ecfdf5; border-color: #a7f3d0; }
+.admin-row-action--neutral { color: #334155; background: #ffffff; border-color: #cbd5e1; }
+.admin-row-action--icon { width: 32px; min-width: 32px; padding: 0; }
+.admin-row-action:disabled { cursor: not-allowed; opacity: .55; transform: none; }
+
+
+/* High-specificity table action button overrides */
+.admin-content .admin-row-action,
+.admin-content table .admin-row-action,
+.admin-content table button.admin-row-action,
+.admin-content button.admin-row-action,
+.admin-row-action {
+  min-height: 32px !important;
+  height: 32px !important;
+  max-height: 32px !important;
+  padding: 0 10px !important;
+  min-width: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #334155 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 5%) !important;
+  transition: all 0.15s ease !important;
+}
+
+.admin-content .admin-row-action:hover:not(:disabled),
+.admin-content table .admin-row-action:hover:not(:disabled),
+.admin-content button.admin-row-action:hover:not(:disabled),
+.admin-row-action:hover:not(:disabled) {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 8px rgb(15 23 42 / 10%) !important;
+}
+
 .admin-content .admin-row-action--detail,
-.admin-content .admin-row-action--detail:hover:not(:disabled) { color: #0f766e; background: #f0fdfa; border-color: #99f6e4; }
+.admin-content table .admin-row-action--detail,
+.admin-content button.admin-row-action--detail,
+.admin-row-action--detail {
+  color: #0f766e !important;
+  background: #f0fdfa !important;
+  border-color: #99f6e4 !important;
+}
+.admin-content .admin-row-action--detail:hover:not(:disabled),
+.admin-content table .admin-row-action--detail:hover:not(:disabled),
+.admin-content button.admin-row-action--detail:hover:not(:disabled),
+.admin-row-action--detail:hover:not(:disabled) {
+  color: #0d5f58 !important;
+  background: #ccfbf1 !important;
+  border-color: #5eead4 !important;
+}
+
 .admin-content .admin-row-action--edit,
-.admin-content .admin-row-action--edit:hover:not(:disabled) { color: #c2410c; background: #fff7ed; border-color: #fed7aa; }
+.admin-content table .admin-row-action--edit,
+.admin-content button.admin-row-action--edit,
+.admin-row-action--edit {
+  color: #c2410c !important;
+  background: #fff7ed !important;
+  border-color: #fed7aa !important;
+}
+.admin-content .admin-row-action--edit:hover:not(:disabled),
+.admin-content table .admin-row-action--edit:hover:not(:disabled),
+.admin-content button.admin-row-action--edit:hover:not(:disabled),
+.admin-row-action--edit:hover:not(:disabled) {
+  color: #9a3412 !important;
+  background: #ffedd5 !important;
+  border-color: #fdba74 !important;
+}
+
 .admin-content .admin-row-action--delete,
-.admin-content .admin-row-action--delete:hover:not(:disabled) { color: #dc2626; background: #fef2f2; border-color: #fecaca; }
+.admin-content table .admin-row-action--delete,
+.admin-content button.admin-row-action--delete,
+.admin-row-action--delete {
+  color: #dc2626 !important;
+  background: #fef2f2 !important;
+  border-color: #fecaca !important;
+}
+.admin-content .admin-row-action--delete:hover:not(:disabled),
+.admin-content table .admin-row-action--delete:hover:not(:disabled),
+.admin-content button.admin-row-action--delete:hover:not(:disabled),
+.admin-row-action--delete:hover:not(:disabled) {
+  color: #b91c1c !important;
+  background: #fee2e2 !important;
+  border-color: #fca5a5 !important;
+}
+
 .admin-content .admin-row-action--approve,
-.admin-content .admin-row-action--approve:hover:not(:disabled) { color: #15803d; background: #f0fdf4; border-color: #bbf7d0; }
+.admin-content table .admin-row-action--approve,
+.admin-content button.admin-row-action--approve,
+.admin-row-action--approve {
+  color: #15803d !important;
+  background: #f0fdf4 !important;
+  border-color: #bbf7d0 !important;
+}
+.admin-content .admin-row-action--approve:hover:not(:disabled),
+.admin-content table .admin-row-action--approve:hover:not(:disabled),
+.admin-content button.admin-row-action--approve:hover:not(:disabled),
+.admin-row-action--approve:hover:not(:disabled) {
+  color: #166534 !important;
+  background: #dcfce7 !important;
+  border-color: #86efac !important;
+}
+
 .admin-content .admin-row-action--submit,
-.admin-content .admin-row-action--submit:hover:not(:disabled) { color: #1d4ed8; background: #eff6ff; border-color: #bfdbfe; }
+.admin-content table .admin-row-action--submit,
+.admin-content button.admin-row-action--submit,
+.admin-row-action--submit {
+  color: #1d4ed8 !important;
+  background: #eff6ff !important;
+  border-color: #bfdbfe !important;
+}
+.admin-content .admin-row-action--submit:hover:not(:disabled),
+.admin-content table .admin-row-action--submit:hover:not(:disabled),
+.admin-content button.admin-row-action--submit:hover:not(:disabled),
+.admin-row-action--submit:hover:not(:disabled) {
+  color: #1e40af !important;
+  background: #dbeafe !important;
+  border-color: #93c5fd !important;
+}
+
 .admin-content .admin-row-action--warning,
-.admin-content .admin-row-action--warning:hover:not(:disabled) { color: #b45309; background: #fffbeb; border-color: #fde68a; }
+.admin-content table .admin-row-action--warning,
+.admin-content button.admin-row-action--warning,
+.admin-row-action--warning {
+  color: #b45309 !important;
+  background: #fffbeb !important;
+  border-color: #fde68a !important;
+}
+.admin-content .admin-row-action--warning:hover:not(:disabled),
+.admin-content table .admin-row-action--warning:hover:not(:disabled),
+.admin-content button.admin-row-action--warning:hover:not(:disabled),
+.admin-row-action--warning:hover:not(:disabled) {
+  color: #92400e !important;
+  background: #fef3c7 !important;
+  border-color: #fcd34d !important;
+}
+
 .admin-content .admin-row-action--restore,
-.admin-content .admin-row-action--restore:hover:not(:disabled) { color: #047857; background: #ecfdf5; border-color: #a7f3d0; }
+.admin-content table .admin-row-action--restore,
+.admin-content button.admin-row-action--restore,
+.admin-row-action--restore {
+  color: #047857 !important;
+  background: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+}
+.admin-content .admin-row-action--restore:hover:not(:disabled),
+.admin-content table .admin-row-action--restore:hover:not(:disabled),
+.admin-content button.admin-row-action--restore:hover:not(:disabled),
+.admin-row-action--restore:hover:not(:disabled) {
+  color: #065f46 !important;
+  background: #d1fae5 !important;
+  border-color: #6ee7b7 !important;
+}
+
 .admin-content .admin-row-action--neutral,
-.admin-content .admin-row-action--neutral:hover:not(:disabled) { color: #334155; background: #ffffff; border-color: #cbd5e1; }
-.admin-content .admin-row-action--icon { width: 32px; min-width: 32px; padding: 0; }
-.admin-content .admin-row-action:disabled { cursor: not-allowed; opacity: .55; transform: none; }
+.admin-content table .admin-row-action--neutral,
+.admin-content button.admin-row-action--neutral,
+.admin-row-action--neutral {
+  color: #334155 !important;
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+.admin-content .admin-row-action--neutral:hover:not(:disabled),
+.admin-content table .admin-row-action--neutral:hover:not(:disabled),
+.admin-content button.admin-row-action--neutral:hover:not(:disabled),
+.admin-row-action--neutral:hover:not(:disabled) {
+  color: #1e293b !important;
+  background: #f8fafc !important;
+  border-color: #94a3b8 !important;
+}
+
+.admin-content .admin-row-action--icon,
+.admin-content table .admin-row-action--icon,
+.admin-content button.admin-row-action--icon,
+.admin-row-action--icon {
+  width: 32px !important;
+  min-width: 32px !important;
+  padding: 0 !important;
+}
+
+.admin-content .admin-row-action:disabled,
+.admin-content table .admin-row-action:disabled,
+.admin-content button.admin-row-action:disabled,
+.admin-row-action:disabled {
+  cursor: not-allowed !important;
+  opacity: .55 !important;
+  transform: none !important;
+}
+
+
+/* Admin custom select trigger styling */
+.admin-content button.admin-select-trigger,
+button.admin-select-trigger {
+  min-height: 40px !important;
+  max-height: 40px !important;
+  height: 40px !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  padding: 0 12px 0 14px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #1e293b !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  outline: none !important;
+  transition: all 0.15s ease !important;
+}
+
+.admin-content button.admin-select-trigger:hover,
+button.admin-select-trigger:hover {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+.admin-content button.admin-select-trigger.is-open,
+button.admin-select-trigger.is-open {
+  border-color: var(--primary-orange, #f97316) !important;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15) !important;
+}
+
+
+/* Admin modal custom buttons */
+.admin-content button.admin-modal-btn-cancel,
+button.admin-modal-btn-cancel {
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  padding: 0 16px !important;
+  border-radius: 10px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+  color: #475569 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  transition: all 0.15s ease !important;
+}
+
+.admin-content button.admin-modal-btn-cancel:hover:not(:disabled),
+button.admin-modal-btn-cancel:hover:not(:disabled) {
+  background: #f8fafc !important;
+  color: #1e293b !important;
+  border-color: #cbd5e1 !important;
+}
+
+.admin-content button.admin-modal-btn-save,
+button.admin-modal-btn-save {
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  padding: 0 20px !important;
+  border-radius: 10px !important;
+  border: none !important;
+  background: linear-gradient(135deg, #ff7a00 0%, #ea580c 100%) !important;
+  color: #ffffff !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.25) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  transition: all 0.15s ease !important;
+}
+
+.admin-content button.admin-modal-btn-save:hover:not(:disabled),
+button.admin-modal-btn-save:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.35) !important;
+  transform: translateY(-1px) !important;
+}

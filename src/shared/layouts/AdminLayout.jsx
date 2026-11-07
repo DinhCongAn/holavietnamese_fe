@@ -62,11 +62,13 @@ export function AdminLayout() {
         return isAdmin;
       }).map(([to, label]) => {
         let finalTo = to;
-        if (isContentManager && !isAdmin) {
-          if (to === ROUTES.ADMIN_VOCABULARY) finalTo = ROUTES.CONTENT_VOCABULARY;
-          if (to === ROUTES.ADMIN_DESTINATIONS) finalTo = ROUTES.CONTENT_DESTINATIONS;
+        if (isAdmin) {
+          if (to === ROUTES.CONTENT_COURSES) finalTo = ROUTES.ADMIN_COURSES;
+        } else if (isContentManager && !isAdmin) {
           if (to === ROUTES.ADMIN_CULTURE) finalTo = ROUTES.CONTENT_CULTURE;
           if (to === ROUTES.ADMIN_CULTURE_CATEGORIES) finalTo = ROUTES.CONTENT_CULTURE_CATEGORIES;
+          if (to === ROUTES.ADMIN_VOCABULARY) finalTo = ROUTES.CONTENT_VOCABULARY;
+          if (to === ROUTES.ADMIN_DESTINATIONS) finalTo = ROUTES.CONTENT_DESTINATIONS;
         }
         let resolvedLabel = label;
         if (to === ROUTES.CONTENT_COURSES) {
@@ -82,10 +84,15 @@ export function AdminLayout() {
   }).filter(group => group.links.length > 0);
 
   const location = useLocation();
-  const contentFlowPrefixes = [ROUTES.CONTENT_COURSES, ROUTES.CONTENT_LESSONS, ROUTES.CONTENT_QUESTIONS, ROUTES.CONTENT_QUIZZES];
+  const contentFlowPrefixes = [
+    ROUTES.CONTENT_COURSES, ROUTES.CONTENT_LESSONS, ROUTES.CONTENT_QUESTIONS, ROUTES.CONTENT_QUIZZES,
+    ROUTES.ADMIN_COURSES, ROUTES.ADMIN_LESSONS, ROUTES.ADMIN_QUESTIONS, ROUTES.ADMIN_QUIZZES,
+  ];
   const inContentFlow = contentFlowPrefixes.some(prefix => location.pathname === prefix || location.pathname.startsWith(prefix + '/'));
   const current = isContentManager && !isAdmin && inContentFlow
     ? 'Biên soạn khóa học'
+    : isAdmin && (location.pathname === ROUTES.ADMIN_COURSES || location.pathname.startsWith(`${ROUTES.ADMIN_COURSES}/`))
+    ? 'Duyệt khóa học'
     : visibleGroups.flatMap(group => group.links).find(([to]) => location.pathname === to || (to !== '/admin' && location.pathname.startsWith(to + '/')))?.[1] || (isAdmin ? 'Quản trị hệ thống' : 'Quản lý nội dung');
 
   return (
@@ -106,11 +113,17 @@ export function AdminLayout() {
                   to={to}
                   end={to === '/admin'}
                   onClick={() => setOpen(false)}
-                  className={({ isActive }) => `admin-nav-item ${isActive || (isContentManager && !isAdmin && to === ROUTES.CONTENT_COURSES && inContentFlow) ? 'active' : ''}`}
+                  className={({ isActive }) => `admin-nav-item ${
+                    isActive ||
+                    (isContentManager && !isAdmin && to === ROUTES.CONTENT_COURSES && inContentFlow) ||
+                    (isAdmin && to === ROUTES.ADMIN_COURSES && (location.pathname === ROUTES.ADMIN_COURSES || location.pathname.startsWith(`${ROUTES.ADMIN_COURSES}/`)))
+                      ? 'active'
+                      : ''
+                  }`}
                 >
                   <BilingualText
                     vi={label}
-                    en={label === 'Biên soạn khóa học' ? 'Course authoring' : label === 'Quản lý bài viết' ? 'Manage articles' : undefined}
+                    en={label === 'Biên soạn khóa học' ? 'Course authoring' : label === 'Duyệt khóa học' ? 'Course review' : label === 'Quản lý bài viết' ? 'Manage articles' : undefined}
                   />
                 </NavLink>
               ))}
@@ -143,7 +156,7 @@ export function AdminLayout() {
                 <span className="admin-breadcrumb-separator">/</span>
               </span>
               <strong className="admin-breadcrumb-current">
-                <BilingualText vi={current} en={current === 'Biên soạn khóa học' ? 'Course authoring' : undefined} />
+                <BilingualText vi={current} en={current === 'Biên soạn khóa học' ? 'Course authoring' : current === 'Duyệt khóa học' ? 'Course review' : undefined} />
               </strong>
             </div>
           </div>

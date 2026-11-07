@@ -68,7 +68,7 @@ test('content authoring navigation belongs to Content Manager and Admin receives
   assert.doesNotMatch(contentPages, /isAdmin && kind === 'quizzes'/);
 
   assert.doesNotMatch(quizPages, /<Navigate to="\/content\/courses" replace\/>/);
-  assert.match(quizPages, /const canEdit=isContentManager&&!isAdmin/);
+  assert.match(quizPages, /const canEdit\s*=\s*isContentManager\s*&&\s*!isAdmin/);
   assert.match(quizPages, /Tạo và quản lý câu hỏi dùng trong các bài học và quiz của bạn/);
 });
 

@@ -238,25 +238,27 @@ export function AppRouter() {
                 <Route path={ROUTES.CONTENT_QUIZZES} element={<AdminContentListPage kind="quizzes" />} />
                 <Route path={ROUTES.CONTENT_QUIZ_BUILDER} element={<AdminQuizBuilderPage />} />
                 <Route path={ROUTES.CONTENT_QUIZ_PREVIEW} element={<AdminQuizPreviewPage />} />
-                <Route path="/admin/courses" element={<LegacyRouteRedirect to={ROUTES.CONTENT_COURSES} />} />
-                <Route path="/admin/courses/new" element={<LegacyRouteRedirect to={ROUTES.CONTENT_COURSE_CREATE} />} />
-                <Route path="/admin/courses/:courseId" element={<LegacyRouteRedirect to={ROUTES.CONTENT_COURSE_BUILDER} />} />
-                <Route path="/admin/courses/:courseId/preview" element={<LegacyRouteRedirect to={ROUTES.CONTENT_COURSE_PREVIEW} />} />
-                <Route path="/admin/lessons" element={<LegacyRouteRedirect to={ROUTES.CONTENT_LESSONS} />} />
-                <Route path="/admin/lessons/:lessonId" element={<LegacyRouteRedirect to={ROUTES.CONTENT_LESSON_BUILDER} />} />
-                <Route path="/admin/lessons/:lessonId/preview" element={<LegacyRouteRedirect to={ROUTES.CONTENT_LESSON_PREVIEW} />} />
-                <Route path="/admin/questions" element={<LegacyRouteRedirect to={ROUTES.CONTENT_QUESTIONS} />} />
-                <Route path="/admin/quizzes" element={<LegacyRouteRedirect to={ROUTES.CONTENT_QUIZZES} />} />
-                <Route path="/admin/quizzes/:quizId" element={<LegacyRouteRedirect to={ROUTES.CONTENT_QUIZ_BUILDER} />} />
-                <Route path="/admin/quizzes/:quizId/preview" element={<LegacyRouteRedirect to={ROUTES.CONTENT_QUIZ_PREVIEW} />} />
+                <Route path={ROUTES.ADMIN_COURSES} element={<AdminContentListPage kind="courses" />} />
+                <Route path={ROUTES.ADMIN_COURSE_CREATE} element={<AdminCourseCreatePage />} />
+                <Route path={ROUTES.ADMIN_COURSE_BUILDER} element={<AdminCourseBuilderPage />} />
+                <Route path={ROUTES.ADMIN_COURSE_PREVIEW} element={<AdminCoursePreviewPage />} />
+                <Route path={ROUTES.ADMIN_LESSONS} element={<AdminContentListPage kind="lessons" />} />
+                <Route path={ROUTES.ADMIN_LESSON_BUILDER} element={<AdminLessonBuilderPage />} />
+                <Route path={ROUTES.ADMIN_LESSON_PREVIEW} element={<AdminLessonPreviewPage />} />
+                <Route path={ROUTES.ADMIN_QUESTIONS} element={<AdminQuestionBankPage />} />
+                <Route path={ROUTES.ADMIN_QUIZZES} element={<AdminContentListPage kind="quizzes" />} />
+                <Route path={ROUTES.ADMIN_QUIZ_BUILDER} element={<AdminQuizBuilderPage />} />
+                <Route path={ROUTES.ADMIN_QUIZ_PREVIEW} element={<AdminQuizPreviewPage />} />
                 <Route path={ROUTES.ADMIN_VOCABULARY} element={<AdminVocabularyPage />} />
                 <Route path={ROUTES.ADMIN_REGIONAL_LANGUAGE} element={<AdminRegionalLanguagePage />} />
+                <Route path="/admin/regional-language" element={<Navigate to={ROUTES.ADMIN_REGIONAL_LANGUAGE} replace />} />
                 <Route path={ROUTES.ADMIN_IMPORT} element={<AdminImportPage />} />
                 <Route path={ROUTES.ADMIN_IMPORT_HISTORY} element={<AdminImportHistoryPage />} />
                 <Route path={ROUTES.ADMIN_DESTINATIONS} element={<AdminDestinationsPage />} />
                 <Route path={ROUTES.ADMIN_DESTINATION_DETAIL} element={<AdminDestinationDetailPage />} />
                 <Route path={ROUTES.CONTENT_VOCABULARY} element={<AdminVocabularyPage />} />
                 <Route path={ROUTES.CONTENT_REGIONAL_LANGUAGE} element={<AdminRegionalLanguagePage />} />
+                <Route path="/content/regional-language" element={<Navigate to={ROUTES.CONTENT_REGIONAL_LANGUAGE} replace />} />
                 <Route path={ROUTES.CONTENT_IMPORT} element={<AdminImportPage />} />
                 <Route path={ROUTES.CONTENT_IMPORT_HISTORY} element={<AdminImportHistoryPage />} />
                 <Route path={ROUTES.CONTENT_DESTINATIONS} element={<AdminDestinationsPage />} />

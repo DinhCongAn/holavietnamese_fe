@@ -41,7 +41,7 @@ export const ROUTES = {
   VOCABULARY_NOTEBOOK_DETAIL: '/vocabulary/notebook/:id',
   VOCABULARY_REVIEW: '/vocabulary/review',
   REGIONAL_VIETNAMESE: '/regional-vietnamese',
-  ADMIN_REGIONAL_LANGUAGE: '/admin/regional-language',
+  ADMIN_REGIONAL_LANGUAGE: '/admin/vocabulary/regional-language',
   ADMIN_IMPORT: '/admin/import',
   ADMIN_IMPORT_HISTORY: '/admin/imports',
 
@@ -73,6 +73,17 @@ export const ROUTES = {
 
   // Admin 
   ADMIN: '/admin',
+  ADMIN_COURSES: '/admin/courses',
+  ADMIN_COURSE_CREATE: '/admin/courses/new',
+  ADMIN_COURSE_BUILDER: '/admin/courses/:courseId',
+  ADMIN_COURSE_PREVIEW: '/admin/courses/:courseId/preview',
+  ADMIN_LESSONS: '/admin/lessons',
+  ADMIN_LESSON_BUILDER: '/admin/lessons/:lessonId',
+  ADMIN_LESSON_PREVIEW: '/admin/lessons/:lessonId/preview',
+  ADMIN_QUESTIONS: '/admin/questions',
+  ADMIN_QUIZZES: '/admin/quizzes',
+  ADMIN_QUIZ_BUILDER: '/admin/quizzes/:quizId',
+  ADMIN_QUIZ_PREVIEW: '/admin/quizzes/:quizId/preview',
   CONTENT_COURSES: '/content/courses',
   CONTENT_COURSE_CREATE: '/content/courses/new',
   CONTENT_COURSE_BUILDER: '/content/courses/:courseId',
@@ -98,7 +109,7 @@ export const ROUTES = {
   ADMIN_AUDIT_LOGS: '/admin/audit-logs',
 
   // Content Manager data tools
-  CONTENT_REGIONAL_LANGUAGE: '/content/regional-language',
+  CONTENT_REGIONAL_LANGUAGE: '/content/vocabulary/regional-language',
   CONTENT_IMPORT: '/content/import',
   CONTENT_IMPORT_HISTORY: '/content/imports',
   CONTENT_VOCABULARY: '/content/vocabulary',
@@ -126,6 +137,12 @@ export function getBackOfficeRoutes(pathname = '') {
   const adminArea = pathname === ROUTES.ADMIN || pathname.startsWith(`${ROUTES.ADMIN}/`);
   return adminArea
     ? {
+        courses: ROUTES.ADMIN_COURSES,
+        courseBuilder: ROUTES.ADMIN_COURSE_BUILDER,
+        coursePreview: ROUTES.ADMIN_COURSE_PREVIEW,
+        lessons: ROUTES.ADMIN_LESSONS,
+        questions: ROUTES.ADMIN_QUESTIONS,
+        quizzes: ROUTES.ADMIN_QUIZZES,
         vocabulary: ROUTES.ADMIN_VOCABULARY,
         regionalLanguage: ROUTES.ADMIN_REGIONAL_LANGUAGE,
         importData: ROUTES.ADMIN_IMPORT,
@@ -134,6 +151,12 @@ export function getBackOfficeRoutes(pathname = '') {
         destinationDetail: ROUTES.ADMIN_DESTINATION_DETAIL,
       }
     : {
+        courses: ROUTES.CONTENT_COURSES,
+        courseBuilder: ROUTES.CONTENT_COURSE_BUILDER,
+        coursePreview: ROUTES.CONTENT_COURSE_PREVIEW,
+        lessons: ROUTES.CONTENT_LESSONS,
+        questions: ROUTES.CONTENT_QUESTIONS,
+        quizzes: ROUTES.CONTENT_QUIZZES,
         vocabulary: ROUTES.CONTENT_VOCABULARY,
         regionalLanguage: ROUTES.CONTENT_REGIONAL_LANGUAGE,
         importData: ROUTES.CONTENT_IMPORT,

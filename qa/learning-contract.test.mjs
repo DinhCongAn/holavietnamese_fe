@@ -119,7 +119,8 @@ test('Active routes keep their paths except for canonical learning and content-m
   };
   const canonicalManagementRoutes = {
     ADMIN_VOCABULARY: '/admin/vocabulary',
-    ADMIN_REGIONAL_LANGUAGE: '/admin/regional-language',
+    ADMIN_REGIONAL_LANGUAGE: '/admin/vocabulary/regional-language',
+    CONTENT_REGIONAL_LANGUAGE: '/content/vocabulary/regional-language',
     ADMIN_IMPORT: '/admin/import',
     ADMIN_IMPORT_HISTORY: '/admin/imports',
     ADMIN_DESTINATIONS: '/admin/destinations',

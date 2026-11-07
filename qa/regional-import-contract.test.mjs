@@ -89,8 +89,8 @@ test('Import history keeps pagination and uses the persisted job detail endpoint
   await contentImportService.history(3); assert.deepEqual(calls[0].params, { page: 3, size: 20 });
   await contentImportService.get(jobId); assert.equal(calls[1].url, `/api/admin/imports/${jobId}`);
   assert.equal(ROUTES.REGIONAL_VIETNAMESE, '/regional-vietnamese');
-  assert.equal(ROUTES.ADMIN_REGIONAL_LANGUAGE, '/admin/regional-language');
-  assert.equal(ROUTES.CONTENT_REGIONAL_LANGUAGE, '/content/regional-language');
+  assert.equal(ROUTES.ADMIN_REGIONAL_LANGUAGE, '/admin/vocabulary/regional-language');
+  assert.equal(ROUTES.CONTENT_REGIONAL_LANGUAGE, '/content/vocabulary/regional-language');
   const app = await fs.readFile(new URL('../src/app/router/AppRouter.jsx', import.meta.url), 'utf8');
   const adminRoutes = app.slice(app.indexOf('<Route element={<AdminRoute />}>'));
   for (const route of ['ADMIN_REGIONAL_LANGUAGE', 'ADMIN_IMPORT', 'ADMIN_IMPORT_HISTORY', 'CONTENT_REGIONAL_LANGUAGE', 'CONTENT_IMPORT', 'CONTENT_IMPORT_HISTORY']) assert.ok(adminRoutes.includes(`path={ROUTES.${route}}`));
@@ -117,7 +117,7 @@ test('Import preview explains regional columns, reconciles duplicates and pagina
   assert.ok(resultView.includes('function ImportSummaryGroup'));
   assert.ok(resultView.includes('<AdminPagination currentPage={safePage + 1}'));
   assert.ok(regionalAdmin.includes('{ ...query, page, size: 20 }'));
-  assert.ok(regionalAdmin.includes('<AdminPagination currentPage={data.number + 1}'));
+  assert.match(regionalAdmin, /<AdminPagination\s+currentPage=\{data\.number \+ 1\}/);
   assert.ok(regionalAdmin.includes('tone="detail"'));
   assert.ok(regionalAdmin.includes('adminRegionalVocabularyService.get'));
   assert.ok(uploadPage.includes('contentImportService.updatePreview'));

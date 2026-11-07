@@ -443,73 +443,40 @@ body .vocabulary-ui .vocabulary-review-completion strong { color:var(--color-for
 @media(prefers-reduced-motion:reduce) { .admin-sidebar { transition:none; } }
 
 .tutor-current-mode-banner .current-mode-icon,.tutor-current-mode-banner .current-mode-badge { background:var(--color-sage) !important; color:var(--color-forest) !important; }
-\n
+
 /* ==========================================================================
-   Clean Notifications System - Pure White Minimalist Palette
-   Explicit Override: Prevent heritage.css button selector from turning notifications orange
+   Refined Notifications System
    ========================================================================== */
-.notifications-page,
-.notifications-page button,
-.notifications-page .button,
-.notifications-page article,
-.notifications-page .notification-card,
-.notifications-page .notification-item,
-.notification-dropdown,
-.notification-dropdown button,
-.notification-dropdown .button,
-.notification-dropdown .notification-item,
 .notification-menu,
-.notification-menu__trigger,
-.notification-item {
-  background-color: #FFFFFF !important;
-  background: #FFFFFF !important;
-  border-color: #E2E8F0 !important;
-  color: #1E293B !important;
+.notification-dropdown,
+.notifications-page {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.notification-menu button,
+.notification-dropdown button,
+.notifications-page button,
+.nghe-guide-replay-container button,
+.nghe-guide-replay,
+.nghe-guide-replay__dismiss,
+.nghe-guide button {
   min-height: unset !important;
+  font-family: inherit;
+}
+
+.nghe-guide-replay-container button,
+.nghe-guide-replay,
+.nghe-guide-replay__dismiss {
+  background: transparent !important;
+  border: none !important;
+  color: inherit !important;
+  padding: 0 !important;
   box-shadow: none !important;
-  outline: none !important;
-  -webkit-tap-highlight-color: transparent !important;
 }
 
-.notifications-page button:hover,
-.notifications-page .button:hover,
-.notifications-page article:hover,
-.notifications-page .notification-card:hover,
-.notifications-page .notification-item:hover,
 .notification-dropdown button:hover,
-.notification-dropdown .button:hover,
-.notification-dropdown .notification-item:hover,
-.notification-menu__trigger:hover,
-.notification-item:hover {
-  background-color: #F8FAFC !important;
-  background: #F8FAFC !important;
-  border-color: #E2E8F0 !important;
-  color: #1E293B !important;
-}
-
-.notifications-page button:active,
-.notifications-page article:active,
-.notifications-page .notification-card:active,
-.notification-dropdown button:active,
-.notification-dropdown .notification-item:active,
-.notification-item:active {
-  background-color: #FFFFFF !important;
-  background: #FFFFFF !important;
-  border-color: #E2E8F0 !important;
-}
-
-/* Ensure unread accent dot is orange, but NEVER background of card or item */
-.notification-unread-dot {
-  background-color: #F97316 !important;
-  background: #F97316 !important;
-}
-
-/* Icon container */
-.notification-icon-box {
-  background-color: #F8FAFC !important;
-  background: #F8FAFC !important;
-  border-color: #E2E8F0 !important;
-  color: #64748B !important;
+.notifications-page button:hover {
+  background-image: none;
 }
 
 /* Custom Thin Elegant Scrollbar for Notification Dropdown */
@@ -520,15 +487,15 @@ body .vocabulary-ui .vocabulary-review-completion strong { color:var(--color-for
   background: transparent;
 }
 .notification-scroll::-webkit-scrollbar-thumb {
-  background: #E2E8F0;
+  background: #E8E5DF;
   border-radius: 9999px;
 }
 .notification-scroll::-webkit-scrollbar-thumb:hover {
-  background: #CBD5E1;
+  background: #D1C7BA;
 }
 .notification-scroll {
   scrollbar-width: thin;
-  scrollbar-color: #E2E8F0 transparent;
+  scrollbar-color: #E8E5DF transparent;
 }
 
 /* Ensure bilingual-text does not cause inline-grid line-height collisions */

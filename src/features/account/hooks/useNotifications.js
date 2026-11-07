@@ -5,6 +5,7 @@ import { useAuth } from '@/features/auth/context/AuthContext';
 import { notificationService } from '@/features/account/api/notificationService';
 import { useNotificationStream } from '@/features/account/hooks/useNotificationStream';
 import { normalizeNotification, unwrapSseNotification } from '@/constants/notifications';
+import HolaNotificationToast from '@/shared/components/common/HolaNotificationToast';
 
 const NotificationContext = createContext(null);
 const EMPTY_PAGE = { content: [], page: 1, size: 10, totalElements: 0, totalPages: 0 };
@@ -47,6 +48,7 @@ export function NotificationProvider({ children }) {
   const [query, setQuery] = useState({ page: 1, size: 10, isRead: undefined });
   const seenIdsRef = useRef(new Set());
   const readEventIdsRef = useRef(new Set());
+  const markAsReadRef = useRef(null);
 
   const loadRecent = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -122,20 +124,49 @@ export function NotificationProvider({ children }) {
         window.dispatchEvent(new CustomEvent('reward:received', { detail: item }));
       }
     }
-    toast(item.title, {
-      description: item.message,
-      action: (item.linkUrl || item.targetType === 'BADGE') ? {
-        label: 'Xem ngay',
-        onClick: () => {
-          if (item.targetType === 'BADGE' && item.targetId) {
-            navigate(`/achievements?badgeId=${encodeURIComponent(item.targetId)}`);
-          } else if (item.linkUrl) {
-            navigate(item.linkUrl);
-          }
-        },
-      } : undefined,
-    });
+
+    toast.custom(
+      (t) =>
+        createElement(HolaNotificationToast, {
+          id: t,
+          item,
+          onClose: () => toast.dismiss(t),
+          onAction: () => {
+            toast.dismiss(t);
+            if (markAsReadRef.current && item.id) {
+              markAsReadRef.current(item.id);
+            }
+            if (item.targetType === 'BADGE' && item.targetId) {
+              navigate(`/achievements?badgeId=${encodeURIComponent(item.targetId)}`);
+            } else if (item.linkUrl) {
+              navigate(item.linkUrl);
+            }
+          },
+        }),
+      { duration: 6000 }
+    );
   }, [navigate, query]);
+
+  // Expose test helper in development or browser console
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.__holaTestNotification = (customItem) => {
+        handleNew(customItem || {
+          id: Date.now(),
+          type: 'LESSON',
+          title: "Ready for today's Vietnamese lesson?",
+          message: 'Continue "Vietnamese for Beginners" and keep your learning streak going.',
+          linkUrl: '/learn/1',
+          createdAt: new Date().toISOString(),
+        });
+      };
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete window.__holaTestNotification;
+      }
+    };
+  }, [handleNew]);
 
   const handleReadEvent = useCallback((payload) => {
     const data = payload?.result ?? payload;
@@ -183,6 +214,10 @@ export function NotificationProvider({ children }) {
       toast.error(requestError.message || 'Không thể đánh dấu đã đọc.');
     } finally { setBusy(false); }
   }, [recent, pageData.content, handleReadEvent, loadPage, query]);
+
+  useEffect(() => {
+    markAsReadRef.current = markAsRead;
+  }, [markAsRead]);
 
   const markAllAsRead = useCallback(async () => {
     if (!unreadCount) return;
