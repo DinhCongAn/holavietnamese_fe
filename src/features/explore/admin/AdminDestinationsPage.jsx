@@ -28,13 +28,16 @@ export function AdminDestinationsPage() {
   const [keyword, setKeyword] = useState('');
   const [creating, setCreating] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [page, setPage] = useState(0);
   const pageSize = 10;
 
-  const resource = useAsyncResource(useCallback(signal => adminDestinationService.list(query, { signal }), [query]));
+  const resource = useAsyncResource(useCallback(
+    signal => adminDestinationService.list({ ...query, page, size: pageSize }, { signal }),
+    [query, page],
+  ));
   const filter = (field, value) => {
     setQuery(current => ({ ...current, [field]: value }));
-    setCurrentPage(1);
+    setPage(0);
   };
 
   function saved() {
@@ -248,7 +251,7 @@ export function AdminDestinationsPage() {
               onClick={() => {
                 setKeyword('');
                 setQuery({ ...emptyFilters });
-                setCurrentPage(1);
+                setPage(0);
               }}
             >
               <span>{label('Đặt lại', 'Reset')}</span>
@@ -259,7 +262,8 @@ export function AdminDestinationsPage() {
 
       {/* Destinations Table */}
       <ResourceState resource={resource}>
-        {items => {
+        {data => {
+          const items = data.content ?? [];
           if (items.length === 0) {
             return (
               <div className="admin-card" style={{ textAlign: 'center', padding: '40px', color: 'var(--color-muted)' }}>
@@ -267,10 +271,6 @@ export function AdminDestinationsPage() {
               </div>
             );
           }
-
-          const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
-          const safePage = Math.min(currentPage, totalPages);
-          const pagedItems = items.slice((safePage - 1) * pageSize, safePage * pageSize);
 
           return (
             <div className="admin-card" style={{ padding: 0, overflowX: 'auto' }}>
@@ -298,7 +298,7 @@ export function AdminDestinationsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {pagedItems.map(item => {
+                  {items.map(item => {
                     const detailPath = generatePath(managementRoutes.destinationDetail, { id: String(item.id) });
                     const regionObj = DESTINATION_REGIONS.find(r => r.value === item.region);
 
@@ -407,10 +407,10 @@ export function AdminDestinationsPage() {
                 </tbody>
               </table>
               <AdminPagination
-                currentPage={safePage}
+                currentPage={(data.number ?? page) + 1}
                 pageSize={pageSize}
-                totalItems={items.length}
-                onPageChange={setCurrentPage}
+                totalItems={data.totalElements ?? items.length}
+                onPageChange={nextPage => setPage(nextPage - 1)}
               />
             </div>
           );

@@ -132,7 +132,7 @@ test('Active routes keep their paths except for canonical learning and content-m
     else if (canonicalManagementRoutes[key]) assert.equal(after[key], canonicalManagementRoutes[key], key);
     else if (canonicalContentRoutes[key]) {
       const [newKey, newPath] = canonicalContentRoutes[key];
-      assert.equal(after[key], undefined, `${key} is replaced by ${newKey}`);
+      assert.equal(after[key], path, `${key} remains available for Admin`);
       assert.equal(after[newKey], newPath, newKey);
     }
     else assert.equal(after[key],path,key);

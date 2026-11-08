@@ -51,7 +51,17 @@ test('Regional administration uses existing POST and PUT semantics and never del
   await adminRegionalVocabularyService.create(payload); await adminRegionalVocabularyService.update(9, { ...payload, status: 'ARCHIVED' });
   assert.equal(calls[0].method, 'post'); assert.equal(calls[1].method, 'put'); assert.equal(calls[1].url, '/api/admin/regional-language/9');
   assert.equal(JSON.parse(calls[1].data).status, 'ARCHIVED');
+  result = 4;
+  assert.equal(await adminRegionalVocabularyService.approveAllPending(), 4);
+  assert.equal(calls[2].method, 'post');
+  assert.equal(calls[2].url, '/api/admin/regional-language/review/approve-all');
   await assert.rejects(() => adminRegionalVocabularyService.update('undefined', payload));
+});
+test('Regional administration exposes the guarded approve-all action', async () => {
+  const page = await fs.readFile(new URL('../src/features/explore/regional/admin/AdminRegionalLanguagePage.jsx', import.meta.url), 'utf8');
+  assert.ok(page.includes('mayReview &&'));
+  assert.ok(page.includes('adminRegionalVocabularyService.approveAllPending()'));
+  assert.ok(page.includes('confirmationDialog'));
 });
 test('Excel preview uploads the file with a browser multipart boundary and authenticated client', async () => {
   calls.length = 0; result = { id: jobId, status: 'READY', canConfirm: true, rows: [] };

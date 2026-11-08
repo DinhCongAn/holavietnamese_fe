@@ -40,7 +40,7 @@ export const destinationService = {
 export const adminDestinationService = {
   async list(filters = {}, options = {}) {
     return resultOf(await axiosClient.get('/api/admin/destinations', {
-      ...options, params: paramsOf(filters, ['keyword', 'status', 'region']),
+      ...options, params: paramsOf(filters, ['keyword', 'status', 'region', 'page', 'size']),
     }));
   },
   async get(id, options = {}) {

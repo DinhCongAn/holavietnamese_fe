@@ -17,6 +17,7 @@ import { useConfirmDialog } from '@/shared/components/common/ConfirmDialog';
 import '@/features/vocabulary/components/admin/admin-vocabulary.css';
 
 const emptyFilters = { keyword: '', status: '', partOfSpeech: '' };
+const PAGE_SIZE = 10;
 
 const VOCABULARY_STATUS_DOTS = {
   DRAFT: '#F59E0B',
@@ -51,7 +52,7 @@ export function AdminVocabularyPage() {
     const controller = new AbortController();
     setResource((state) => ({ ...state, loading: true, error: null }));
     adminVocabularyService
-      .search({ ...query, page, size: 20 }, { signal: controller.signal })
+      .search({ ...query, page, size: PAGE_SIZE }, { signal: controller.signal })
       .then((data) => {
         if (!controller.signal.aborted) {
           setPageInfo(data);
@@ -541,7 +542,7 @@ export function AdminVocabularyPage() {
               </table>
               <AdminPagination
                 currentPage={page + 1}
-                pageSize={20}
+                pageSize={PAGE_SIZE}
                 totalItems={pageInfo.totalElements}
                 onPageChange={(nextPage) => setPage(nextPage - 1)}
               />

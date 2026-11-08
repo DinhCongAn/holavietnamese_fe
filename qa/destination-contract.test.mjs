@@ -70,11 +70,19 @@ test('Admin combines filters, preserves cancellation, and uses the current Beare
   calls.length = 0;
   storage.set('token', 'rotated-destination-token');
   const signal = new AbortController().signal;
-  await adminDestinationService.list({ keyword: 'Hanoi', status: 'DRAFT', region: 'NORTH', page: 5 }, { signal });
-  assert.deepEqual(calls[0], { method: 'get', url: '/api/admin/destinations', params: { keyword: 'Hanoi', status: 'DRAFT', region: 'NORTH' }, body: undefined, signal, token: 'Bearer rotated-destination-token' });
+  await adminDestinationService.list({ keyword: 'Hanoi', status: 'DRAFT', region: 'NORTH', page: 5, size: 10 }, { signal });
+  assert.deepEqual(calls[0], { method: 'get', url: '/api/admin/destinations', params: { keyword: 'Hanoi', status: 'DRAFT', region: 'NORTH', page: 5, size: 10 }, body: undefined, signal, token: 'Bearer rotated-destination-token' });
   await destinationService.list({ keyword: '', region: null, status: 'DRAFT' });
   assert.equal(calls[1].url, '/api/destinations');
   assert.deepEqual(calls[1].params, {});
+});
+
+test('Destination management delegates pagination to the backend', async () => {
+  const page = await fs.readFile(new URL('../src/features/explore/admin/AdminDestinationsPage.jsx', import.meta.url), 'utf8');
+  assert.match(page, /adminDestinationService\.list\(\{ \.\.\.query, page, size: pageSize \}/);
+  assert.match(page, /const items = data\.content \?\? \[\]/);
+  assert.match(page, /totalItems=\{data\.totalElements \?\? items\.length\}/);
+  assert.doesNotMatch(page, /items\.slice\(/);
 });
 
 test('Destination management submits fields and every linked content ID in one request', async () => {

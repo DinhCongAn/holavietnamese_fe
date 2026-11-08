@@ -20,6 +20,7 @@ export const adminRegionalVocabularyService = {
   async update(id, payload) { return resultOf(await axiosClient.put(`/api/admin/regional-language/${pathId(id)}`, payload)); },
   async submitReview(id) { return resultOf(await axiosClient.post(`/api/admin/regional-language/${pathId(id)}/submit-review`)); },
   async review(id, decision) { return resultOf(await axiosClient.post(`/api/admin/regional-language/${pathId(id)}/review`, { decision })); },
+  async approveAllPending() { return resultOf(await axiosClient.post('/api/admin/regional-language/review/approve-all')); },
   async archive(id) { return resultOf(await axiosClient.post(`/api/admin/regional-language/${pathId(id)}/archive`)); },
   async restore(id) { return resultOf(await axiosClient.post(`/api/admin/regional-language/${pathId(id)}/restore`)); },
   async revise(id) { return resultOf(await axiosClient.post(`/api/admin/regional-language/${pathId(id)}/revise`)); },

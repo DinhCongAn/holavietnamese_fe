@@ -15,6 +15,7 @@ import { canReviewVocabulary, canWriteVocabulary } from '@/utils/permissions/con
 import { AdminActionButton, AdminActionGroup } from '@/shared/components/common/AdminTableActions';
 import { AdminPagination } from '@/shared/components/common/AdminPagination';
 import { AdminFilterSelect } from '@/shared/components/common/AdminFilterSelect';
+import { useConfirmDialog } from '@/shared/components/common/ConfirmDialog';
 import { useLocation, Link } from 'react-router-dom';
 import {
   BookOpen,
@@ -26,6 +27,7 @@ import {
   Pencil,
   Trash2,
   Check,
+  CheckCheck,
   RotateCcw as RestoreIcon,
   Send,
 } from 'lucide-react';
@@ -54,10 +56,12 @@ export function AdminRegionalLanguagePage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [bulkApproving, setBulkApproving] = useState(false);
+  const { confirm, confirmationDialog } = useConfirmDialog();
 
   const actionPending = useRef(false);
   const resource = useAsyncResource(
-    useCallback((signal) => adminRegionalVocabularyService.list({ ...query, page, size: 20 }, { signal }), [query, page])
+    useCallback((signal) => adminRegionalVocabularyService.list({ ...query, page, size: 10 }, { signal }), [query, page])
   );
   const masters = useAsyncResource(useCallback((signal) => adminVocabularyService.list({}, { signal }), []));
 
@@ -126,6 +130,44 @@ export function AdminRegionalLanguagePage() {
     }
   }
 
+  async function approveAllPending() {
+    if (
+      busy ||
+      bulkApproving ||
+      !(await confirm({
+        title: label('Duyệt toàn bộ biến thể đang chờ?', 'Approve all pending regional variants?'),
+        description: label(
+          'Tất cả từ vựng vùng miền đang ở trạng thái Chờ duyệt sẽ được chuyển sang Đã xuất bản. Thao tác áp dụng cho toàn bộ dữ liệu, không chỉ trang hoặc bộ lọc hiện tại.',
+          'Every regional vocabulary variant awaiting review will be published. This applies to all records, not only the current page or filter.',
+        ),
+        confirmLabel: label('Duyệt toàn bộ', 'Approve all'),
+        tone: 'warning',
+      }))
+    ) return;
+
+    actionPending.current = true;
+    setBulkApproving(true);
+    setBusy(true);
+    setError(null);
+    setMessage('');
+    try {
+      const approved = await adminRegionalVocabularyService.approveAllPending();
+      setMessage(
+        approved > 0
+          ? label(`Đã duyệt và xuất bản ${approved} biến thể vùng miền.`, `Approved and published ${approved} regional variants.`)
+          : label('Không có biến thể vùng miền nào đang chờ duyệt.', 'No regional variants are awaiting review.'),
+      );
+      setPage(0);
+      resource.reload();
+    } catch (failure) {
+      setError(failure);
+    } finally {
+      actionPending.current = false;
+      setBulkApproving(false);
+      setBusy(false);
+    }
+  }
+
   return (
     <section className="admin-regional-page admin-vocabulary-page">
       <Breadcrumb
@@ -149,6 +191,20 @@ export function AdminRegionalLanguagePage() {
         }
         actions={
           <>
+            {mayReview && (
+              <button
+                type="button"
+                disabled={busy || bulkApproving}
+                onClick={approveAllPending}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+              >
+                <CheckCheck size={16} aria-hidden="true" />
+                <BilingualText
+                  vi={bulkApproving ? 'Đang duyệt…' : 'Duyệt toàn bộ'}
+                  en={bulkApproving ? 'Approving…' : 'Approve all'}
+                />
+              </button>
+            )}
             <Link
               className="button secondary"
               to={managementRoutes.vocabulary}
@@ -473,7 +529,7 @@ export function AdminRegionalLanguagePage() {
               </table>
               <AdminPagination
                 currentPage={data.number + 1}
-                pageSize={20}
+                pageSize={10}
                 totalItems={data.totalElements}
                 onPageChange={(nextPage) => setPage(nextPage - 1)}
               />
@@ -497,6 +553,7 @@ export function AdminRegionalLanguagePage() {
           }}
         />
       )}
+      {confirmationDialog}
     </section>
   );
 }
