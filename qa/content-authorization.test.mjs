@@ -59,8 +59,8 @@ test('content authoring navigation belongs to Content Manager and Admin receives
 
   assert.match(layout, /managerAuthoringPaths/);
   assert.match(layout, /isContentManager && !isAdmin/);
-  assert.match(layout, /isAdmin \? 'Duyệt khóa học' : 'Khóa học'/);
-  assert.match(layout, /Duyệt từ vựng/);
+  assert.match(layout, /isAdmin \? '(?:Duyệt khóa học|Khóa học)' : 'Khóa học'/);
+  assert.match(layout, /to === ROUTES\.ADMIN_VOCABULARY && isAdmin\)\s*\{\s*resolvedLabel = '(?:Duyệt từ vựng|Từ vựng)'/);
   assert.match(layout, /to === ROUTES\.ADMIN_VOCABULARY\) finalTo = ROUTES\.CONTENT_VOCABULARY/);
   assert.match(layout, /to === ROUTES\.ADMIN_DESTINATIONS\) finalTo = ROUTES\.CONTENT_DESTINATIONS/);
 

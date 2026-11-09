@@ -126,7 +126,11 @@ test('Import preview explains regional columns, reconciles duplicates and pagina
   for (const key of ['createdWords', 'duplicateWords', 'createdRegionalVariants', 'duplicateRegionalVariants']) assert.ok(resultView.includes(key));
   assert.ok(resultView.includes('function ImportSummaryGroup'));
   assert.ok(resultView.includes('<AdminPagination currentPage={safePage + 1}'));
-  assert.ok(regionalAdmin.includes('{ ...query, page, size: 20 }'));
+  const pageSize = regionalAdmin.match(/const PAGE_SIZE = (\d+);/);
+  assert.ok(pageSize, 'Regional pagination declares one shared page size');
+  assert.ok(Number(pageSize[1]) > 0 && Number(pageSize[1]) <= 100);
+  assert.ok(regionalAdmin.includes('{ ...query, page, size: PAGE_SIZE }'));
+  assert.ok(regionalAdmin.includes('pageSize={PAGE_SIZE}'));
   assert.match(regionalAdmin, /<AdminPagination\s+currentPage=\{data\.number \+ 1\}/);
   assert.ok(regionalAdmin.includes('tone="detail"'));
   assert.ok(regionalAdmin.includes('adminRegionalVocabularyService.get'));

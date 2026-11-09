@@ -72,9 +72,9 @@ export function AdminLayout() {
         }
         let resolvedLabel = label;
         if (to === ROUTES.CONTENT_COURSES) {
-          resolvedLabel = isContentManager && !isAdmin ? 'Biên soạn khóa học' : (isAdmin ? 'Duyệt khóa học' : 'Khóa học');
+          resolvedLabel = isContentManager && !isAdmin ? 'Biên soạn khóa học' : (isAdmin ? 'Khóa học' : 'Khóa học');
         } else if (to === ROUTES.ADMIN_VOCABULARY && isAdmin) {
-          resolvedLabel = 'Duyệt từ vựng';
+          resolvedLabel = 'Từ vựng';
         } else if (isAdmin && (to === ROUTES.ADMIN_CULTURE || to === ROUTES.CONTENT_CULTURE)) {
           resolvedLabel = 'Quản lý bài viết';
         }

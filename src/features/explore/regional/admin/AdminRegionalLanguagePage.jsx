@@ -39,6 +39,8 @@ const REGIONAL_STATUS_DOTS = {
   ARCHIVED: '#64748B',
 };
 
+const PAGE_SIZE = 10;
+
 export function AdminRegionalLanguagePage() {
   const location = useLocation();
   const managementRoutes = getBackOfficeRoutes(location.pathname);
@@ -61,7 +63,7 @@ export function AdminRegionalLanguagePage() {
 
   const actionPending = useRef(false);
   const resource = useAsyncResource(
-    useCallback((signal) => adminRegionalVocabularyService.list({ ...query, page, size: 10 }, { signal }), [query, page])
+    useCallback((signal) => adminRegionalVocabularyService.list({ ...query, page, size: PAGE_SIZE }, { signal }), [query, page])
   );
   const masters = useAsyncResource(useCallback((signal) => adminVocabularyService.list({}, { signal }), []));
 
@@ -529,7 +531,7 @@ export function AdminRegionalLanguagePage() {
               </table>
               <AdminPagination
                 currentPage={data.number + 1}
-                pageSize={10}
+                pageSize={PAGE_SIZE}
                 totalItems={data.totalElements}
                 onPageChange={(nextPage) => setPage(nextPage - 1)}
               />
